@@ -42,12 +42,12 @@ function RepositoryCard({ repository }: RepositoryCardProps) {
       </div>
 
       <p className="font-body mb-6 min-h-12 flex-1 text-sm leading-6 text-orbita-muted">
-        {description || "No description available."}
+        {description || "Sin descripción disponible."}
       </p>
 
       <div className="mb-5 flex flex-wrap items-center gap-4">
         <span className="font-code rounded-md bg-orbita-surface px-3 py-1.5 text-xs text-orbita-text">
-          {language || "Unknown"}
+          {language || "Desconocido"}
         </span>
 
         <span className="font-code flex items-center gap-2 text-xs text-orbita-muted">
@@ -67,7 +67,7 @@ function RepositoryCard({ repository }: RepositoryCardProps) {
             <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" />
           </svg>
 
-          {stars} stars
+          {stars} estrellas
         </span>
       </div>
 
@@ -78,7 +78,7 @@ function RepositoryCard({ repository }: RepositoryCardProps) {
           rel="noopener noreferrer"
           className="font-body inline-flex items-center gap-2 text-sm font-medium text-orbita-accent hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orbita-primary"
         >
-          View on GitHub
+          Ver en GitHub
           <span aria-hidden="true">↗</span>
         </a>
       </div>

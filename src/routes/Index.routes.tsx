@@ -2,6 +2,7 @@
 import { Routes, Route } from "react-router";
 import MainMenu from "../pages/MainMenu";
 import RepositoriesPreview from "../pages/RepositoriesPreview";
+import RepositorySelectionPreview from "../pages/RepositorySelectionPreview";
 
 function RouterPage() {
   return (
@@ -10,6 +11,10 @@ function RouterPage() {
       <Route
         path="/repositories-preview"
         element={<RepositoriesPreview />}
+      />
+      <Route
+        path="/repository-selection-preview"
+        element={<RepositorySelectionPreview />}
       />
     </Routes>
   );

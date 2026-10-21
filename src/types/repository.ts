@@ -6,3 +6,9 @@ export type Repository = {
   stars: number;
   url: string;
 };
+
+
+export type RepositorySelection = {
+  repositoryId: number;
+  position: number;
+};

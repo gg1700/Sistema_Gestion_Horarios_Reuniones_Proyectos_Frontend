@@ -19,11 +19,11 @@ function RepositoriesPreview() {
             id="repositories-title"
             className="font-heading text-3xl font-semibold md:text-4xl"
           >
-            My Repositories
+            Mis repositorios
           </h1>
 
           <p className="font-body mt-3 text-sm text-orbita-muted md:text-base">
-            Your connected GitHub repositories
+            Tus repositorios de GitHub vinculados
           </p>
 
           {repositoriesMock.length > 0 ? (
@@ -37,7 +37,7 @@ function RepositoriesPreview() {
             </div>
           ) : (
             <p className="font-body mt-8 text-orbita-muted">
-              No repositories available.
+              No hay repositorios disponibles.
             </p>
           )}
         </section>
