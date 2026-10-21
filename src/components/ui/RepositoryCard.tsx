@@ -1,47 +1,85 @@
 
+import type { Repository } from "../../types/repository";
+
 type RepositoryCardProps = {
-  name: string;
-  description: string | null;
-  language: string | null;
-  stars: number;
-  url: string;
+  repository: Repository;
 };
 
-function RepositoryCard({
-  name,
-  description,
-  language,
-  stars,
-  url,
-}: RepositoryCardProps) {
-  return (
-    <article className="w-full rounded-xl border border-[#2C312E] bg-[#1B1F1D] p-5 transition-colors hover:border-[#10B981]">
-      <h3 className="mb-2 break-words font-['Space_Grotesk'] text-lg font-semibold text-[#E1E4DF]">
-        {name}
-      </h3>
+function RepositoryCard({ repository }: RepositoryCardProps) {
+  const { name, description, language, stars, url } = repository;
 
-      <p className="mb-4 font-['Inter'] text-sm text-[#8F968F]">
+  return (
+    <article className="flex h-full flex-col rounded-xl border border-orbita-outline bg-orbita-card p-6 transition-colors duration-200 hover:border-orbita-primary">
+      <div className="mb-5 flex items-center gap-3">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-orbita-surface text-orbita-accent">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m8 17-5-5 5-5" />
+            <path d="m16 7 5 5-5 5" />
+            <path d="m14 4-4 16" />
+          </svg>
+        </div>
+
+        <div className="min-w-0">
+          <h3 className="font-heading break-words text-lg font-semibold text-orbita-text">
+            {name}
+          </h3>
+
+          <p className="font-body mt-1 text-xs text-orbita-muted">
+            Repositorio público
+          </p>
+        </div>
+      </div>
+
+      <p className="font-body mb-6 min-h-12 flex-1 text-sm leading-6 text-orbita-muted">
         {description || "No description available."}
       </p>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="rounded-md bg-[#252A27] px-3 py-1 font-mono text-xs text-[#E1E4DF]">
+      <div className="mb-5 flex flex-wrap items-center gap-4">
+        <span className="font-code rounded-md bg-orbita-surface px-3 py-1.5 text-xs text-orbita-text">
           {language || "Unknown"}
         </span>
 
-        <span className="font-mono text-sm text-[#8F968F]">
-          ★ {stars}
+        <span className="font-code flex items-center gap-2 text-xs text-orbita-muted">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-[#20D4BF]"
+            aria-hidden="true"
+          >
+            <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" />
+          </svg>
+
+          {stars} stars
         </span>
       </div>
 
-      <div className="mt-5 border-t border-[#2C312E] pt-4">
+      <div className="border-t border-orbita-outline pt-5">
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-['Inter'] text-sm font-medium text-[#4ADEA3] hover:underline"
+          className="font-body inline-flex items-center gap-2 text-sm font-medium text-orbita-accent hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orbita-primary"
         >
-          View on GitHub ↗
+          View on GitHub
+          <span aria-hidden="true">↗</span>
         </a>
       </div>
     </article>

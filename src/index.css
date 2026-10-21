@@ -11,4 +11,19 @@
   --color-danger: #E74C3C;
   --font-first: 'Inter', sans-serif;
   --font-second: 'Encode Sans Semi Condensed', sans-serif;
+
+  /*Orbita design colors*/
+  --color-orbita-primary: #10B981;
+  --color-orbita-accent: #4EDEA3;
+  --color-orbita-background: #101312;
+  --color-orbita-card: #1B1F1D;
+  --color-orbita-surface: #252A27;
+  --color-orbita-outline: #2C312E;
+  --color-orbita-text: #E1E4DF;
+  --color-orbita-muted: #8F968F;
+
+  /*Orbita typography*/
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
 }
