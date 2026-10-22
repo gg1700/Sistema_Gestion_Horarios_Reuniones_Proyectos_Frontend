@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router";
 import MainMenu from "../pages/MainMenu";
 import RepositoriesPreview from "../pages/RepositoriesPreview";
 import RepositorySelectionPreview from "../pages/RepositorySelectionPreview";
+import ProfileVisibilitySettings from "../pages/ProfileVisibilitySettings";
 
 function RouterPage() {
   return (
@@ -15,6 +16,10 @@ function RouterPage() {
       <Route
         path="/repository-selection-preview"
         element={<RepositorySelectionPreview />}
+      />
+      <Route
+        path="/profile-visibility"
+        element={<ProfileVisibilitySettings />}
       />
     </Routes>
   );
