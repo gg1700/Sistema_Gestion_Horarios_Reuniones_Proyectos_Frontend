@@ -4,6 +4,7 @@ import MainMenu from "../pages/MainMenu";
 import RepositoriesPreview from "../pages/RepositoriesPreview";
 import RepositorySelectionPreview from "../pages/RepositorySelectionPreview";
 import ProfileVisibilitySettings from "../pages/ProfileVisibilitySettings";
+import ProfilePreview from "../pages/ProfilePreview";
 
 function RouterPage() {
   return (
@@ -20,6 +21,10 @@ function RouterPage() {
       <Route
         path="/profile-visibility"
         element={<ProfileVisibilitySettings />}
+      />
+      <Route
+        path="/profile-preview"
+        element={<ProfilePreview />}
       />
     </Routes>
   );
