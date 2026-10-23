@@ -4,7 +4,7 @@ import PublicProfile from '../components/features/profile/PublicProfile';
 import usePublicProfile from '../hooks/usePublicProfile';
 
 function PublicProfilePage() {
-  const { handleName, profile } = usePublicProfile();
+  const { handleName, profile, isLoading, error } = usePublicProfile();
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -20,7 +20,13 @@ function PublicProfilePage() {
       document.head.appendChild(meta);
     }
 
-    if (profile) {
+    if (isLoading) {
+      document.title = 'Cargando perfil público | Orbitia';
+      meta.content = 'Consultando el perfil público.';
+    } else if (error) {
+      document.title = 'Error al consultar el perfil | Orbitia';
+      meta.content = 'No se pudo consultar el perfil público.';
+    } else if (profile) {
       document.title = `${profile.name} ${profile.firstLastName} | Orbitia`;
       meta.content = `Perfil público de ${profile.name} ${profile.firstLastName} en Orbitia.`;
     } else {
@@ -39,7 +45,7 @@ function PublicProfilePage() {
         meta.setAttribute('content', previousDescription);
       }
     };
-  }, [profile]);
+  }, [profile, isLoading, error]);
 
   return (
     <main className="min-h-screen bg-orbita-background px-5 py-10 font-body text-orbita-text md:px-10">
@@ -51,13 +57,20 @@ function PublicProfilePage() {
           >
             Orbitia
           </Link>
-
           <span className="rounded-full bg-orbita-surface px-4 py-2 text-xs text-orbita-accent">
-            Vista pública · Datos simulados
+            Vista pública
           </span>
         </header>
 
-        {profile ? (
+        {isLoading ? (
+          <section role="status" className="py-12 text-center text-orbita-muted">
+            Cargando perfil público...
+          </section>
+        ) : error ? (
+          <section role="alert" className="py-12 text-center text-orbita-muted">
+            {error}
+          </section>
+        ) : profile ? (
           <>
             <div className="mb-8">
               <p className="text-sm font-medium text-orbita-accent">
