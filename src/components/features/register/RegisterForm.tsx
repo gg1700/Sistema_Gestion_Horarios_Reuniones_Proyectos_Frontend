@@ -4,6 +4,7 @@ import { FaGithub } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import { FiAlertCircle, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
 import TextField from '../../ui/TextField';
+import Button from '../../ui/Button';
 import PasswordRequirements from './PasswordRequirements';
 import useRegisterForm from '../../../hooks/useRegisterForm';
 import { routePaths } from '../../../constants/routes';
@@ -122,14 +123,14 @@ function RegisterForm() {
         </p>
       )}
 
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
-        className="flex h-11 items-center justify-center gap-2 rounded-lg bg-orbita-accent font-medium text-orbita-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        isFullWidth
+        rightIcon={isSubmitting ? undefined : <FiArrowRight />}
       >
         {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
-        {!isSubmitting && <FiArrowRight aria-hidden="true" />}
-      </button>
+      </Button>
 
       <div className="flex items-center gap-3 font-code text-[11px] uppercase tracking-widest text-orbita-muted">
         <span className="h-px flex-1 bg-orbita-outline" />
