@@ -1,37 +1,75 @@
 import { useEffect, useState } from 'react';
 import {
-  checkMockHandleAvailability,
-  createMockPublicLink,
-  createMockPublicUrl,
-  handlePattern,
-  isReservedHandle,
-  waitMockRequest,
-} from '../mocks/publicLink';
+  checkPublicHandle,
+  getPublicLink,
+  updatePublicLink,
+} from '../api/publicLink';
 import type {
   HandleAvailability,
   PublicLink,
 } from '../types/publicLink';
 
+const handlePattern = /^[a-z0-9-]{3,50}$/;
+const reservedHandles = new Set([
+  'admin',
+  'api',
+  'login',
+  'public',
+]);
+
+const emptyPublicLink: PublicLink = {
+  handleName: '',
+  url: '',
+  publicLinkActive: false,
+  allOptionalFieldsPrivate: false,
+};
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 function usePublicLink() {
   const [publicLink, setPublicLink] = useState<PublicLink>(
-    createMockPublicLink,
+    emptyPublicLink,
   );
-
-  const [draftHandle, setDraftHandle] = useState(
-    publicLink.handleName,
-  );
-
+  const [draftHandle, setDraftHandle] = useState('');
   const [availability, setAvailability] =
     useState<HandleAvailability>('unchanged');
-
+  const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [serverError, setServerError] = useState('');
   const [notice, setNotice] = useState('');
-  const [simulateServerError, setSimulateServerError] =
-    useState(false);
 
   useEffect(() => {
-    if (draftHandle === publicLink.handleName) {
+    let cancelled = false;
+
+    getPublicLink()
+      .then(data => {
+        if (cancelled) return;
+
+        setPublicLink(current => ({
+          ...data,
+          allOptionalFieldsPrivate:
+            current.allOptionalFieldsPrivate,
+        }));
+        setDraftHandle(data.handleName);
+        setIsLoaded(true);
+      })
+      .catch(error => {
+        if (!cancelled) {
+          setServerError(
+            getErrorMessage(error, 'No se pudo cargar el enlace.'),
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded || draftHandle === publicLink.handleName) {
       setAvailability('unchanged');
       return;
     }
@@ -41,41 +79,33 @@ function usePublicLink() {
       return;
     }
 
-    if (isReservedHandle(draftHandle)) {
+    if (reservedHandles.has(draftHandle)) {
       setAvailability('reserved');
       return;
     }
 
     let cancelled = false;
-
     setAvailability('checking');
 
-    const timeout = setTimeout(async () => {
-      try {
-        const available = await checkMockHandleAvailability(
-          draftHandle,
-          simulateServerError,
-        );
-
-        if (!cancelled) {
-          setAvailability(available ? 'available' : 'taken');
-        }
-      } catch {
-        if (!cancelled) {
-          setAvailability('error');
-        }
-      }
+    const timeout = setTimeout(() => {
+      checkPublicHandle(draftHandle)
+        .then(result => {
+          if (!cancelled) {
+            setAvailability(
+              result.available ? 'available' : 'taken',
+            );
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setAvailability('error');
+        });
     }, 450);
 
     return () => {
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [
-    draftHandle,
-    publicLink.handleName,
-    simulateServerError,
-  ]);
+  }, [draftHandle, publicLink.handleName, isLoaded]);
 
   function updateDraftHandle(value: string) {
     setDraftHandle(value);
@@ -85,10 +115,11 @@ function usePublicLink() {
 
   async function saveHandle(): Promise<boolean> {
     if (
+      !isLoaded ||
       isSaving ||
       availability !== 'available' ||
       !handlePattern.test(draftHandle) ||
-      isReservedHandle(draftHandle)
+      reservedHandles.has(draftHandle)
     ) {
       return false;
     }
@@ -97,38 +128,35 @@ function usePublicLink() {
     setServerError('');
 
     try {
-      const available = await checkMockHandleAvailability(
-        draftHandle,
-        simulateServerError,
-      );
+      const availabilityResult =
+        await checkPublicHandle(draftHandle);
 
-      if (!available) {
+      if (!availabilityResult.available) {
         setAvailability('taken');
         throw new Error('El identificador ya está ocupado.');
       }
 
-      await waitMockRequest();
-
-      const nextUrl = createMockPublicUrl(draftHandle);
+      const updated = await updatePublicLink({
+        handleName: draftHandle,
+      });
 
       setPublicLink(current => ({
-        ...current,
-        handleName: draftHandle,
-        url: nextUrl,
+        ...updated,
+        allOptionalFieldsPrivate:
+          current.allOptionalFieldsPrivate,
       }));
-
-      setNotice(
-        'Identificador actualizado en la simulación.',
-      );
+      setDraftHandle(updated.handleName);
+      setAvailability('unchanged');
+      setNotice('Identificador actualizado correctamente.');
 
       return true;
     } catch (error) {
       setServerError(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo actualizar el enlace público.',
+        getErrorMessage(
+          error,
+          'No se pudo actualizar el identificador.',
+        ),
       );
-
       return false;
     } finally {
       setIsSaving(false);
@@ -136,34 +164,30 @@ function usePublicLink() {
   }
 
   async function togglePublicLink() {
-    if (isSaving) return;
+    if (!isLoaded || isSaving) return;
 
     setIsSaving(true);
     setServerError('');
     setNotice('');
 
     try {
-      await waitMockRequest();
-
-      if (simulateServerError) {
-        throw new Error(
-          'No se pudo actualizar el estado del enlace.',
-        );
-      }
+      const updated = await updatePublicLink({
+        publicLinkActive: !publicLink.publicLinkActive,
+      });
 
       setPublicLink(current => ({
-        ...current,
-        publicLinkActive: !current.publicLinkActive,
+        ...updated,
+        allOptionalFieldsPrivate:
+          current.allOptionalFieldsPrivate,
       }));
 
-      setNotice(
-        'Estado del enlace actualizado en la simulación.',
-      );
+      setNotice('Estado del enlace actualizado correctamente.');
     } catch (error) {
       setServerError(
-        error instanceof Error
-          ? error.message
-          : 'Ocurrió un error del servidor.',
+        getErrorMessage(
+          error,
+          'No se pudo actualizar el estado del enlace.',
+        ),
       );
     } finally {
       setIsSaving(false);
@@ -181,11 +205,10 @@ function usePublicLink() {
     publicLink,
     draftHandle,
     availability,
+    isLoaded,
     isSaving,
     serverError,
     notice,
-    simulateServerError,
-    setSimulateServerError,
     updateDraftHandle,
     saveHandle,
     togglePublicLink,

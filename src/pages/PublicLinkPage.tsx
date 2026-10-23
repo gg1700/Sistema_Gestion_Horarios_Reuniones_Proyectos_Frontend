@@ -14,11 +14,10 @@ function PublicLinkPage() {
     publicLink,
     draftHandle,
     availability,
+    isLoaded,
     isSaving,
     serverError,
     notice,
-    simulateServerError,
-    setSimulateServerError,
     updateDraftHandle,
     saveHandle,
     togglePublicLink,
@@ -41,7 +40,7 @@ function PublicLinkPage() {
   };
 
   const canSaveHandle =
-    availability === 'available' && !isSaving;
+    isLoaded && availability === 'available' && !isSaving;
 
   async function copyLink() {
     try {
@@ -84,8 +83,8 @@ function PublicLinkPage() {
         </header>
 
         <div className="mb-7 rounded-lg border border-[#325448] bg-[#193126] px-5 py-4 text-sm text-[#4EDEA3]">
-          VISTA DE PRUEBA · Los cambios utilizan datos simulados.
-          No modifican tu perfil real.
+          La información del enlace se obtiene del servidor.
+          El aviso de privacidad continúa en modo demostración.
         </div>
 
         {serverError && (
@@ -155,7 +154,7 @@ function PublicLinkPage() {
                 role="switch"
                 aria-label="Activar enlace público"
                 aria-checked={publicLink.publicLinkActive}
-                disabled={isSaving}
+                disabled={!isLoaded || isSaving}
                 onClick={() => void togglePublicLink()}
                 className={`relative h-7 w-12 shrink-0 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4EDEA3] disabled:opacity-50 ${
                   publicLink.publicLinkActive
@@ -200,6 +199,7 @@ function PublicLinkPage() {
 
               <button
                 type="button"
+                disabled={!isLoaded}
                 onClick={() => void copyLink()}
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-[#4EDEA3] px-5 py-3 text-sm font-semibold text-[#00291A] transition-colors hover:bg-[#69EABB]"
               >
@@ -248,6 +248,7 @@ function PublicLinkPage() {
               <input
                 id="public-handle"
                 type="text"
+                disabled={!isLoaded || isSaving}
                 value={draftHandle}
                 onChange={event =>
                   updateDraftHandle(event.target.value)
@@ -319,9 +320,8 @@ function PublicLinkPage() {
             </h2>
 
             <p className="mt-2 text-xs leading-5 text-[#B9C8BF]">
-              Estas opciones son temporales y permiten
-              comprobar los estados antes de conectar el
-              backend real.
+              Esta opción permite simular la privacidad de los datos
+              opcionales mientras se integra su configuración real.
             </p>
 
             <div className="mt-5 flex flex-col gap-4">
@@ -337,20 +337,6 @@ function PublicLinkPage() {
                   className="accent-[#10B981]"
                 />
                 Simular todos los datos opcionales privados
-              </label>
-
-              <label className="flex items-center gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={simulateServerError}
-                  onChange={event =>
-                    setSimulateServerError(
-                      event.target.checked,
-                    )
-                  }
-                  className="accent-[#10B981]"
-                />
-                Simular error del servidor
               </label>
             </div>
           </section>
