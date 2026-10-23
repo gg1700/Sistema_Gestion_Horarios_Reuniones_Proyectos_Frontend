@@ -1,4 +1,6 @@
+
 @import "tailwindcss";
+
 @theme {
   --color-primary: #1E40AF;
   --color-secondary: #E6E6E6;
@@ -11,4 +13,41 @@
   --color-danger: #E74C3C;
   --font-first: 'Inter', sans-serif;
   --font-second: 'Encode Sans Semi Condensed', sans-serif;
+
+  --color-orbita-primary: #10B981;
+  --color-orbita-accent: #4EDEA3;
+  --color-orbita-background: #101312;
+  --color-orbita-card: #1B1F1D;
+  --color-orbita-surface: #252A27;
+  --color-orbita-outline: #2C312E;
+  --color-orbita-text: #E1E4DF;
+  --color-orbita-muted: #8F968F;
+
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+}
+
+.orbita-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4A554E #252A27;
+}
+
+.orbita-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.orbita-scrollbar::-webkit-scrollbar-track {
+  background: #252A27;
+  border-radius: 8px;
+}
+
+.orbita-scrollbar::-webkit-scrollbar-thumb {
+  background: #4A554E;
+  border-radius: 8px;
+  border: 2px solid #252A27;
+}
+
+.orbita-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #10B981;
 }
