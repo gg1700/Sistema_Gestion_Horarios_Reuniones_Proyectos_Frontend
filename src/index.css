@@ -11,4 +11,34 @@
   --color-danger: #E74C3C;
   --font-first: 'Inter', sans-serif;
   --font-second: 'Encode Sans Semi Condensed', sans-serif;
+
+  --color-orbita-primary: #10B981;
+  --color-orbita-accent: #4EDEA3;
+  --color-orbita-secondary: #2DD4BF;
+  --color-orbita-background: #101312;
+  --color-orbita-card: #1B1F1D;
+  --color-orbita-surface: #252A27;
+  --color-orbita-modal: #2A2F2C;
+  --color-orbita-outline: #2C312E;
+  --color-orbita-text: #E1E4DF;
+  --color-orbita-muted: #8F968F;
+  --color-orbita-disabled: #6B726D;
+  --color-orbita-on-primary: #00291A;
+  --color-orbita-success: #24372E;
+  --color-orbita-error: #FFB4AB;
+  --color-orbita-error-tint: #3B2422;
+  --color-orbita-error-container: #93000A;
+
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-orbita-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-orbita-surface) inset;
+  caret-color: var(--color-orbita-text);
+  transition: background-color 9999s ease-in-out 0s;
 }
