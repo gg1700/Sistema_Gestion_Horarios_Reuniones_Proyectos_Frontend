@@ -5,6 +5,8 @@ import RepositoriesPreview from "../pages/RepositoriesPreview";
 import RepositorySelectionPreview from "../pages/RepositorySelectionPreview";
 import ProfileVisibilitySettings from "../pages/ProfileVisibilitySettings";
 import ProfilePreview from "../pages/ProfilePreview";
+import PublicProfilePage from '../pages/PublicProfilePage';
+import PublicLinkPage from '../pages/PublicLinkPage';
 
 function RouterPage() {
   return (
@@ -25,6 +27,12 @@ function RouterPage() {
       <Route
         path="/profile-preview"
         element={<ProfilePreview />}
+      />
+      <Route 
+        path="/:publicHandle" element={<PublicProfilePage />} />
+      <Route
+        path="/perfil/enlace-publico"
+        element={<PublicLinkPage />}
       />
     </Routes>
   );
