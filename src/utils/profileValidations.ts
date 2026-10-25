@@ -2,14 +2,17 @@ import { emailPattern, properNounPattern } from '../constants/validation';
 import {
   allowedPhotoTypes,
   descriptionMaximumLength,
-  phoneNumberPattern,
+  digitsPattern,
   photoMaximumBytes,
 } from '../constants/profile';
+import { describePhoneDigits, findCountryByCode } from '../constants/countries';
 import type {
   AdditionalInfoErrors,
   AdditionalInfoValues,
+  ContactEmailFormItem,
   LinkErrors,
   LinkFormItem,
+  PhoneFormItem,
   WorkExperienceErrors,
   WorkExperienceValues,
 } from '../types/profile';
@@ -39,20 +42,45 @@ function validateLink(link: LinkFormItem): LinkErrors {
   return errors;
 }
 
+function validatePhone(phone: PhoneFormItem) {
+  const phoneNumber = phone.number.trim();
+  if (phoneNumber.length === 0) return '';
+  const country = findCountryByCode(phone.countryCode);
+  if (!country) return 'Selecciona el código de país.';
+  if (!digitsPattern.test(phoneNumber)) return 'Usa solo números.';
+  const { minimum, maximum } = country.phoneDigits;
+  if (phoneNumber.length < minimum || phoneNumber.length > maximum) {
+    return `${country.name} requiere ${describePhoneDigits(country)}.`;
+  }
+  return '';
+}
+
+function validateContactEmail(contactEmail: ContactEmailFormItem) {
+  const email = contactEmail.email.trim();
+  if (email.length === 0) return '';
+  if (email.length > 200 || !emailPattern.test(email)) return 'Ingresa un correo válido.';
+  return '';
+}
+
+function collectItemErrors<Item extends { id: string }>(items: Item[], validator: (item: Item) => string) {
+  const itemErrors: Record<string, string> = {};
+  for (const item of items) {
+    const message = validator(item);
+    if (message) itemErrors[item.id] = message;
+  }
+  return Object.keys(itemErrors).length > 0 ? itemErrors : undefined;
+}
+
 export function validateAdditionalInfo(values: AdditionalInfoValues): AdditionalInfoErrors {
   const errors: AdditionalInfoErrors = {};
   const surname = values.surname.trim();
   if (surname.length > 0 && !properNounPattern.test(surname)) {
     errors.surname = 'Solo letras, espacios, apóstrofes o guiones.';
   }
-  const phoneNumber = values.phoneNumber.trim();
-  if (phoneNumber.length > 0 && !phoneNumberPattern.test(phoneNumber)) {
-    errors.phoneNumber = 'Usa solo números, de 6 a 15 dígitos.';
-  }
-  const contactEmail = values.contactEmail.trim();
-  if (contactEmail.length > 0 && !emailPattern.test(contactEmail)) {
-    errors.contactEmail = 'Ingresa un correo válido.';
-  }
+  const phoneErrors = collectItemErrors(values.phones, validatePhone);
+  if (phoneErrors) errors.phones = phoneErrors;
+  const contactEmailErrors = collectItemErrors(values.contactEmails, validateContactEmail);
+  if (contactEmailErrors) errors.contactEmails = contactEmailErrors;
   if (values.address.trim().length > 300) {
     errors.address = 'Máximo 300 caracteres.';
   }

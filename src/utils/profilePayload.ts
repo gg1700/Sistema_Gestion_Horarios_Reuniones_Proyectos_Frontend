@@ -15,13 +15,21 @@ export function buildAdditionalInfoFormData(
     if (additionalInfo.surname.trim()) {
       appendJson(formData, 'surname', { surname: additionalInfo.surname.trim(), visibility: true });
     }
-    if (additionalInfo.phoneNumber.trim()) {
-      appendJson(formData, 'phones', [
-        { phoneNumber: additionalInfo.phoneNumber.trim(), countryCode: additionalInfo.phoneCountryCode },
-      ]);
+    const filledPhones = additionalInfo.phones.filter((phone) => phone.number.trim());
+    if (filledPhones.length > 0) {
+      appendJson(
+        formData,
+        'phones',
+        filledPhones.map((phone) => ({ phoneNumber: phone.number.trim(), countryCode: phone.countryCode }))
+      );
     }
-    if (additionalInfo.contactEmail.trim()) {
-      appendJson(formData, 'contactEmails', [{ email: additionalInfo.contactEmail.trim() }]);
+    const filledContactEmails = additionalInfo.contactEmails.filter((contactEmail) => contactEmail.email.trim());
+    if (filledContactEmails.length > 0) {
+      appendJson(
+        formData,
+        'contactEmails',
+        filledContactEmails.map((contactEmail) => ({ email: contactEmail.email.trim() }))
+      );
     }
     if (additionalInfo.address.trim()) {
       appendJson(formData, 'addresses', [{ address: additionalInfo.address.trim() }]);
