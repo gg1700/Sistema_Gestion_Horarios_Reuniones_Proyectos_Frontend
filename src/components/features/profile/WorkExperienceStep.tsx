@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { FiAlertCircle, FiCheck, FiPlus } from 'react-icons/fi';
 import TextField from '../../ui/TextField';
+import DateField from '../../ui/DateField';
 import SectionCard from '../../ui/SectionCard';
 import Button from '../../ui/Button';
 import RequiredFieldsNote from '../../ui/RequiredFieldsNote';
@@ -56,22 +57,22 @@ function WorkExperienceStep({ form }: WorkExperienceStepProps) {
             maxLength={200}
             error={errors.companyName}
           />
-          <TextField
+          <DateField
             label="Fecha de inicio"
             name="startDate"
-            type="date"
             value={draft.startDate}
-            onChange={form.handleDraftChange}
+            onChange={(value) => form.updateDraftField('startDate', value)}
+            maximumDate={draft.endDate || undefined}
             error={errors.startDate}
             isRequired
           />
           {!draft.isCurrentJob && (
-            <TextField
+            <DateField
               label="Fecha de fin"
               name="endDate"
-              type="date"
               value={draft.endDate}
-              onChange={form.handleDraftChange}
+              onChange={(value) => form.updateDraftField('endDate', value)}
+              minimumDate={draft.startDate || undefined}
               error={errors.endDate}
             />
           )}

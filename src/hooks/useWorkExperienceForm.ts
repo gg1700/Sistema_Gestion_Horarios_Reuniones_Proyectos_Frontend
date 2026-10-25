@@ -13,6 +13,8 @@ const emptyWorkExperience: WorkExperienceValues = {
   description: '',
 };
 
+type WorkExperienceTextField = Exclude<keyof WorkExperienceValues, 'isCurrentJob'>;
+
 function createWorkExperienceId() {
   return `experience-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -25,10 +27,13 @@ function useWorkExperienceForm() {
   const isEditing = editingId !== null;
   const canAddWorkExperience = isEditing || workExperiences.length < maximumWorkExperiences;
 
+  function updateDraftField(field: WorkExperienceTextField, value: string) {
+    setDraft((previousDraft) => ({ ...previousDraft, [field]: value }));
+    setErrors((previousErrors) => ({ ...previousErrors, [field]: undefined }));
+  }
+
   function handleDraftChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    const { name, value } = event.target;
-    setDraft((previousDraft) => ({ ...previousDraft, [name]: value }));
-    setErrors((previousErrors) => ({ ...previousErrors, [name]: undefined }));
+    updateDraftField(event.target.name as WorkExperienceTextField, event.target.value);
   }
 
   function toggleCurrentJob() {
@@ -94,6 +99,7 @@ function useWorkExperienceForm() {
     isEditing,
     canAddWorkExperience,
     handleDraftChange,
+    updateDraftField,
     toggleCurrentJob,
     saveWorkExperience,
     cancelEditing: resetDraft,
