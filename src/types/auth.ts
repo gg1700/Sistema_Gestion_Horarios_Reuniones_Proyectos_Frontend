@@ -1,14 +1,20 @@
+export type OAuthProvider = 'google' | 'github';
+
 export interface RegisterFormValues {
   handleName: string;
   name: string;
   firstSurname: string;
-  email: string;
-  password: string;
 }
 
 export type RegisterField = keyof RegisterFormValues;
 
 export type RegisterFormErrors = Partial<Record<RegisterField, string>>;
+
+export interface PendingRegistration {
+  token: string;
+  email: string;
+  provider: OAuthProvider;
+}
 
 export interface RegisteredUser {
   id: string;

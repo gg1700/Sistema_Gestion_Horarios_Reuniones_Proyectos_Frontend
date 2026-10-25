@@ -17,6 +17,7 @@ interface TextFieldProps {
   labelHint?: string;
   rightElement?: ReactNode;
   maxLength?: number;
+  isRequired?: boolean;
 }
 
 function TextField({
@@ -35,6 +36,7 @@ function TextField({
   labelHint,
   rightElement,
   maxLength,
+  isRequired = false,
 }: TextFieldProps) {
   const hasError = Boolean(error);
   const borderColor = hasError
@@ -48,6 +50,11 @@ function TextField({
       <div className="flex items-center justify-between">
         <label htmlFor={name} className="text-sm font-medium text-orbita-text">
           {label}
+          {isRequired && (
+            <span className="ml-0.5 text-orbita-error" aria-hidden="true">
+              *
+            </span>
+          )}
         </label>
         {labelHint && (
           <span className="font-code text-[11px] uppercase tracking-wider text-orbita-accent">
@@ -70,6 +77,7 @@ function TextField({
           placeholder={placeholder}
           autoComplete={autoComplete}
           maxLength={maxLength}
+          required={isRequired}
           aria-invalid={hasError}
           aria-describedby={hasError ? `${name}-error` : undefined}
           className="h-11 w-full bg-transparent text-sm text-orbita-text scheme-dark placeholder:text-orbita-disabled focus:outline-none"

@@ -7,7 +7,7 @@ function SecurityNotice() {
       <div>
         <p className="text-sm font-medium text-orbita-text">Tus datos están protegidos</p>
         <p className="mt-1 text-xs leading-5 text-orbita-muted">
-          La contraseña se guarda cifrada y nunca se comparte con otros servicios.
+          Tu identidad se verifica con Google o GitHub. Orbitia nunca ve ni guarda tu contraseña.
         </p>
       </div>
     </div>
