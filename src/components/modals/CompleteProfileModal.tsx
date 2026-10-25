@@ -49,7 +49,7 @@ function CompleteProfileModal() {
             <BrandHeading
               badge={isFirstStep ? 'Paso 1 de 2' : 'Paso 2 de 2'}
               title={isFirstStep ? 'Completa tu perfil' : 'Experiencia laboral'}
-              description="Todos los campos son opcionales. Puedes cambiarlos luego desde tu perfil."
+              description="Esta información es opcional. Puedes completarla luego desde tu perfil."
               isCompact
             />
           </div>
@@ -85,7 +85,7 @@ function CompleteProfileModal() {
           />
         ) : (
           <ModalFooter
-            skipLabel="Omitir e ir a mi perfil"
+            skipLabel="Completar más tarde"
             confirmLabel="Guardar e ir a mi perfil"
             onSkip={() => completeProfile.finishProfile([])}
             onConfirm={handleFinish}
