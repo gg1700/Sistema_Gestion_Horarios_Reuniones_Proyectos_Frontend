@@ -3,6 +3,7 @@ import { FiAlertCircle, FiCheck, FiPlus } from 'react-icons/fi';
 import TextField from '../../ui/TextField';
 import SectionCard from '../../ui/SectionCard';
 import Button from '../../ui/Button';
+import RequiredFieldsNote from '../../ui/RequiredFieldsNote';
 import WorkExperienceCard from './WorkExperienceCard';
 import { descriptionMaximumLength, maximumWorkExperiences } from '../../../constants/profile';
 import type useWorkExperienceForm from '../../../hooks/useWorkExperienceForm';
@@ -33,6 +34,8 @@ function WorkExperienceStep({ form }: WorkExperienceStepProps) {
           </span>
         }
       >
+        <RequiredFieldsNote condition="Si agregas una experiencia" />
+
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField
             label="Cargo"
@@ -42,6 +45,7 @@ function WorkExperienceStep({ form }: WorkExperienceStepProps) {
             placeholder="Desarrollador backend"
             maxLength={150}
             error={errors.title}
+            isRequired
           />
           <TextField
             label="Empresa"
@@ -59,6 +63,7 @@ function WorkExperienceStep({ form }: WorkExperienceStepProps) {
             value={draft.startDate}
             onChange={form.handleDraftChange}
             error={errors.startDate}
+            isRequired
           />
           {!draft.isCurrentJob && (
             <TextField

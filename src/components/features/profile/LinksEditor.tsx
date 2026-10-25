@@ -26,6 +26,17 @@ function LinksEditor({ links, errors = {}, canAddLink, onAdd, onUpdate, onRemove
         </span>
       }
     >
+      {links.length > 0 && (
+        <div className="hidden gap-2 text-sm font-medium text-orbita-text sm:flex">
+          <span className="w-40">
+            Etiqueta <span className="text-orbita-error" aria-hidden="true">*</span>
+          </span>
+          <span className="flex-1">
+            URL <span className="text-orbita-error" aria-hidden="true">*</span>
+          </span>
+        </div>
+      )}
+
       {links.map((link) => {
         const linkErrors = errors[link.id] ?? {};
         return (
@@ -33,6 +44,7 @@ function LinksEditor({ links, errors = {}, canAddLink, onAdd, onUpdate, onRemove
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 aria-label="Etiqueta del enlace"
+                aria-required="true"
                 value={link.text}
                 onChange={(event) => onUpdate(link.id, { text: event.target.value })}
                 placeholder="GitHub"
@@ -49,6 +61,7 @@ function LinksEditor({ links, errors = {}, canAddLink, onAdd, onUpdate, onRemove
                 <FiLink className="shrink-0 text-orbita-muted" aria-hidden="true" />
                 <input
                   aria-label="URL del enlace"
+                  aria-required="true"
                   value={link.url}
                   onChange={(event) => onUpdate(link.id, { url: event.target.value })}
                   placeholder="github.com/tu-usuario"
