@@ -13,7 +13,7 @@ interface ModalFooterProps {
 function ModalFooter({ skipLabel, confirmLabel, onSkip, onConfirm, onBack, isLoading = false }: ModalFooterProps) {
   return (
     <div className="flex items-center justify-between gap-3 border-t border-orbita-outline px-6 py-4 sm:px-8">
-      <Button variant="ghost" onClick={onSkip} disabled={isLoading}>
+      <Button variant="secondary" onClick={onSkip} disabled={isLoading}>
         {skipLabel}
       </Button>
       <div className="flex items-center gap-3">
