@@ -4,28 +4,25 @@ import { useNavigate } from 'react-router';
 import { registerUser } from '../api/authApi';
 import { routePaths } from '../constants/routes';
 import { ApiError } from '../types/api';
-import type { RegisterField, RegisterFormErrors, RegisterFormValues } from '../types/auth';
+import type {
+  PendingRegistration,
+  RegisterField,
+  RegisterFormErrors,
+  RegisterFormValues,
+} from '../types/auth';
 import { saveSession } from '../utils/session';
+import { clearPendingRegistration } from '../utils/pendingRegistration';
 import { validateRegisterForm } from '../utils/registerValidations';
 
 const emptyValues: RegisterFormValues = {
   handleName: '',
   name: '',
   firstSurname: '',
-  email: '',
-  password: '',
 };
 
 type TouchedFields = Partial<Record<RegisterField, boolean>>;
 
-function buildConflictErrors(message: string): RegisterFormErrors {
-  if (message.toLowerCase().includes('correo')) {
-    return { email: 'Este correo ya está registrado.' };
-  }
-  return { handleName: 'Este nombre de usuario ya está en uso.' };
-}
-
-function useRegisterForm() {
+function useRegisterForm(pendingRegistration: PendingRegistration) {
   const navigate = useNavigate();
   const [values, setValues] = useState<RegisterFormValues>(emptyValues);
   const [touchedFields, setTouchedFields] = useState<TouchedFields>({});
@@ -59,13 +56,28 @@ function useRegisterForm() {
   }
 
   function markAllFieldsAsTouched() {
-    setTouchedFields({
-      handleName: true,
-      name: true,
-      firstSurname: true,
-      email: true,
-      password: true,
-    });
+    setTouchedFields({ handleName: true, name: true, firstSurname: true });
+  }
+
+  function handleRegisterError(error: unknown) {
+    if (!(error instanceof ApiError)) {
+      setGeneralError('Ocurrió un error inesperado. Intenta nuevamente.');
+      return;
+    }
+    if (error.statusCode === 401) {
+      clearPendingRegistration();
+      setGeneralError('Tu verificación expiró. Vuelve a continuar con Google o GitHub.');
+      return;
+    }
+    if (error.statusCode === 409 && error.message.toLowerCase().includes('correo')) {
+      setGeneralError('Este correo ya tiene una cuenta. Inicia sesión con Google o GitHub.');
+      return;
+    }
+    if (error.statusCode === 409) {
+      setServerErrors({ handleName: 'Este nombre de usuario ya está en uso.' });
+      return;
+    }
+    setGeneralError(error.message);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -76,17 +88,12 @@ function useRegisterForm() {
     setIsSubmitting(true);
     setGeneralError('');
     try {
-      const response = await registerUser(values);
+      const response = await registerUser(values, pendingRegistration.token);
+      clearPendingRegistration();
       saveSession(response.data.session, response.data.user);
       navigate(routePaths.completeProfile);
     } catch (error) {
-      if (error instanceof ApiError && error.statusCode === 409) {
-        setServerErrors(buildConflictErrors(error.message));
-      } else if (error instanceof ApiError) {
-        setGeneralError(error.message);
-      } else {
-        setGeneralError('Ocurrió un error inesperado. Intenta nuevamente.');
-      }
+      handleRegisterError(error);
     } finally {
       setIsSubmitting(false);
     }
