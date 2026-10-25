@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { FiAlertCircle, FiCamera, FiX } from 'react-icons/fi';
+import { FiAlertCircle, FiCamera, FiUpload, FiX } from 'react-icons/fi';
 
 interface ProfilePhotoPickerProps {
   photo: File | null;
@@ -36,8 +36,9 @@ function ProfilePhotoPicker({ photo, error, onChange }: ProfilePhotoPickerProps)
         )}
       </div>
       <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-3">
-          <label className="cursor-pointer text-sm font-medium text-orbita-accent hover:underline">
+        <div className="flex items-center gap-2">
+          <label className="flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-orbita-primary/60 px-3 text-sm text-orbita-accent transition-colors hover:bg-orbita-success">
+            <FiUpload aria-hidden="true" />
             {photo ? 'Cambiar foto' : 'Subir foto'}
             <input type="file" accept="image/png,image/jpeg" onChange={handleFileChange} className="hidden" />
           </label>
@@ -45,7 +46,7 @@ function ProfilePhotoPicker({ photo, error, onChange }: ProfilePhotoPickerProps)
             <button
               type="button"
               onClick={() => onChange(null)}
-              className="flex items-center gap-1 text-xs text-orbita-muted hover:text-orbita-error"
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-orbita-muted/40 bg-orbita-surface px-3 text-sm text-orbita-muted transition-colors hover:border-orbita-error hover:bg-orbita-error-tint hover:text-orbita-error"
             >
               <FiX aria-hidden="true" /> Quitar
             </button>
