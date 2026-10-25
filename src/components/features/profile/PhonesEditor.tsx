@@ -1,6 +1,7 @@
 import { FiAlertCircle, FiPlus, FiTrash2 } from 'react-icons/fi';
 import Button from '../../ui/Button';
 import IconButton from '../../ui/IconButton';
+import Dropdown from '../../ui/Dropdown';
 import ContactListHeader from './ContactListHeader';
 import { countries, describePhoneDigits, findCountryByCode } from '../../../constants/countries';
 import { maximumPhones } from '../../../constants/profile';
@@ -16,6 +17,11 @@ interface PhonesEditorProps {
 }
 
 const defaultMaximumDigits = 15;
+
+const countryCodeOptions = countries.map((country) => ({
+  value: country.code,
+  label: `+${country.code} ${country.name}`,
+}));
 
 function getPhonePlaceholder(countryCode: string) {
   const country = findCountryByCode(countryCode);
@@ -38,23 +44,15 @@ function PhonesEditor({ phones, errors = {}, canAddPhone, onAdd, onUpdate, onRem
       {phones.map((phone, index) => (
         <div key={phone.id} className="flex flex-col gap-1">
           <div className="flex gap-2">
-            <select
-              aria-label={`Código de país del teléfono ${index + 1}`}
+            <Dropdown
+              ariaLabel={`Código de país del teléfono ${index + 1}`}
               value={phone.countryCode}
-              onChange={(event) =>
-                onUpdate(phone.id, {
-                  countryCode: event.target.value,
-                  number: keepAllowedDigits(phone.number, event.target.value),
-                })
+              options={countryCodeOptions}
+              onChange={(countryCode) =>
+                onUpdate(phone.id, { countryCode: countryCode, number: keepAllowedDigits(phone.number, countryCode) })
               }
-              className="h-11 w-36 shrink-0 rounded-lg border border-orbita-outline bg-orbita-surface px-2 text-sm text-orbita-text focus:border-orbita-accent focus:outline-none sm:w-44"
-            >
-              {countries.map((country) => (
-                <option key={country.code} value={country.code}>
-                  +{country.code} {country.name}
-                </option>
-              ))}
-            </select>
+              className="w-36 shrink-0 sm:w-44"
+            />
             <input
               type="tel"
               inputMode="numeric"

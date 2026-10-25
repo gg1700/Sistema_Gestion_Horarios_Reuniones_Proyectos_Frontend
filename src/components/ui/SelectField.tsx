@@ -1,16 +1,12 @@
-import type { ChangeEvent } from 'react';
-
-interface SelectOption {
-  value: string;
-  label: string;
-}
+import Dropdown from './Dropdown';
+import type { DropdownOption } from './Dropdown';
 
 interface SelectFieldProps {
   label: string;
   name: string;
   value: string;
-  options: SelectOption[];
-  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  options: DropdownOption[];
+  onChange: (value: string) => void;
   placeholder?: string;
   isRequired?: boolean;
 }
@@ -34,21 +30,7 @@ function SelectField({
           </span>
         )}
       </label>
-      <select
-        id={name}
-        name={name}
-        value={value}
-        onChange={onChange}
-        required={isRequired}
-        className="h-11 rounded-lg border border-orbita-outline bg-orbita-surface px-3 text-sm text-orbita-text focus:border-orbita-accent focus:outline-none"
-      >
-        {placeholder && <option value="">{placeholder}</option>}
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <Dropdown id={name} ariaLabel={label} value={value} options={options} onChange={onChange} placeholder={placeholder} />
     </div>
   );
 }

@@ -19,7 +19,7 @@ const countryOptions = countries.map((country) => ({ value: country.name, label:
 function AdditionalInfoStep({ form }: AdditionalInfoStepProps) {
   const { values, errors } = form;
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+  function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     form.updateField(event.target.name as AdditionalInfoField, event.target.value);
   }
 
@@ -43,7 +43,7 @@ function AdditionalInfoStep({ form }: AdditionalInfoStepProps) {
             name="countryName"
             value={values.countryName}
             options={countryOptions}
-            onChange={handleInputChange}
+            onChange={(value) => form.updateField('countryName', value)}
             placeholder="Selecciona un país"
           />
         </div>
