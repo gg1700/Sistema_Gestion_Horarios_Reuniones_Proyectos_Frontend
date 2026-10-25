@@ -5,18 +5,28 @@ export interface LinkFormItem {
   visibility: boolean;
 }
 
+export interface PhoneFormItem {
+  id: string;
+  countryCode: string;
+  number: string;
+}
+
+export interface ContactEmailFormItem {
+  id: string;
+  email: string;
+}
+
 export interface AdditionalInfoValues {
   surname: string;
-  phoneCountryCode: string;
-  phoneNumber: string;
-  contactEmail: string;
+  phones: PhoneFormItem[];
+  contactEmails: ContactEmailFormItem[];
   address: string;
   countryName: string;
   links: LinkFormItem[];
   photo: File | null;
 }
 
-export type AdditionalInfoField = Exclude<keyof AdditionalInfoValues, 'links' | 'photo'>;
+export type AdditionalInfoField = 'surname' | 'address' | 'countryName';
 
 export interface LinkErrors {
   text?: string;
@@ -25,8 +35,8 @@ export interface LinkErrors {
 
 export interface AdditionalInfoErrors {
   surname?: string;
-  phoneNumber?: string;
-  contactEmail?: string;
+  phones?: Record<string, string>;
+  contactEmails?: Record<string, string>;
   address?: string;
   photo?: string;
   links?: Record<string, LinkErrors>;
@@ -47,9 +57,15 @@ export interface WorkExperienceItem extends WorkExperienceValues {
 
 export type WorkExperienceErrors = Partial<Record<keyof WorkExperienceValues, string>>;
 
+export interface PhoneDigitsRange {
+  minimum: number;
+  maximum: number;
+}
+
 export interface Country {
   name: string;
   code: string;
+  phoneDigits: PhoneDigitsRange;
 }
 
 export interface CreateAdditionalInfoResponse {
