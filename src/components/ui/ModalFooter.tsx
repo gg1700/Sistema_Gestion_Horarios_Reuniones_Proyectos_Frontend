@@ -18,7 +18,7 @@ function ModalFooter({ skipLabel, confirmLabel, onSkip, onConfirm, onBack, isLoa
       </Button>
       <div className="flex items-center gap-3">
         {onBack && (
-          <Button variant="ghost" onClick={onBack} disabled={isLoading} leftIcon={<FiArrowLeft />}>
+          <Button variant="secondary" onClick={onBack} disabled={isLoading} leftIcon={<FiArrowLeft />}>
             Atrás
           </Button>
         )}

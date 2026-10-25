@@ -121,7 +121,7 @@ function WorkExperienceStep({ form }: WorkExperienceStepProps) {
             {isEditing ? 'Guardar cambios' : 'Agregar experiencia'}
           </Button>
           {isEditing && (
-            <Button variant="ghost" onClick={form.cancelEditing}>
+            <Button variant="secondary" onClick={form.cancelEditing}>
               Cancelar
             </Button>
           )}
