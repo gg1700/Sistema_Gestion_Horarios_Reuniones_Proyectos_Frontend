@@ -16,8 +16,8 @@ const variantClassNames: Record<ButtonVariant, string> = {
   outline: 'h-10 rounded-lg border border-orbita-primary/60 px-4 text-orbita-accent hover:bg-orbita-success',
   dashed:
     'h-11 rounded-lg border border-dashed border-orbita-primary/60 text-orbita-accent hover:border-orbita-accent hover:bg-orbita-success/40',
-  ghost: 'h-10 text-orbita-muted hover:text-orbita-text',
-  link: 'h-9 text-orbita-accent hover:text-orbita-text',
+  ghost: 'h-10 rounded-lg px-4 text-orbita-muted hover:bg-orbita-surface hover:text-orbita-text',
+  link: 'h-9 rounded-lg px-2 text-orbita-accent hover:bg-orbita-surface',
 };
 
 function Button({
