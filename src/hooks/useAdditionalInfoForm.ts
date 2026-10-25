@@ -1,33 +1,48 @@
 import { useState } from 'react';
-import { maximumLinks } from '../constants/profile';
+import { maximumContactEmails, maximumLinks, maximumPhones } from '../constants/profile';
 import type {
   AdditionalInfoErrors,
   AdditionalInfoField,
   AdditionalInfoValues,
+  ContactEmailFormItem,
   LinkFormItem,
+  PhoneFormItem,
 } from '../types/profile';
 import { validateAdditionalInfo } from '../utils/profileValidations';
 
-const emptyAdditionalInfo: AdditionalInfoValues = {
-  surname: '',
-  phoneCountryCode: '591',
-  phoneNumber: '',
-  contactEmail: '',
-  address: '',
-  countryName: '',
-  links: [],
-  photo: null,
-};
+const defaultCountryCode = '591';
 
-function createLinkId() {
-  return `link-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+function createItemId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function createPhone(): PhoneFormItem {
+  return { id: createItemId('phone'), countryCode: defaultCountryCode, number: '' };
+}
+
+function createContactEmail(): ContactEmailFormItem {
+  return { id: createItemId('email'), email: '' };
+}
+
+function createEmptyAdditionalInfo(): AdditionalInfoValues {
+  return {
+    surname: '',
+    phones: [createPhone()],
+    contactEmails: [createContactEmail()],
+    address: '',
+    countryName: '',
+    links: [],
+    photo: null,
+  };
 }
 
 function useAdditionalInfoForm() {
-  const [values, setValues] = useState<AdditionalInfoValues>(emptyAdditionalInfo);
+  const [values, setValues] = useState<AdditionalInfoValues>(createEmptyAdditionalInfo);
   const [hasTriedToSave, setHasTriedToSave] = useState(false);
   const errors: AdditionalInfoErrors = hasTriedToSave ? validateAdditionalInfo(values) : {};
   const canAddLink = values.links.length < maximumLinks;
+  const canAddPhone = values.phones.length < maximumPhones;
+  const canAddContactEmail = values.contactEmails.length < maximumContactEmails;
 
   function updateField(field: AdditionalInfoField, value: string) {
     setValues((previousValues) => ({ ...previousValues, [field]: value }));
@@ -37,9 +52,52 @@ function useAdditionalInfoForm() {
     setValues((previousValues) => ({ ...previousValues, photo: photo }));
   }
 
+  function addPhone() {
+    if (!canAddPhone) return;
+    setValues((previousValues) => ({ ...previousValues, phones: [...previousValues.phones, createPhone()] }));
+  }
+
+  function updatePhone(phoneId: string, changes: Partial<PhoneFormItem>) {
+    setValues((previousValues) => ({
+      ...previousValues,
+      phones: previousValues.phones.map((phone) => (phone.id === phoneId ? { ...phone, ...changes } : phone)),
+    }));
+  }
+
+  function removePhone(phoneId: string) {
+    setValues((previousValues) => ({
+      ...previousValues,
+      phones: previousValues.phones.filter((phone) => phone.id !== phoneId),
+    }));
+  }
+
+  function addContactEmail() {
+    if (!canAddContactEmail) return;
+    setValues((previousValues) => ({
+      ...previousValues,
+      contactEmails: [...previousValues.contactEmails, createContactEmail()],
+    }));
+  }
+
+  function updateContactEmail(contactEmailId: string, email: string) {
+    setValues((previousValues) => ({
+      ...previousValues,
+      contactEmails: previousValues.contactEmails.map((contactEmail) =>
+        contactEmail.id === contactEmailId ? { ...contactEmail, email: email } : contactEmail
+      ),
+    }));
+  }
+
+  function removeContactEmail(contactEmailId: string) {
+    setValues((previousValues) => ({
+      ...previousValues,
+      contactEmails: previousValues.contactEmails.filter((contactEmail) => contactEmail.id !== contactEmailId),
+    }));
+  }
+
   function addLink() {
     if (!canAddLink) return;
-    const newLink: LinkFormItem = { id: createLinkId(), text: '', url: '', visibility: true };
+    const newLink: LinkFormItem = { id: createItemId('link'), text: '', url: '', visibility: true };
     setValues((previousValues) => ({ ...previousValues, links: [...previousValues.links, newLink] }));
   }
 
@@ -66,8 +124,16 @@ function useAdditionalInfoForm() {
     values,
     errors,
     canAddLink,
+    canAddPhone,
+    canAddContactEmail,
     updateField,
     updatePhoto,
+    addPhone,
+    updatePhone,
+    removePhone,
+    addContactEmail,
+    updateContactEmail,
+    removeContactEmail,
     addLink,
     updateLink,
     removeLink,
