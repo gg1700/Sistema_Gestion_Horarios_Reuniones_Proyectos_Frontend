@@ -12,19 +12,34 @@ interface SelectFieldProps {
   options: SelectOption[];
   onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
   placeholder?: string;
+  isRequired?: boolean;
 }
 
-function SelectField({ label, name, value, options, onChange, placeholder }: SelectFieldProps) {
+function SelectField({
+  label,
+  name,
+  value,
+  options,
+  onChange,
+  placeholder,
+  isRequired = false,
+}: SelectFieldProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={name} className="text-sm font-medium text-orbita-text">
         {label}
+        {isRequired && (
+          <span className="ml-0.5 text-orbita-error" aria-hidden="true">
+            *
+          </span>
+        )}
       </label>
       <select
         id={name}
         name={name}
         value={value}
         onChange={onChange}
+        required={isRequired}
         className="h-11 rounded-lg border border-orbita-outline bg-orbita-surface px-3 text-sm text-orbita-text focus:border-orbita-accent focus:outline-none"
       >
         {placeholder && <option value="">{placeholder}</option>}

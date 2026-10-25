@@ -1,7 +1,12 @@
-function RequiredFieldsNote() {
+interface RequiredFieldsNoteProps {
+  condition?: string;
+}
+
+function RequiredFieldsNote({ condition }: RequiredFieldsNoteProps) {
   return (
     <p className="text-xs text-orbita-muted">
-      Los campos con <span className="text-orbita-error">*</span> son obligatorios.
+      {condition ? `${condition}, los` : 'Los'} campos con <span className="text-orbita-error">*</span> son
+      obligatorios.
     </p>
   );
 }
