@@ -15,9 +15,19 @@ interface PhonesEditorProps {
   onRemove: (phoneId: string) => void;
 }
 
+const defaultMaximumDigits = 15;
+
 function getPhonePlaceholder(countryCode: string) {
   const country = findCountryByCode(countryCode);
   return country ? describePhoneDigits(country) : 'Número';
+}
+
+function getMaximumDigits(countryCode: string) {
+  return findCountryByCode(countryCode)?.phoneDigits.maximum ?? defaultMaximumDigits;
+}
+
+function keepAllowedDigits(value: string, countryCode: string) {
+  return value.replace(/\D/g, '').slice(0, getMaximumDigits(countryCode));
 }
 
 function PhonesEditor({ phones, errors = {}, canAddPhone, onAdd, onUpdate, onRemove }: PhonesEditorProps) {
@@ -31,7 +41,12 @@ function PhonesEditor({ phones, errors = {}, canAddPhone, onAdd, onUpdate, onRem
             <select
               aria-label={`Código de país del teléfono ${index + 1}`}
               value={phone.countryCode}
-              onChange={(event) => onUpdate(phone.id, { countryCode: event.target.value })}
+              onChange={(event) =>
+                onUpdate(phone.id, {
+                  countryCode: event.target.value,
+                  number: keepAllowedDigits(phone.number, event.target.value),
+                })
+              }
               className="h-11 w-36 shrink-0 rounded-lg border border-orbita-outline bg-orbita-surface px-2 text-sm text-orbita-text focus:border-orbita-accent focus:outline-none sm:w-44"
             >
               {countries.map((country) => (
@@ -45,9 +60,9 @@ function PhonesEditor({ phones, errors = {}, canAddPhone, onAdd, onUpdate, onRem
               inputMode="numeric"
               aria-label={`Número de teléfono ${index + 1}`}
               value={phone.number}
-              onChange={(event) => onUpdate(phone.id, { number: event.target.value.replace(/\D/g, '') })}
+              onChange={(event) => onUpdate(phone.id, { number: keepAllowedDigits(event.target.value, phone.countryCode) })}
               placeholder={getPhonePlaceholder(phone.countryCode)}
-              maxLength={15}
+              maxLength={getMaximumDigits(phone.countryCode)}
               className={`h-11 w-full min-w-0 rounded-lg border bg-orbita-surface px-3 text-sm text-orbita-text placeholder:text-orbita-disabled focus:outline-none ${
                 errors[phone.id] ? 'border-orbita-error' : 'border-orbita-outline focus:border-orbita-accent'
               }`}
