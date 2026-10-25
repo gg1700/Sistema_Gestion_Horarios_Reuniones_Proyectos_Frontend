@@ -4,6 +4,8 @@ import SelectField from '../../ui/SelectField';
 import SectionCard from '../../ui/SectionCard';
 import ProfilePhotoPicker from './ProfilePhotoPicker';
 import LinksEditor from './LinksEditor';
+import ContactEmailsEditor from './ContactEmailsEditor';
+import PhonesEditor from './PhonesEditor';
 import { countries } from '../../../constants/countries';
 import type useAdditionalInfoForm from '../../../hooks/useAdditionalInfoForm';
 import type { AdditionalInfoField } from '../../../types/profile';
@@ -11,11 +13,6 @@ import type { AdditionalInfoField } from '../../../types/profile';
 interface AdditionalInfoStepProps {
   form: ReturnType<typeof useAdditionalInfoForm>;
 }
-
-const countryCodeOptions = countries.map((country) => ({
-  value: country.code,
-  label: `+${country.code} ${country.name}`,
-}));
 
 const countryOptions = countries.map((country) => ({ value: country.name, label: country.name }));
 
@@ -41,39 +38,6 @@ function AdditionalInfoStep({ form }: AdditionalInfoStepProps) {
             maxLength={100}
             error={errors.surname}
           />
-          <TextField
-            label="Correo de contacto"
-            name="contactEmail"
-            type="email"
-            value={values.contactEmail}
-            onChange={handleInputChange}
-            placeholder="contacto@ejemplo.com"
-            maxLength={200}
-            error={errors.contactEmail}
-          />
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-[180px_1fr]">
-          <SelectField
-            label="Código"
-            name="phoneCountryCode"
-            value={values.phoneCountryCode}
-            options={countryCodeOptions}
-            onChange={handleInputChange}
-          />
-          <TextField
-            label="Teléfono"
-            name="phoneNumber"
-            type="tel"
-            value={values.phoneNumber}
-            onChange={handleInputChange}
-            placeholder="71234567"
-            maxLength={15}
-            error={errors.phoneNumber}
-          />
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
           <SelectField
             label="País de residencia"
             name="countryName"
@@ -82,16 +46,35 @@ function AdditionalInfoStep({ form }: AdditionalInfoStepProps) {
             onChange={handleInputChange}
             placeholder="Selecciona un país"
           />
-          <TextField
-            label="Dirección"
-            name="address"
-            value={values.address}
-            onChange={handleInputChange}
-            placeholder="Av. Principal #450"
-            maxLength={300}
-            error={errors.address}
-          />
         </div>
+
+        <ContactEmailsEditor
+          contactEmails={values.contactEmails}
+          errors={errors.contactEmails}
+          canAddContactEmail={form.canAddContactEmail}
+          onAdd={form.addContactEmail}
+          onUpdate={form.updateContactEmail}
+          onRemove={form.removeContactEmail}
+        />
+
+        <PhonesEditor
+          phones={values.phones}
+          errors={errors.phones}
+          canAddPhone={form.canAddPhone}
+          onAdd={form.addPhone}
+          onUpdate={form.updatePhone}
+          onRemove={form.removePhone}
+        />
+
+        <TextField
+          label="Dirección"
+          name="address"
+          value={values.address}
+          onChange={handleInputChange}
+          placeholder="Av. Principal #450"
+          maxLength={300}
+          error={errors.address}
+        />
       </SectionCard>
 
       <LinksEditor
