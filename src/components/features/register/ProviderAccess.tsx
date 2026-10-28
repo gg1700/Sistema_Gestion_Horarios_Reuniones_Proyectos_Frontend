@@ -1,13 +1,27 @@
 import { FaGithub } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
+import { FiAlertCircle } from 'react-icons/fi';
 import { getProviderAuthorizationUrl } from '../../../api/authApi';
 
 const providerLinkClassName =
   'flex h-11 items-center justify-center gap-2 rounded-lg border border-orbita-outline bg-orbita-surface text-sm font-medium hover:border-orbita-muted';
 
-function ProviderAccess() {
+interface ProviderAccessProps {
+  errorMessage?: string;
+}
+
+function ProviderAccess({ errorMessage }: ProviderAccessProps) {
   return (
     <div className="flex flex-col gap-5 rounded-xl border border-orbita-outline bg-orbita-card p-6 text-center sm:p-8">
+      {errorMessage && (
+        <p
+          role="alert"
+          className="flex items-center justify-center gap-2 rounded-lg bg-orbita-error-tint px-3 py-2 text-sm text-orbita-error"
+        >
+          <FiAlertCircle aria-hidden="true" />
+          {errorMessage}
+        </p>
+      )}
       <p className="text-sm text-orbita-muted">
         Para crear tu cuenta, primero verifica tu correo con Google o GitHub.
       </p>

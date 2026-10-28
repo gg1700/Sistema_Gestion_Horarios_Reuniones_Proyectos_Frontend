@@ -1,17 +1,15 @@
-import { Link } from 'react-router';
 import { FiAlertCircle, FiArrowRight } from 'react-icons/fi';
 import TextField from '../../ui/TextField';
 import RequiredFieldsNote from '../../ui/RequiredFieldsNote';
 import VerifiedAccount from './VerifiedAccount';
 import useRegisterForm from '../../../hooks/useRegisterForm';
-import { routePaths } from '../../../constants/routes';
-import type { PendingRegistration } from '../../../types/auth';
+import type { RegisteredUser } from '../../../types/auth';
 
 interface RegisterFormProps {
-  pendingRegistration: PendingRegistration;
+  user: RegisteredUser;
 }
 
-function RegisterForm({ pendingRegistration }: RegisterFormProps) {
+function RegisterForm({ user }: RegisterFormProps) {
   const {
     values,
     isSubmitting,
@@ -21,7 +19,7 @@ function RegisterForm({ pendingRegistration }: RegisterFormProps) {
     handleChange,
     handleBlur,
     handleSubmit,
-  } = useRegisterForm(pendingRegistration);
+  } = useRegisterForm(user);
 
   return (
     <form
@@ -29,7 +27,7 @@ function RegisterForm({ pendingRegistration }: RegisterFormProps) {
       noValidate
       className="flex flex-col gap-5 rounded-xl border border-orbita-outline bg-orbita-card p-6 sm:p-8"
     >
-      <VerifiedAccount email={pendingRegistration.email} provider={pendingRegistration.provider} />
+      <VerifiedAccount email={user.email} />
 
       <RequiredFieldsNote />
 
@@ -94,16 +92,10 @@ function RegisterForm({ pendingRegistration }: RegisterFormProps) {
         disabled={isSubmitting}
         className="flex h-11 items-center justify-center gap-2 rounded-lg bg-orbita-accent font-medium text-orbita-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
+        {isSubmitting ? 'Guardando...' : 'Continuar'}
         {!isSubmitting && <FiArrowRight aria-hidden="true" />}
       </button>
 
-      <p className="text-center text-sm text-orbita-muted">
-        ¿Ya tienes cuenta?{' '}
-        <Link to={routePaths.login} className="font-medium text-orbita-accent hover:underline">
-          Inicia sesión
-        </Link>
-      </p>
     </form>
   );
 }

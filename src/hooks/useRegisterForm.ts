@@ -1,30 +1,28 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { registerUser } from '../api/authApi';
+import { completeRegistration } from '../api/authApi';
 import { routePaths } from '../constants/routes';
 import { ApiError } from '../types/api';
-import type {
-  PendingRegistration,
-  RegisterField,
-  RegisterFormErrors,
-  RegisterFormValues,
-} from '../types/auth';
-import { saveSession } from '../utils/session';
-import { clearPendingRegistration } from '../utils/pendingRegistration';
+import type { RegisteredUser, RegisterField, RegisterFormErrors, RegisterFormValues } from '../types/auth';
 import { validateRegisterForm } from '../utils/registerValidations';
 
-const emptyValues: RegisterFormValues = {
-  handleName: '',
-  name: '',
-  firstSurname: '',
-};
+const provisionalName = 'Usuario';
+const provisionalSurname = 'Pendiente';
 
 type TouchedFields = Partial<Record<RegisterField, boolean>>;
 
-function useRegisterForm(pendingRegistration: PendingRegistration) {
+function buildInitialValues(user: RegisteredUser): RegisterFormValues {
+  return {
+    handleName: user.handleName,
+    name: user.name === provisionalName ? '' : user.name,
+    firstSurname: user.firstSurname === provisionalSurname ? '' : user.firstSurname,
+  };
+}
+
+function useRegisterForm(user: RegisteredUser) {
   const navigate = useNavigate();
-  const [values, setValues] = useState<RegisterFormValues>(emptyValues);
+  const [values, setValues] = useState<RegisterFormValues>(() => buildInitialValues(user));
   const [touchedFields, setTouchedFields] = useState<TouchedFields>({});
   const [serverErrors, setServerErrors] = useState<RegisterFormErrors>({});
   const [generalError, setGeneralError] = useState('');
@@ -65,12 +63,11 @@ function useRegisterForm(pendingRegistration: PendingRegistration) {
       return;
     }
     if (error.statusCode === 401) {
-      clearPendingRegistration();
-      setGeneralError('Tu verificación expiró. Vuelve a continuar con Google o GitHub.');
+      setGeneralError('Tu sesión expiró. Vuelve a continuar con Google o GitHub.');
       return;
     }
-    if (error.statusCode === 409 && error.message.toLowerCase().includes('correo')) {
-      setGeneralError('Este correo ya tiene una cuenta. Inicia sesión con Google o GitHub.');
+    if (error.statusCode === 409 && error.message.toLowerCase().includes('completado')) {
+      navigate(routePaths.completeProfile);
       return;
     }
     if (error.statusCode === 409) {
@@ -88,9 +85,7 @@ function useRegisterForm(pendingRegistration: PendingRegistration) {
     setIsSubmitting(true);
     setGeneralError('');
     try {
-      const response = await registerUser(values, pendingRegistration.token);
-      clearPendingRegistration();
-      saveSession(response.data.session, response.data.user);
+      await completeRegistration(values);
       navigate(routePaths.completeProfile);
     } catch (error) {
       handleRegisterError(error);
