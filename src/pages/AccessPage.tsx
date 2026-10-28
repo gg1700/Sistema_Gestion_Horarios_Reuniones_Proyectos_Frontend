@@ -7,35 +7,14 @@ import { Dialog } from '../components/modals';
 import { Alert, Button, Input, ProviderIcon } from '../components/ui';
 import { useMockFlow } from '../contexts/MockFlowContext';
 import { paths } from '../constants/paths';
+import { useOptionalAuth } from '../features/auth/AuthContext';
+import { RealAccessPage } from '../features/auth/RealAccessPage';
 
 /*
-CONTRATO BACKEND PROPUESTO — ACCESO CON GOOGLE / GITHUB
-Página pública. Navegar a uno de estos endpoints, no pedir contraseñas en Orbitia:
-GET /api/v1/auth/google?intent=login&returnTo=%2Fpanel
-GET /api/v1/auth/github?intent=login&returnTo=%2Fpanel
-Body: ninguno. Respuesta 302: Location al proveedor; no hay JSON en esta redirección.
-Callback GET /api/v1/auth/google/callback?code=CODIGO&state=ESTADO (igual para github):
-servidor valida state/código, crea cookie de sesión HttpOnly y redirige al frontend.
-No entregar access_token ni refresh_token al navegador ni en parámetros de la URL.
-
-GET /api/v1/session — sin body; después del retorno para decidir el siguiente paso.
-Respuesta JSON 200, ejemplo de primer acceso:
-{ "data": { "authenticated": true, "profileCompleted": false, "provider": "google", "profile": { "name": "Mateo", "firstSurname": "Silva", "email": "mateo.silva@correo.com", "handle": "" } } }
-profileCompleted false -> modal completar cuenta; true -> panel o retorno interno permitido.
-email viene del proveedor verificado y solo se muestra, nunca se acepta desde este form.
-
-PATCH /api/v1/profile — completar la cuenta tras la identidad externa verificada.
-Request JSON:
-{ "name": "Mateo", "firstSurname": "Silva", "handle": "mateo-silva" }
-Respuesta JSON 200:
-{ "data": { "profileCompleted": true, "profile": { "name": "Mateo", "firstSurname": "Silva", "email": "mateo.silva@correo.com", "handle": "mateo-silva" } } }
-Nombre/apellido obligatorios; handle único de 3 a 50 caracteres a-z, 0-9 o guiones,
-sin nombres de rutas reservadas. Solo permitir handle en este PATCH durante el alta;
-para cambiarlo después usar el contrato de ProfileLinkPage.tsx.
-401 sin identidad verificada; 409 usuario ocupado; 422 errores por campo. Mantener modal
-y valores ante errores; éxito -> /bienvenida. Cancelación OAuth -> /acceso/no-completado.
+La app usa RealAccessPage con AuthProvider y los contratos de features/auth/api.ts.
+MockAccessPage conserva la maqueta para pruebas aisladas; no autentica la app real.
 */
-export default function AccessPage() {
+function MockAccessPage() {
   const { state, dispatch } = useMockFlow();
   const navigate = useNavigate();
   const [query, setQuery] = useSearchParams();
@@ -81,4 +60,9 @@ export default function AccessPage() {
       </form><p className="flow-note flow-top-rule"><FiLink />El correo está asociado a la cuenta verificada. Podrás completar el resto de tu perfil y autorizar tus integraciones después.</p>
     </Dialog>
   </VisitorShell>;
+}
+
+export default function AccessPage() {
+  const auth = useOptionalAuth();
+  return auth ? <RealAccessPage /> : <MockAccessPage />;
 }

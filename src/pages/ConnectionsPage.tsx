@@ -9,21 +9,16 @@ import { Button, ProviderIcon, SectionHeading } from '../components/ui';
 import { useMockFlow } from '../contexts/MockFlowContext';
 import { calendars } from '../mocks/account';
 import { paths } from '../constants/paths';
+import { useOptionalAuth } from '../features/auth/AuthContext';
+import { RealConnectionsPage } from '../features/auth/RealConnectionsPage';
 
 /*
-CONTRATO BACKEND PROPUESTO — CONEXIONES
-GET /api/v1/connections — sesión del titular; sin body.
-Respuesta JSON 200:
-{ "data": { "google": { "identityLinked": true, "email": "mateo.silva@correo.com", "calendarStatus": "reconnect", "calendarId": "personal", "calendarName": "Personal" }, "github": { "identityLinked": true, "username": "mateosilva", "dataConnected": true, "selectedRepositories": ["repo-1", "repo-2"] } } }
-Llenado: email/username son los de cada proveedor, no se derivan del usuario de Orbitia.
-identityLinked indica si sirve para entrar; calendarStatus: connected/reconnect/
-disconnected indica solo la integración Calendar. dataConnected indica solo datos GitHub.
-Por eso desconectar datos y quitar una cuenta de acceso tienen botones distintos.
-selectedRepositories contiene ids estables y ordenados; su longitud llena el contador.
-No devolver tokens OAuth. 401 sin sesión. [] significa ningún repositorio seleccionado.
-Los contratos de autorizar, elegir y desvincular están en ConnectionDialogs.tsx.
+La app usa RealConnectionsPage: GET auth/session y GET integrations/github/connection.
+Los JSON y errores reales se documentan en features/auth/api.ts.
+MockConnectionsPage conserva los flujos visuales de calendario/repositorios para
+pruebas aisladas. Esos datos no acreditan una conexión del usuario real.
 */
-export default function ConnectionsPage() {
+function MockConnectionsPage() {
   const { state } = useMockFlow();
   const [query, setQuery] = useSearchParams();
   const { google, github } = state.account;
@@ -42,4 +37,9 @@ export default function ConnectionsPage() {
     </section><aside className="connections-aside"><OrbitIllustration services /><p className="ui-eyebrow">EN LA MISMA ÓRBITA</p><h2>Tus herramientas.<br />Tu espacio.</h2><p>Conecta cada servicio con tu propia cuenta y elige qué información usar en Orbitia.</p><section><h3>Conectar y publicar son decisiones distintas.</h3><p>La información que compartes en tu perfil se configura en Visibilidad.</p><TextLink to={paths.visibility}>Configurar visibilidad</TextLink></section></aside></div>
     <ConnectionDialogs modal={query.get('modal')} onClose={() => setQuery({})} onNext={openModal} />
   </MemberShell>;
+}
+
+export default function ConnectionsPage() {
+  const auth = useOptionalAuth();
+  return auth ? <RealConnectionsPage /> : <MockConnectionsPage />;
 }

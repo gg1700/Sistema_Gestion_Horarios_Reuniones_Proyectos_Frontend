@@ -6,6 +6,8 @@ import { ProfileIdentity, ProfileTabs } from '../components/features/profile/Pro
 import { ConnectionDialogs } from '../components/features/connections/ConnectionDialogs';
 import { Button, ButtonLink, EmptyState, ProviderIcon, SectionHeading } from '../components/ui';
 import { useMockFlow } from '../contexts/MockFlowContext';
+import { useOptionalAuth } from '../features/auth/AuthContext';
+import { RealConnectionsPage } from '../features/auth/RealConnectionsPage';
 import { useUI } from '../contexts/UIContext';
 import { githubActivity, repositories } from '../mocks/account';
 import { paths } from '../constants/paths';
@@ -28,7 +30,7 @@ Errores: 401 sin sesión; 409 GITHUB_NOT_CONNECTED -> mostrar la vista desconect
 botón Conectar; 502 proveedor no disponible -> conservar últimos datos y permitir reintento.
 Estos datos siguen siendo privados hasta que el usuario active su visibilidad.
 */
-export default function GitHubInfoPage() {
+function MockGitHubInfoPage() {
   const { state, dispatch } = useMockFlow();
   const { notify } = useUI();
   const [query, setQuery] = useSearchParams();
@@ -44,4 +46,9 @@ export default function GitHubInfoPage() {
     </> : <EmptyState title="GitHub está desconectado" description="Vincula tu cuenta para consultar repositorios y actividad." actions={<ButtonLink to={`${paths.connections}?modal=conectar-github`}>Conectar GitHub</ButtonLink>} />}
     <ConnectionDialogs modal={query.get('modal')} onClose={() => setQuery({})} onNext={modal => setQuery({ modal })} />
   </MemberShell>;
+}
+
+export default function GitHubInfoPage() {
+  const auth = useOptionalAuth();
+  return auth ? <RealConnectionsPage /> : <MockGitHubInfoPage />;
 }

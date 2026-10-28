@@ -8,6 +8,7 @@ import { AccountMenu } from './AccountMenu';
 import type { NavigationItem } from '../../../types/ui';
 import { Navigate, useLocation, useParams } from 'react-router';
 import { publicProfilePath } from '../../../constants/paths';
+import { useOptionalAuth } from '../../../features/auth/AuthContext';
 
 const privateNavigation: NavigationItem[] = [
   { to: paths.dashboard, label: 'Inicio' }, { to: paths.agenda, label: 'Agenda' },
@@ -17,15 +18,15 @@ const privateNavigation: NavigationItem[] = [
 
 export function MemberShell({ children }: PropsWithChildren) {
   const { state } = useMockFlow();
+  const auth = useOptionalAuth();
   const { pathname } = useLocation();
   const [accountOpen, setAccountOpen] = useState(false);
   const closeAccount = useCallback(() => setAccountOpen(false), []);
-  // Solo navegación de la maqueta tras borrar los datos locales. El guard real
-  // de sesión/propiedad se añadirá aquí y en los endpoints al integrar backend.
-  if (state.account.deleted) return <Navigate to={paths.access} replace />;
+  // RequireSession protege el grupo privado en el router de la app real.
+  if (!auth && state.account.deleted) return <Navigate to={paths.access} replace />;
   const navigation = privateNavigation.map(item => item.to === paths.profile ? { ...item, active: pathname.startsWith(paths.profile) } : item);
   return <div className="flow-surface"><AppLayout navigation={navigation} brandTo={paths.dashboard}
-    identity={{ name: `${state.profile.name} ${state.profile.firstSurname}`, imageUrl: state.account.details.image }} onAccountClick={() => setAccountOpen(value => !value)}>
+    identity={auth?.session ? { name: `${auth.session.profile.name} ${auth.session.profile.firstSurname}`, imageUrl: auth.session.profile.profilePicture } : { name: `${state.profile.name} ${state.profile.firstSurname}`, imageUrl: state.account.details.image }} onAccountClick={() => setAccountOpen(value => !value)}>
     {children}
   </AppLayout>{accountOpen && <AccountMenu onClose={closeAccount} />}</div>;
 }

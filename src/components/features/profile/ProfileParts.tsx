@@ -4,9 +4,15 @@ import { Avatar } from '../../ui';
 import { useMockFlow } from '../../../contexts/MockFlowContext';
 import { paths } from '../../../constants/paths';
 import type { WorkExperience } from '../../../mocks/account';
+import { useOptionalAuth } from '../../../features/auth/AuthContext';
 
 export function ProfileIdentity() {
   const { state } = useMockFlow();
+  const auth = useOptionalAuth();
+  if (auth?.session) {
+    const profile = auth.session.profile;
+    return <div className="profile-context"><Avatar name={`${profile.name} ${profile.firstSurname}`} src={profile.profilePicture} size="small" /><span>{profile.name} {profile.firstSurname}</span><small>@{profile.handleName}</small></div>;
+  }
   return <div className="profile-context"><Avatar name={`${state.profile.name} ${state.profile.firstSurname}`} src={state.account.details.image} size="small" />
     <span>{state.profile.name} {state.profile.firstSurname} {state.account.details.secondSurname}</span><small>@{state.profile.handle}</small></div>;
 }

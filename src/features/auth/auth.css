@@ -1,0 +1,22 @@
+.auth-session-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  min-height: 65vh;
+}
+.auth-inline-status {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.auth-connection-note {
+  margin-top: 1rem;
+  color: var(--ui-muted);
+  line-height: 1.7;
+}
+.auth-connection-error {
+  margin-top: 1rem;
+}
+

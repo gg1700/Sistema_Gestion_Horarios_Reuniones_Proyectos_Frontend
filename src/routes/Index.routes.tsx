@@ -18,21 +18,16 @@ import AccessIssuePage from '../pages/AccessIssuePage';
 import ProfilePublicPage from '../pages/ProfilePublicPage';
 import ProfileLinkPage from '../pages/ProfileLinkPage';
 import ProfileOriginsPage from '../pages/ProfileOriginsPage';
+import { RequireSession } from '../features/auth/SessionGate';
 
 /*
-INTEGRACIÓN DE PROTECCIÓN DE RUTAS — COMENTARIO, NO AUTENTICACIÓN IMPLEMENTADA
-Antes del grupo privado consultar GET /api/v1/session, sin body, con cookie de sesión.
-Respuesta JSON 200:
-{ "data": { "authenticated": true, "profileCompleted": true, "provider": "google", "profile": { "name": "Mateo", "firstSurname": "Silva", "handle": "mateo-silva", "email": "mateo.silva@correo.com" } } }
-Sin sesión:
-{ "data": { "authenticated": false, "profileCompleted": false, "provider": null, "profile": null } }
-Proteger bienvenida, panel, agenda, solicitudes, perfil y todas sus rutas hijas.
-authenticated false -> /acceso con retorno interno permitido; true con profileCompleted
-false -> modal de completar cuenta en /acceso. Sesión completa -> permitir la ruta.
-Cada endpoint privado valida también sesión/propiedad; el guard visual no lo sustituye.
-Landing/acceso/perfil público/disponibilidad admiten visitantes. /reuniones/:token se
-protege por la invitación concreta (ParticipantPage.tsx), sin exigir la sesión del dueño.
-Estos guards se conectarán al integrar backend; las rutas mock siguen abiertas para revisión.
+PROTECCIÓN DE RUTAS IMPLEMENTADA
+RequireSession consulta el estado de AuthProvider, cargado con GET /api/v1/auth/session.
+Cookie HttpOnly; 401 -> /acceso. Perfil incompleto -> formulario de completar cuenta.
+La respuesta y los JSON de los endpoints reales están en features/auth/api.ts.
+Un fallo del servidor muestra un aviso y reintento; no habilita las rutas privadas.
+Landing, acceso, perfil público, disponibilidad e invitaciones quedan fuera del grupo.
+Las restantes funcionalidades visuales conservan sus mocks hasta su integración.
 */
 function RouterPage() {
   return (
@@ -41,6 +36,7 @@ function RouterPage() {
       <Route path={paths.access} element={<AccessPage />} />
       <Route path={paths.accessIssue} element={<AccessIssuePage />} />
 
+      <Route element={<RequireSession />}>
       <Route path={paths.welcome} element={<WelcomePage />} />
       <Route path={paths.dashboard} element={<DashboardPage />} />
       <Route path={paths.agenda} element={<AgendaPage />} />
@@ -57,6 +53,7 @@ function RouterPage() {
       <Route path={paths.visibility} element={<VisibilityPage />} />
       <Route path={paths.connections} element={<ConnectionsPage />} />
       <Route path={paths.githubInfo} element={<GitHubInfoPage />} />
+      </Route>
       <Route path={paths.availability} element={<AvailabilityPage />} />
       {/* El acceso de participante se protege por invitación, no por sesión del dueño. */}
       <Route path={paths.participant} element={<ParticipantPage />} />
