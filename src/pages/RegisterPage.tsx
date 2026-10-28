@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router';
 import AuthLayout from '../components/layouts/AuthLayout';
 import AccessStory from '../components/features/register/AccessStory';
 import ProviderAccess from '../components/features/register/ProviderAccess';
-import RegisterForm from '../components/features/register/RegisterForm';
+import CompleteRegistrationModal from '../components/modals/CompleteRegistrationModal';
 import useRegistrationStatus from '../hooks/useRegistrationStatus';
 import { routePaths } from '../constants/routes';
 import { defaultOAuthErrorMessage, oauthErrorMessages } from '../constants/oauth';
@@ -17,6 +18,7 @@ function getOAuthErrorMessage(oauthResult: string | null) {
 function RegisterPage() {
   const [searchParams] = useSearchParams();
   const { status, user } = useRegistrationStatus();
+  const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(true);
   const oauthErrorMessage = getOAuthErrorMessage(searchParams.get('oauth'));
 
   if (status === 'completed') {
@@ -35,7 +37,9 @@ function RegisterPage() {
           errorMessage={oauthErrorMessage ?? (status === 'error' ? connectionErrorMessage : undefined)}
         />
       </div>
-      {status === 'pending' && user && <RegisterForm user={user} />}
+      {status === 'pending' && user && isRegistrationModalOpen && (
+        <CompleteRegistrationModal user={user} onClose={() => setIsRegistrationModalOpen(false)} />
+      )}
     </AuthLayout>
   );
 }

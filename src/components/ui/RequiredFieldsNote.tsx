@@ -1,7 +1,7 @@
 function RequiredFieldsNote() {
   return (
-    <p className="text-xs text-orbita-muted">
-      Los campos con <span className="text-orbita-error">*</span> son obligatorios.
+    <p className="text-[11px] text-ui-muted">
+      Los campos con <span className="text-ui-mint">*</span> son obligatorios.
     </p>
   );
 }
