@@ -39,73 +39,22 @@ export function getOAuthErrorMessage(code: string): string {
   return messages[code] ?? 'No se pudo completar el acceso. Inténtalo nuevamente.';
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const headers = new Headers(options.headers);
-
-  if (options.body) {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  const response = await fetch(`${apiUrl}${path}`, {
-    ...options,
-    headers,
-    credentials: 'include'
-  });
-
-  const result = await response.json().catch(() => null) as ApiResponse<T> | null;
-
-  if (!response.ok || !result?.success) {
-    throw new Error(
-      result?.message ?? 'No se pudo completar la solicitud.'
-    );
-  }
-
-  return result.data as T;
-}
-
 export async function getAuthenticatedProfile(
   signal?: AbortSignal
 ): Promise<AuthenticatedProfile> {
-  const profile = await request<AuthenticatedProfile>(
-    '/api/v1/profile',
-    { signal, cache: 'no-store' }
-  );
+  const response = await fetch(`${apiUrl}/api/v1/profile`, {
+    credentials: 'include',
+    cache: 'no-store',
+    signal
+  });
 
-  if (!profile) {
-    throw new Error('El servidor no devolvió el perfil del usuario.');
+  const result = await response.json().catch(() => null) as ApiResponse<AuthenticatedProfile> | null;
+
+  if (!response.ok || !result?.success || !result.data) {
+    throw new Error(
+      result?.message ?? 'No se pudo consultar el perfil autenticado.'
+    );
   }
 
-  return profile;
-}
-
-export async function checkHandleAvailability(
-  handleName: string
-): Promise<boolean> {
-  const result = await request<{ available: boolean }>(
-    `/api/v1/profile/public-link/availability?handle=${encodeURIComponent(handleName)}`
-  );
-
-  return result.available;
-}
-
-export async function updateInitialProfile(
-  name: string,
-  firstSurname: string
-): Promise<void> {
-  await request<void>('/api/v1/profile', {
-    method: 'PATCH',
-    body: JSON.stringify({ name, firstSurname })
-  });
-}
-
-export async function updateInitialHandle(
-  handleName: string
-): Promise<void> {
-  await request<void>('/api/v1/profile/public-link', {
-    method: 'PATCH',
-    body: JSON.stringify({ handleName })
-  });
+  return result.data;
 }
