@@ -1,9 +1,9 @@
-import { FiLink, FiPlus, FiTrash2 } from 'react-icons/fi';
-import SectionCard from '../../ui/SectionCard';
+import { FiEye, FiPlus, FiTrash2 } from 'react-icons/fi';
 import Button from '../../ui/Button';
 import IconButton from '../../ui/IconButton';
 import VisibilityToggle from '../../ui/VisibilityToggle';
 import { maximumLinks } from '../../../constants/profile';
+import { fieldBoxClassName, getFieldBorderClassName } from '../../../utils/fieldClassNames';
 import type { LinkErrors, LinkFormItem } from '../../../types/profile';
 
 interface LinksEditorProps {
@@ -15,24 +15,33 @@ interface LinksEditorProps {
   onRemove: (linkId: string) => void;
 }
 
+function RequiredMark() {
+  return (
+    <span className="ml-0.5 text-ui-mint" aria-hidden="true">
+      *
+    </span>
+  );
+}
+
 function LinksEditor({ links, errors = {}, canAddLink, onAdd, onUpdate, onRemove }: LinksEditorProps) {
   return (
-    <SectionCard
-      title="Enlaces personales"
-      description="Agrega tu portafolio, LinkedIn o GitHub para compartirlos en tu perfil."
-      headerRight={
-        <span className="font-code text-[11px] uppercase tracking-wider text-orbita-accent">
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-[13px] font-medium text-ui-text">Enlaces personales</h3>
+        <span className="text-[10px] text-ui-moss">
           {links.length} de {maximumLinks}
         </span>
-      }
-    >
+      </div>
+
       {links.length > 0 && (
-        <div className="hidden gap-2 text-sm font-medium text-orbita-text sm:flex">
-          <span className="w-40">
-            Etiqueta <span className="text-orbita-error" aria-hidden="true">*</span>
+        <div className="hidden gap-3 text-xs font-medium text-ui-text sm:flex">
+          <span className="w-44">
+            Nombre del enlace
+            <RequiredMark />
           </span>
           <span className="flex-1">
-            URL <span className="text-orbita-error" aria-hidden="true">*</span>
+            URL
+            <RequiredMark />
           </span>
         </div>
       )}
@@ -40,58 +49,57 @@ function LinksEditor({ links, errors = {}, canAddLink, onAdd, onUpdate, onRemove
       {links.map((link) => {
         const linkErrors = errors[link.id] ?? {};
         return (
-          <div key={link.id} className="flex flex-col gap-1">
-            <div className="flex flex-col gap-2 sm:flex-row">
+          <div key={link.id} className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
               <input
-                aria-label="Etiqueta del enlace"
+                aria-label="Nombre del enlace"
                 aria-required="true"
                 value={link.text}
                 onChange={(event) => onUpdate(link.id, { text: event.target.value })}
-                placeholder="GitHub"
+                placeholder="Portafolio"
                 maxLength={150}
-                className={`h-11 w-full rounded-lg border bg-orbita-surface px-3 text-sm text-orbita-text placeholder:text-orbita-disabled focus:outline-none sm:w-40 ${
-                  linkErrors.text ? 'border-orbita-error' : 'border-orbita-outline focus:border-orbita-accent'
-                }`}
+                className={`w-full sm:w-44 ${fieldBoxClassName} ${getFieldBorderClassName(Boolean(linkErrors.text))}`}
               />
-              <div
-                className={`flex flex-1 items-center gap-2 rounded-lg border bg-orbita-surface px-3 ${
-                  linkErrors.url ? 'border-orbita-error' : 'border-orbita-outline focus-within:border-orbita-accent'
-                }`}
-              >
-                <FiLink className="shrink-0 text-orbita-muted" aria-hidden="true" />
+              <div className="flex min-w-0 flex-1 items-center gap-1">
                 <input
                   aria-label="URL del enlace"
                   aria-required="true"
                   value={link.url}
                   onChange={(event) => onUpdate(link.id, { url: event.target.value })}
-                  placeholder="github.com/tu-usuario"
+                  placeholder="https://tu-sitio.dev"
                   maxLength={300}
-                  className="h-11 w-full bg-transparent text-sm text-orbita-text placeholder:text-orbita-disabled focus:outline-none"
+                  className={`w-full min-w-0 ${fieldBoxClassName} ${getFieldBorderClassName(Boolean(linkErrors.url))}`}
+                />
+                <VisibilityToggle
+                  isVisible={link.visibility}
+                  onToggle={() => onUpdate(link.id, { visibility: !link.visibility })}
+                />
+                <IconButton
+                  label="Eliminar enlace"
+                  icon={<FiTrash2 />}
+                  onClick={() => onRemove(link.id)}
+                  variant="danger"
+                  size="medium"
                 />
               </div>
-              <VisibilityToggle
-                isVisible={link.visibility}
-                onToggle={() => onUpdate(link.id, { visibility: !link.visibility })}
-              />
-              <IconButton
-                label="Eliminar enlace"
-                icon={<FiTrash2 />}
-                onClick={() => onRemove(link.id)}
-                variant="danger"
-                size="medium"
-              />
             </div>
             {(linkErrors.text || linkErrors.url) && (
-              <p className="text-xs text-orbita-error">{[linkErrors.text, linkErrors.url].filter(Boolean).join(' ')}</p>
+              <p className="text-[11px] text-ui-danger">{[linkErrors.text, linkErrors.url].filter(Boolean).join(' ')}</p>
             )}
           </div>
         );
       })}
 
-      <Button variant="dashed" isFullWidth onClick={onAdd} disabled={!canAddLink} leftIcon={<FiPlus />}>
-        {canAddLink ? 'Agregar enlace' : 'Llegaste al máximo de enlaces'}
-      </Button>
-    </SectionCard>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Button variant="link" onClick={onAdd} disabled={!canAddLink} leftIcon={<FiPlus />}>
+          {canAddLink ? 'Agregar enlace' : 'Llegaste al máximo de enlaces'}
+        </Button>
+        <span className="flex items-center gap-1.5 text-[9px] text-ui-moss">
+          <FiEye aria-hidden="true" />
+          Usa el ojo para mostrar u ocultar cada enlace en tu perfil.
+        </span>
+      </div>
+    </section>
   );
 }
 

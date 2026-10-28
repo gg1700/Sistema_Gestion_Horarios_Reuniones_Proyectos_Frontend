@@ -6,20 +6,20 @@ interface VisibilityToggleProps {
 }
 
 function VisibilityToggle({ isVisible, onToggle }: VisibilityToggleProps) {
+  const label = isVisible ? 'Visible en tu perfil público' : 'Oculto en tu perfil público';
+
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-pressed={isVisible}
-      title="Visible en perfil público"
-      className={`flex h-11 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-xs ${
-        isVisible
-          ? 'border-orbita-primary/50 bg-orbita-success text-orbita-accent'
-          : 'border-orbita-outline bg-orbita-surface text-orbita-muted'
+      aria-label={label}
+      title={label}
+      className={`flex h-[3.25rem] w-9 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-ui-hover ${
+        isVisible ? 'text-ui-mint' : 'text-ui-soft'
       }`}
     >
       {isVisible ? <FiEye aria-hidden="true" /> : <FiEyeOff aria-hidden="true" />}
-      {isVisible ? 'Visible' : 'Oculto'}
     </button>
   );
 }

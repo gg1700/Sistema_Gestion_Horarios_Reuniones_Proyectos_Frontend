@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'dashed' | 'ghost' | 'link';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
 
 interface ButtonProps extends ComponentProps<'button'> {
   variant?: ButtonVariant;
@@ -10,14 +10,13 @@ interface ButtonProps extends ComponentProps<'button'> {
 }
 
 const variantClassNames: Record<ButtonVariant, string> = {
-  primary: 'h-11 rounded-lg bg-orbita-accent px-5 font-medium text-orbita-on-primary hover:opacity-90',
+  primary: 'min-h-[3.25rem] rounded-control bg-ui-mint px-5 font-semibold text-ui-ink hover:bg-ui-mint-strong',
   secondary:
-    'h-10 rounded-lg border border-orbita-muted/40 bg-orbita-surface px-4 text-orbita-text hover:border-orbita-muted',
-  outline: 'h-10 rounded-lg border border-orbita-primary/60 px-4 text-orbita-accent hover:bg-orbita-success',
-  dashed:
-    'h-11 rounded-lg border border-dashed border-orbita-primary/60 text-orbita-accent hover:border-orbita-accent hover:bg-orbita-success/40',
-  ghost: 'h-10 rounded-lg px-4 text-orbita-muted hover:bg-orbita-surface hover:text-orbita-text',
-  link: 'h-9 rounded-lg px-2 text-orbita-accent hover:bg-orbita-surface',
+    'min-h-[3.25rem] rounded-control border border-ui-field-border bg-ui-surface px-5 font-semibold text-ui-text hover:border-ui-soft',
+  outline:
+    'min-h-10 rounded-control border border-ui-field-border px-4 font-semibold text-ui-text hover:border-ui-mint/60 hover:bg-ui-hover',
+  ghost: 'min-h-10 rounded-control font-semibold text-ui-mint hover:text-[#DEFFEB]',
+  link: 'min-h-8 text-[11px] text-[#A3E6BE] hover:text-[#DEFFEB]',
 };
 
 function Button({
@@ -33,7 +32,7 @@ function Button({
   return (
     <button
       type={type}
-      className={`flex items-center justify-center gap-2 text-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`flex items-center justify-center gap-2.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
         variantClassNames[variant]
       } ${isFullWidth ? 'w-full' : 'w-fit'} ${className}`}
       {...buttonProps}
