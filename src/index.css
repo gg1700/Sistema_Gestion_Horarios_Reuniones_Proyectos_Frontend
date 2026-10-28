@@ -65,9 +65,9 @@
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-text-fill-color: var(--color-orbita-text);
-  -webkit-box-shadow: 0 0 0 1000px var(--color-orbita-surface) inset;
-  caret-color: var(--color-orbita-text);
+  -webkit-text-fill-color: var(--color-ui-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-ui-field) inset;
+  caret-color: var(--color-ui-text);
   transition: background-color 9999s ease-in-out 0s;
 }
 
