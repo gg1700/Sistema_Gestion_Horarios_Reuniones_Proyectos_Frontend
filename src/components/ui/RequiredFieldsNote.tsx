@@ -4,9 +4,8 @@ interface RequiredFieldsNoteProps {
 
 function RequiredFieldsNote({ condition }: RequiredFieldsNoteProps) {
   return (
-    <p className="text-xs text-orbita-muted">
-      {condition ? `${condition}, los` : 'Los'} campos con <span className="text-orbita-error">*</span> son
-      obligatorios.
+    <p className="text-[11px] text-ui-muted">
+      {condition ? `${condition}, los` : 'Los'} campos con <span className="text-ui-mint">*</span> son obligatorios.
     </p>
   );
 }

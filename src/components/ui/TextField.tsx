@@ -15,6 +15,7 @@ interface TextFieldProps {
   helperText?: string;
   prefix?: string;
   labelHint?: string;
+  leftIcon?: ReactNode;
   rightElement?: ReactNode;
   maxLength?: number;
   isRequired?: boolean;
@@ -34,39 +35,41 @@ function TextField({
   helperText,
   prefix,
   labelHint,
+  leftIcon,
   rightElement,
   maxLength,
   isRequired = false,
 }: TextFieldProps) {
   const hasError = Boolean(error);
   const borderColor = hasError
-    ? 'border-orbita-error'
+    ? 'border-ui-danger'
     : isValid
-      ? 'border-orbita-primary/60'
-      : 'border-orbita-outline focus-within:border-orbita-accent';
+      ? 'border-ui-mint/50'
+      : 'border-ui-field-border hover:border-ui-soft focus-within:border-ui-mint';
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-between">
-        <label htmlFor={name} className="text-sm font-medium text-orbita-text">
+    <div className="flex min-w-0 flex-col gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <label htmlFor={name} className="text-xs font-medium text-ui-text">
           {label}
           {isRequired && (
-            <span className="ml-0.5 text-orbita-error" aria-hidden="true">
+            <span className="ml-0.5 text-ui-mint" aria-hidden="true">
               *
             </span>
           )}
         </label>
-        {labelHint && (
-          <span className="font-code text-[11px] uppercase tracking-wider text-orbita-accent">
-            {labelHint}
-          </span>
-        )}
+        {labelHint && <span className="text-[10px] text-ui-mint">{labelHint}</span>}
       </div>
 
       <div
-        className={`flex items-center gap-2 rounded-lg border bg-orbita-surface px-3 transition-colors ${borderColor}`}
+        className={`flex min-h-[3.25rem] items-center gap-3 rounded-control border bg-ui-field px-4 transition-colors ${borderColor}`}
       >
-        {prefix && <span className="font-code text-sm text-orbita-muted">{prefix}</span>}
+        {leftIcon && (
+          <span className="shrink-0 text-ui-muted" aria-hidden="true">
+            {leftIcon}
+          </span>
+        )}
+        {prefix && <span className="shrink-0 text-sm text-ui-soft">{prefix}</span>}
         <input
           id={name}
           name={name}
@@ -80,24 +83,22 @@ function TextField({
           required={isRequired}
           aria-invalid={hasError}
           aria-describedby={hasError ? `${name}-error` : undefined}
-          className="h-11 w-full bg-transparent text-sm text-orbita-text scheme-dark placeholder:text-orbita-disabled focus:outline-none"
+          className="h-12 w-full min-w-0 bg-transparent text-sm text-ui-text scheme-dark placeholder:text-ui-soft focus:outline-none"
         />
         {rightElement}
-        {!rightElement && hasError && (
-          <FiAlertCircle className="shrink-0 text-orbita-error" aria-hidden="true" />
-        )}
+        {!rightElement && hasError && <FiAlertCircle className="shrink-0 text-ui-danger" aria-hidden="true" />}
         {!rightElement && !hasError && isValid && (
-          <FiCheckCircle className="shrink-0 text-orbita-primary" aria-hidden="true" />
+          <FiCheckCircle className="shrink-0 text-ui-mint" aria-hidden="true" />
         )}
       </div>
 
       {hasError ? (
-        <p id={`${name}-error`} className="flex items-center gap-1.5 text-xs text-orbita-error">
+        <p id={`${name}-error`} className="flex items-center gap-1.5 text-[11px] text-ui-danger">
           <FiAlertCircle aria-hidden="true" />
           {error}
         </p>
       ) : (
-        helperText && <p className="text-xs text-orbita-muted">{helperText}</p>
+        helperText && <p className="text-[10px] leading-4 text-ui-muted">{helperText}</p>
       )}
     </div>
   );

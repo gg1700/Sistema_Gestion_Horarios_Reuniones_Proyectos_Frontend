@@ -2,13 +2,13 @@ import { Navigate } from 'react-router';
 import AuthLayout from '../components/layouts/AuthLayout';
 import BrandHeading from '../components/ui/BrandHeading';
 import CompleteProfileModal from '../components/modals/CompleteProfileModal';
+import useRegistrationStatus from '../hooks/useRegistrationStatus';
 import { routePaths } from '../constants/routes';
-import { getStoredSession } from '../utils/session';
 
 function CompleteProfilePage() {
-  const session = getStoredSession();
+  const { status, user } = useRegistrationStatus();
 
-  if (!session) {
+  if (status === 'unauthenticated' || status === 'pending') {
     return <Navigate to={routePaths.register} replace />;
   }
 
@@ -16,10 +16,10 @@ function CompleteProfilePage() {
     <AuthLayout>
       <BrandHeading
         badge="Cuenta creada"
-        title={`¡Bienvenido, ${session.user.name}!`}
+        title={user ? `¡Bienvenido, ${user.name}!` : '¡Bienvenido!'}
         description="Tu cuenta ya está lista. Completa tu perfil para que tu equipo te conozca mejor."
       />
-      <CompleteProfileModal />
+      {status === 'completed' && <CompleteProfileModal />}
     </AuthLayout>
   );
 }

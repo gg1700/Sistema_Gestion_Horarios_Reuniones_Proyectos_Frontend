@@ -1,42 +1,33 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router';
-import { routePaths } from '../../constants/routes';
+import BrandLogo from '../ui/BrandLogo';
 
 interface AuthLayoutProps {
   children: ReactNode;
+  headerContent?: ReactNode;
 }
 
-function AuthLayout({ children }: AuthLayoutProps) {
+const containerClassName = 'mx-auto w-full max-w-[90rem] px-4 sm:px-10 lg:px-16';
+
+function AuthLayout({ children, headerContent }: AuthLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-orbita-background font-body text-orbita-text">
-      <header className="border-b border-orbita-outline px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <Link to={routePaths.home} className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full border-2 border-orbita-primary" />
-            <span className="font-heading text-lg font-semibold">Orbitia</span>
-          </Link>
-          <nav className="flex items-center gap-6 text-sm text-orbita-muted">
-            <a href="#ayuda" className="hover:text-orbita-text">Ayuda</a>
-            <Link to={routePaths.login} className="hover:text-orbita-text">Acceder</Link>
-          </nav>
+    <div className="flex min-h-screen flex-col bg-ui-background font-body text-ui-sage">
+      <header className={containerClassName}>
+        <div className="flex min-h-24 items-center justify-between gap-6 border-b border-[#1D2C30]">
+          <BrandLogo />
+          {headerContent}
         </div>
       </header>
 
-      <main className="relative flex flex-1 justify-center overflow-hidden px-4 py-12">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute top-10 left-1/2 h-[480px] w-[640px] -translate-x-1/2 rounded-full bg-orbita-primary/10 blur-3xl"
-        />
-        <div className="relative w-full max-w-xl">{children}</div>
-      </main>
+      <main className={`${containerClassName} flex-1 py-8`}>{children}</main>
 
-      <footer className="border-t border-orbita-outline px-6 py-4 text-xs text-orbita-muted">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <span>© 2026 Orbitia.</span>
-          <div className="flex gap-6">
-            <a href="#privacidad" className="hover:text-orbita-text">Privacidad</a>
-            <a href="#terminos" className="hover:text-orbita-text">Términos</a>
-          </div>
+      <footer className={containerClassName}>
+        <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-t border-[#1D2C30] py-4 text-[10px] text-ui-soft">
+          <span>© 2026 Orbitia</span>
+          <span className="flex items-center gap-2">
+            <span className="text-[#77B69C]">•</span>
+            Un espacio. Todas tus conexiones.
+          </span>
+          <span className="text-[8px] tracking-[0.2em] uppercase">Hecho para conectar</span>
         </div>
       </footer>
     </div>

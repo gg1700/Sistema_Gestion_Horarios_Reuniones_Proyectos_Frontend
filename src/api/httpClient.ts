@@ -4,12 +4,12 @@ import { ApiError } from '../types/api';
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
   timeout: 15000,
+  withCredentials: true,
 });
 
 interface RequestOptions {
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
-  token?: string;
 }
 
 function buildApiError(error: unknown) {
@@ -28,15 +28,11 @@ function buildApiError(error: unknown) {
 }
 
 export async function sendRequest<ResponseBody>(path: string, options: RequestOptions) {
-  const headers: Record<string, string> = {};
-  if (options.token) headers.Authorization = `Bearer ${options.token}`;
-
   try {
     const response = await apiClient.request<ResponseBody>({
       url: path,
       method: options.method,
       data: options.body,
-      headers: headers,
     });
     return response.data;
   } catch (error) {

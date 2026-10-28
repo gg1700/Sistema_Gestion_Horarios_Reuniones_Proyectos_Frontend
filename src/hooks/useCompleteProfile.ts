@@ -5,7 +5,6 @@ import { routePaths } from '../constants/routes';
 import { ApiError } from '../types/api';
 import type { AdditionalInfoValues, WorkExperienceItem } from '../types/profile';
 import { buildAdditionalInfoFormData, hasFormDataContent } from '../utils/profilePayload';
-import { clearSession, getStoredSession } from '../utils/session';
 
 export type CompleteProfileStep = 'additionalInfo' | 'workExperience';
 
@@ -15,8 +14,6 @@ function useCompleteProfile() {
   const [savedAdditionalInfo, setSavedAdditionalInfo] = useState<AdditionalInfoValues | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-
-  const session = getStoredSession();
 
   function goToWorkExperience(additionalInfo: AdditionalInfoValues | null) {
     setSavedAdditionalInfo(additionalInfo);
@@ -34,7 +31,7 @@ function useCompleteProfile() {
   }
 
   async function finishProfile(workExperiences: WorkExperienceItem[]) {
-    if (!session || isSubmitting) return;
+    if (isSubmitting) return;
     const formData = buildAdditionalInfoFormData(savedAdditionalInfo, workExperiences);
     if (!hasFormDataContent(formData)) {
       goToProfile();
@@ -43,12 +40,11 @@ function useCompleteProfile() {
     setIsSubmitting(true);
     setSubmitError('');
     try {
-      await createAdditionalInfo(session.token, formData);
+      await createAdditionalInfo(formData);
       goToProfile();
     } 
     catch (error) {
       if (error instanceof ApiError && error.statusCode === 401) {
-        clearSession();
         navigate(routePaths.register);
       } else if (error instanceof ApiError && error.statusCode === 409) {
         goToProfile();
@@ -63,7 +59,6 @@ function useCompleteProfile() {
   }
 
   return {
-    session,
     currentStep,
     isSubmitting,
     submitError,

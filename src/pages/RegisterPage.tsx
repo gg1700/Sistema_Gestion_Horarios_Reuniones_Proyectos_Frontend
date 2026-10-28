@@ -1,47 +1,45 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useState } from 'react';
+import { Navigate, useSearchParams } from 'react-router';
 import AuthLayout from '../components/layouts/AuthLayout';
-import BrandHeading from '../components/ui/BrandHeading';
-import RegisterForm from '../components/features/register/RegisterForm';
+import AccessStory from '../components/features/register/AccessStory';
 import ProviderAccess from '../components/features/register/ProviderAccess';
-import SecurityNotice from '../components/features/register/SecurityNotice';
-import {
-  getPendingRegistration,
-  readPendingRegistration,
-  savePendingRegistration,
-} from '../utils/pendingRegistration';
+import CompleteRegistrationModal from '../components/modals/CompleteRegistrationModal';
+import useRegistrationStatus from '../hooks/useRegistrationStatus';
+import { routePaths } from '../constants/routes';
+import { defaultOAuthErrorMessage, oauthErrorMessages } from '../constants/oauth';
+
+const connectionErrorMessage = 'No se pudo conectar con el servidor. Intenta nuevamente.';
+
+function getOAuthErrorMessage(oauthResult: string | null) {
+  if (!oauthResult || oauthResult === 'success') return undefined;
+  return oauthErrorMessages[oauthResult] ?? defaultOAuthErrorMessage;
+}
 
 function RegisterPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tokenFromUrl = searchParams.get('token');
-  const [pendingRegistration] = useState(() => {
-    const registrationFromUrl = tokenFromUrl ? readPendingRegistration(tokenFromUrl) : null;
-    if (registrationFromUrl) savePendingRegistration(registrationFromUrl.token);
-    return registrationFromUrl ?? getPendingRegistration();
-  });
+  const [searchParams] = useSearchParams();
+  const { status, user } = useRegistrationStatus();
+  const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(true);
+  const oauthErrorMessage = getOAuthErrorMessage(searchParams.get('oauth'));
 
-  useEffect(() => {
-    if (tokenFromUrl) setSearchParams({}, { replace: true });
-  }, [tokenFromUrl, setSearchParams]);
+  if (status === 'completed') {
+    return <Navigate to={routePaths.home} replace />;
+  }
 
   return (
-    <AuthLayout>
-      <div className="mb-8">
-        <BrandHeading
-          badge="Registro seguro"
-          title="Crea tu cuenta en Orbitia"
-          description="Conecta tus reuniones, horarios y proyectos en un único espacio sincronizado."
+    <AuthLayout
+      headerContent={
+        <span className="hidden text-[8px] tracking-[0.18em] text-[#608875] uppercase sm:block">Google + GitHub</span>
+      }
+    >
+      <div className="grid gap-10 lg:grid-cols-[1.16fr_1fr] lg:gap-20">
+        <AccessStory />
+        <ProviderAccess
+          errorMessage={oauthErrorMessage ?? (status === 'error' ? connectionErrorMessage : undefined)}
         />
       </div>
-      {pendingRegistration ? (
-        <RegisterForm pendingRegistration={pendingRegistration} />
-      ) : (
-        <ProviderAccess />
+      {status === 'pending' && user && isRegistrationModalOpen && (
+        <CompleteRegistrationModal user={user} onClose={() => setIsRegistrationModalOpen(false)} />
       )}
-      <SecurityNotice />
-      <p className="mt-6 text-center text-xs text-orbita-muted">
-        Términos del servicio · Política de privacidad · Centro de ayuda
-      </p>
     </AuthLayout>
   );
 }

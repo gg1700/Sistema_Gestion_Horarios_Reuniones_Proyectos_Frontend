@@ -10,30 +10,19 @@ export type RegisterField = keyof RegisterFormValues;
 
 export type RegisterFormErrors = Partial<Record<RegisterField, string>>;
 
-export interface PendingRegistration {
-  token: string;
-  email: string;
-  provider: OAuthProvider;
-}
-
 export interface RegisteredUser {
   id: string;
   handleName: string;
   name: string;
   firstSurname: string;
   email: string;
+  registrationCompleted: boolean;
 }
 
-export interface Session {
-  token: string;
-  expiresIn: string;
-}
-
-export interface RegisterResponse {
+export interface RegistrationResponse {
   success: boolean;
   message: string;
   data: {
     user: RegisteredUser;
-    session: Session;
   };
 }
