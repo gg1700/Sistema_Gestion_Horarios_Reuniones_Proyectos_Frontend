@@ -53,6 +53,10 @@
   --color-ui-soft: #6F8881;
   --color-ui-danger: #E9AA97;
   --color-ui-danger-tint: #2B1D1A;
+  --color-ui-hover: #1E3533;
+  --color-ui-stepper: #132820;
+  --color-ui-stepper-border: #2C4535;
+  --color-ui-step-done: #1B3C2C;
 
   --radius-control: 0.75rem;
   --radius-dialog: 1.5rem;
@@ -93,4 +97,22 @@ input:-webkit-autofill:focus {
 
 .orbita-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #10B981;
+}
+
+.ui-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #2B3D42 transparent;
+}
+
+.ui-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ui-scrollbar::-webkit-scrollbar-thumb {
+  background: #2B3D42;
+  border-radius: 8px;
+}
+
+.ui-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6F8881;
 }
