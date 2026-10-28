@@ -1,16 +1,21 @@
+import { FiPlus } from 'react-icons/fi';
+import Button from '../../ui/Button';
+
 interface ContactListHeaderProps {
   label: string;
-  count: number;
-  maximum: number;
+  canAdd: boolean;
+  onAdd: () => void;
 }
 
-function ContactListHeader({ label, count, maximum }: ContactListHeaderProps) {
+function ContactListHeader({ label, canAdd, onAdd }: ContactListHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm font-medium text-orbita-text">{label}</span>
-      <span className="font-code text-[11px] uppercase tracking-wider text-orbita-muted">
-        {count} de {maximum}
-      </span>
+    <div className="flex min-h-8 items-center justify-between gap-3">
+      <span className="text-xs font-medium text-ui-text">{label}</span>
+      {canAdd && (
+        <Button variant="link" onClick={onAdd} leftIcon={<FiPlus />} className="text-[10px]">
+          Agregar
+        </Button>
+      )}
     </div>
   );
 }

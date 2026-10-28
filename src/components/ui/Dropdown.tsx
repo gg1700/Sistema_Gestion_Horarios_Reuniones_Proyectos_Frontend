@@ -14,6 +14,7 @@ interface DropdownProps {
   onChange: (value: string) => void;
   ariaLabel: string;
   id?: string;
+  displayValue?: string;
   placeholder?: string;
   hasError?: boolean;
   className?: string;
@@ -25,6 +26,7 @@ function Dropdown({
   onChange,
   ariaLabel,
   id,
+  displayValue,
   placeholder = 'Selecciona una opción',
   hasError = false,
   className = '',
@@ -85,7 +87,7 @@ function Dropdown({
         className={`flex h-[3.25rem] w-full items-center justify-between gap-2 rounded-control border bg-ui-field px-4 text-left text-sm transition-colors ${borderColor}`}
       >
         <span className={`truncate ${selectedOption ? 'text-ui-text' : 'text-ui-soft'}`}>
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? (displayValue ?? selectedOption.label) : placeholder}
         </span>
         <FiChevronDown
           className={`shrink-0 text-ui-muted transition-transform ${isOpen ? 'rotate-180 text-ui-mint' : ''}`}

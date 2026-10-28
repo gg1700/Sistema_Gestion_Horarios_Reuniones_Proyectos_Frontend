@@ -1,10 +1,9 @@
-import { FiAlertCircle, FiPlus, FiTrash2 } from 'react-icons/fi';
-import Button from '../../ui/Button';
+import { FiAlertCircle, FiTrash2 } from 'react-icons/fi';
 import IconButton from '../../ui/IconButton';
 import Dropdown from '../../ui/Dropdown';
 import ContactListHeader from './ContactListHeader';
 import { countries, describePhoneDigits, findCountryByCode } from '../../../constants/countries';
-import { maximumPhones } from '../../../constants/profile';
+import { fieldBoxClassName, getFieldBorderClassName } from '../../../utils/fieldClassNames';
 import type { PhoneFormItem } from '../../../types/profile';
 
 interface PhonesEditorProps {
@@ -38,20 +37,21 @@ function keepAllowedDigits(value: string, countryCode: string) {
 
 function PhonesEditor({ phones, errors = {}, canAddPhone, onAdd, onUpdate, onRemove }: PhonesEditorProps) {
   return (
-    <div className="flex flex-col gap-2">
-      <ContactListHeader label="Teléfonos de contacto" count={phones.length} maximum={maximumPhones} />
+    <div className="flex min-w-0 flex-col gap-2">
+      <ContactListHeader label="Teléfono" canAdd={canAddPhone} onAdd={onAdd} />
 
       {phones.map((phone, index) => (
-        <div key={phone.id} className="flex flex-col gap-1">
-          <div className="flex gap-2">
+        <div key={phone.id} className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
             <Dropdown
               ariaLabel={`Código de país del teléfono ${index + 1}`}
               value={phone.countryCode}
+              displayValue={`+${phone.countryCode}`}
               options={countryCodeOptions}
               onChange={(countryCode) =>
                 onUpdate(phone.id, { countryCode: countryCode, number: keepAllowedDigits(phone.number, countryCode) })
               }
-              className="w-36 shrink-0 sm:w-44"
+              className="w-24 shrink-0"
             />
             <input
               type="tel"
@@ -61,34 +61,24 @@ function PhonesEditor({ phones, errors = {}, canAddPhone, onAdd, onUpdate, onRem
               onChange={(event) => onUpdate(phone.id, { number: keepAllowedDigits(event.target.value, phone.countryCode) })}
               placeholder={getPhonePlaceholder(phone.countryCode)}
               maxLength={getMaximumDigits(phone.countryCode)}
-              className={`h-11 w-full min-w-0 rounded-lg border bg-orbita-surface px-3 text-sm text-orbita-text placeholder:text-orbita-disabled focus:outline-none ${
-                errors[phone.id] ? 'border-orbita-error' : 'border-orbita-outline focus:border-orbita-accent'
-              }`}
+              className={`w-full min-w-0 ${fieldBoxClassName} ${getFieldBorderClassName(Boolean(errors[phone.id]))}`}
             />
-            {phones.length > 1 && (
-              <IconButton
-                label="Eliminar teléfono"
-                icon={<FiTrash2 />}
-                onClick={() => onRemove(phone.id)}
-                variant="danger"
-                size="medium"
-              />
-            )}
+            <IconButton
+              label="Eliminar teléfono"
+              icon={<FiTrash2 />}
+              onClick={() => onRemove(phone.id)}
+              variant="danger"
+              size="medium"
+            />
           </div>
           {errors[phone.id] && (
-            <p className="flex items-center gap-1.5 text-xs text-orbita-error">
+            <p className="flex items-center gap-1.5 text-[11px] text-ui-danger">
               <FiAlertCircle aria-hidden="true" />
               {errors[phone.id]}
             </p>
           )}
         </div>
       ))}
-
-      {canAddPhone && (
-        <Button variant="link" onClick={onAdd} leftIcon={<FiPlus />}>
-          Agregar otro teléfono
-        </Button>
-      )}
     </div>
   );
 }
