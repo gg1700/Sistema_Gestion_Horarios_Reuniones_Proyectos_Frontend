@@ -21,11 +21,11 @@ function SelectField({
   isRequired = false,
 }: SelectFieldProps) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={name} className="text-sm font-medium text-orbita-text">
+    <div className="flex min-w-0 flex-col gap-2">
+      <label htmlFor={name} className="text-xs font-medium text-ui-text">
         {label}
         {isRequired && (
-          <span className="ml-0.5 text-orbita-error" aria-hidden="true">
+          <span className="ml-0.5 text-ui-mint" aria-hidden="true">
             *
           </span>
         )}

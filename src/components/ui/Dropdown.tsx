@@ -66,10 +66,10 @@ function Dropdown({
   }
 
   const borderColor = hasError
-    ? 'border-orbita-error'
+    ? 'border-ui-danger'
     : isOpen
-      ? 'border-orbita-accent'
-      : 'border-orbita-outline hover:border-orbita-muted/60';
+      ? 'border-ui-mint'
+      : 'border-ui-field-border hover:border-ui-soft';
 
   return (
     <div ref={containerReference} className={`relative ${className}`}>
@@ -82,13 +82,13 @@ function Dropdown({
         aria-controls={listId}
         onClick={() => (isOpen ? setIsOpen(false) : openList())}
         onKeyDown={handleKeyDown}
-        className={`flex h-11 w-full items-center justify-between gap-2 rounded-lg border bg-orbita-surface px-3 text-left text-sm transition-colors ${borderColor}`}
+        className={`flex h-[3.25rem] w-full items-center justify-between gap-2 rounded-control border bg-ui-field px-4 text-left text-sm transition-colors ${borderColor}`}
       >
-        <span className={`truncate ${selectedOption ? 'text-orbita-text' : 'text-orbita-disabled'}`}>
+        <span className={`truncate ${selectedOption ? 'text-ui-text' : 'text-ui-soft'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <FiChevronDown
-          className={`shrink-0 text-orbita-muted transition-transform ${isOpen ? 'rotate-180 text-orbita-accent' : ''}`}
+          className={`shrink-0 text-ui-muted transition-transform ${isOpen ? 'rotate-180 text-ui-mint' : ''}`}
           aria-hidden="true"
         />
       </button>
@@ -98,7 +98,7 @@ function Dropdown({
           id={listId}
           role="listbox"
           aria-label={ariaLabel}
-          className="orbita-scrollbar absolute top-full left-0 z-30 mt-1 max-h-60 w-full min-w-48 overflow-y-auto rounded-lg border border-orbita-outline bg-orbita-card p-1 shadow-2xl"
+          className="ui-scrollbar absolute top-full left-0 z-30 mt-1 max-h-60 w-full min-w-48 overflow-y-auto rounded-control border border-ui-border bg-ui-raised p-1 shadow-2xl"
         >
           {options.map((option, index) => {
             const isSelected = option.value === value;
@@ -111,8 +111,8 @@ function Dropdown({
                 onPointerEnter={() => setHighlightedIndex(index)}
                 onClick={() => selectOption(option)}
                 className={`flex cursor-pointer items-center justify-between gap-2 rounded-md px-3 py-2 text-sm ${
-                  isHighlighted ? 'bg-orbita-surface' : ''
-                } ${isSelected ? 'text-orbita-accent' : 'text-orbita-text'}`}
+                  isHighlighted ? 'bg-ui-hover' : ''
+                } ${isSelected ? 'text-ui-mint' : 'text-ui-text'}`}
               >
                 <span className="truncate">{option.label}</span>
                 {isSelected && <FiCheck className="shrink-0" aria-hidden="true" />}

@@ -37,7 +37,7 @@ function moveMonth(visibleMonth: VisibleMonth, monthsToMove: number): VisibleMon
 }
 
 const navigationButtonClassName =
-  'flex h-8 w-8 items-center justify-center rounded-md text-orbita-muted hover:bg-orbita-surface hover:text-orbita-text';
+  'flex h-8 w-8 items-center justify-center rounded-md text-ui-muted hover:bg-ui-hover hover:text-ui-text';
 
 function DateField({
   label,
@@ -74,17 +74,17 @@ function DateField({
   }
 
   const borderColor = hasError
-    ? 'border-orbita-error'
+    ? 'border-ui-danger'
     : isOpen
-      ? 'border-orbita-accent'
-      : 'border-orbita-outline hover:border-orbita-muted/60';
+      ? 'border-ui-mint'
+      : 'border-ui-field-border hover:border-ui-soft';
 
   return (
-    <div ref={containerReference} className="relative flex flex-col gap-1.5">
-      <label htmlFor={name} className="text-sm font-medium text-orbita-text">
+    <div ref={containerReference} className="relative flex flex-col gap-2">
+      <label htmlFor={name} className="text-xs font-medium text-ui-text">
         {label}
         {isRequired && (
-          <span className="ml-0.5 text-orbita-error" aria-hidden="true">
+          <span className="ml-0.5 text-ui-mint" aria-hidden="true">
             *
           </span>
         )}
@@ -98,19 +98,19 @@ function DateField({
         aria-invalid={hasError}
         onClick={() => (isOpen ? setIsOpen(false) : openCalendar())}
         onKeyDown={(event) => event.key === 'Escape' && setIsOpen(false)}
-        className={`flex h-11 w-full items-center justify-between gap-2 rounded-lg border bg-orbita-surface px-3 text-left text-sm transition-colors ${borderColor}`}
+        className={`flex h-[3.25rem] w-full items-center justify-between gap-2 rounded-control border bg-ui-field px-4 text-left text-sm transition-colors ${borderColor}`}
       >
-        <span className={value ? 'text-orbita-text' : 'text-orbita-disabled'}>
+        <span className={value ? 'text-ui-text' : 'text-ui-soft'}>
           {value ? formatDisplayDate(value) : 'Selecciona una fecha'}
         </span>
-        <FiCalendar className={isOpen ? 'text-orbita-accent' : 'text-orbita-muted'} aria-hidden="true" />
+        <FiCalendar className={isOpen ? 'text-ui-mint' : 'text-ui-muted'} aria-hidden="true" />
       </button>
 
       {isOpen && (
         <div
           role="dialog"
           aria-label={`Calendario de ${label}`}
-          className="absolute top-full left-0 z-30 mt-1 w-72 rounded-lg border border-orbita-outline bg-orbita-card p-3 shadow-2xl"
+          className="absolute top-full left-0 z-30 mt-1 w-72 rounded-control border border-ui-border bg-ui-raised p-3 shadow-2xl"
         >
           <div className="mb-2 flex items-center justify-between">
             <div className="flex">
@@ -121,7 +121,7 @@ function DateField({
                 <FiChevronLeft aria-hidden="true" />
               </button>
             </div>
-            <span className="font-heading text-sm font-semibold text-orbita-text">
+            <span className="font-heading text-sm font-semibold text-ui-text">
               {getMonthName(visibleMonth.month)} {visibleMonth.year}
             </span>
             <div className="flex">
@@ -136,7 +136,7 @@ function DateField({
 
           <div className="grid grid-cols-7 gap-1 text-center">
             {weekDayNames.map((weekDayName) => (
-              <span key={weekDayName} className="py-1 font-code text-[11px] text-orbita-muted">
+              <span key={weekDayName} className="py-1 font-code text-[11px] text-ui-muted">
                 {weekDayName}
               </span>
             ))}
@@ -154,11 +154,11 @@ function DateField({
                   onClick={() => selectDate(day.isoDate)}
                   className={`flex h-8 items-center justify-center rounded-md text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
                     isSelected
-                      ? 'bg-orbita-accent font-medium text-orbita-on-primary'
+                      ? 'bg-ui-mint font-medium text-ui-ink'
                       : day.isCurrentMonth
-                        ? 'text-orbita-text hover:bg-orbita-surface'
-                        : 'text-orbita-disabled hover:bg-orbita-surface'
-                  } ${isToday && !isSelected ? 'border border-orbita-primary/60' : ''}`}
+                        ? 'text-ui-text hover:bg-ui-hover'
+                        : 'text-ui-soft hover:bg-ui-hover'
+                  } ${isToday && !isSelected ? 'border border-ui-mint/60' : ''}`}
                 >
                   {day.dayNumber}
                 </button>
@@ -166,14 +166,14 @@ function DateField({
             })}
           </div>
 
-          <div className="mt-3 flex items-center justify-between border-t border-orbita-outline pt-2">
+          <div className="mt-3 flex items-center justify-between border-t border-ui-border pt-2">
             <button
               type="button"
               onClick={() => {
                 onChange('');
                 setIsOpen(false);
               }}
-              className="rounded-md px-2 py-1 text-xs text-orbita-muted hover:bg-orbita-surface hover:text-orbita-text"
+              className="rounded-md px-2 py-1 text-xs text-ui-muted hover:bg-ui-hover hover:text-ui-text"
             >
               Borrar
             </button>
@@ -181,7 +181,7 @@ function DateField({
               <button
                 type="button"
                 onClick={() => selectDate(today)}
-                className="rounded-md px-2 py-1 text-xs font-medium text-orbita-accent hover:bg-orbita-surface"
+                className="rounded-md px-2 py-1 text-xs font-medium text-ui-mint hover:bg-ui-hover"
               >
                 Hoy
               </button>
@@ -191,7 +191,7 @@ function DateField({
       )}
 
       {hasError && (
-        <p className="flex items-center gap-1.5 text-xs text-orbita-error">
+        <p className="flex items-center gap-1.5 text-[11px] text-ui-danger">
           <FiAlertCircle aria-hidden="true" />
           {error}
         </p>
