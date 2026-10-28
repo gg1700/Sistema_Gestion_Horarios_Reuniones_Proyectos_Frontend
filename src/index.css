@@ -1,4 +1,6 @@
+
 @import "tailwindcss";
+
 @theme {
   --color-primary: #1E40AF;
   --color-secondary: #E6E6E6;
@@ -41,4 +43,28 @@ input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px var(--color-orbita-surface) inset;
   caret-color: var(--color-orbita-text);
   transition: background-color 9999s ease-in-out 0s;
+}
+
+.orbita-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4A554E #252A27;
+}
+
+.orbita-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.orbita-scrollbar::-webkit-scrollbar-track {
+  background: #252A27;
+  border-radius: 8px;
+}
+
+.orbita-scrollbar::-webkit-scrollbar-thumb {
+  background: #4A554E;
+  border-radius: 8px;
+  border: 2px solid #252A27;
+}
+
+.orbita-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #10B981;
 }

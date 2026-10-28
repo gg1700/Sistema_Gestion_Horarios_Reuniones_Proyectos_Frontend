@@ -1,6 +1,8 @@
 import { Routes, Route } from 'react-router';
 import MainMenu from '../pages/MainMenu';
 import RegisterPage from '../pages/RegisterPage';
+import PublicProfilePage from '../pages/PublicProfilePage';
+import PublicLinkPage from '../pages/PublicLinkPage';
 import { routePaths } from '../constants/routes';
 
 function RouterPage() {
@@ -8,6 +10,11 @@ function RouterPage() {
     <Routes>
       <Route path={routePaths.home} element={<MainMenu />} />
       <Route path={routePaths.register} element={<RegisterPage />} />
+      <Route path="/:publicHandle" element={<PublicProfilePage />} />
+      <Route
+        path="/perfil/enlace-publico"
+        element={<PublicLinkPage />}
+      />
     </Routes>
   );
 }
