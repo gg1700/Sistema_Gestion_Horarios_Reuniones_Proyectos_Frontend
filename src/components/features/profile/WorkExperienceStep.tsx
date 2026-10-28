@@ -1,12 +1,8 @@
-import { useEffect, useRef } from 'react';
-import { FiAlertCircle, FiCheck, FiPlus } from 'react-icons/fi';
-import TextField from '../../ui/TextField';
-import DateField from '../../ui/DateField';
-import SectionCard from '../../ui/SectionCard';
+import { FiPlus, FiShield } from 'react-icons/fi';
 import Button from '../../ui/Button';
-import RequiredFieldsNote from '../../ui/RequiredFieldsNote';
 import WorkExperienceCard from './WorkExperienceCard';
-import { descriptionMaximumLength, maximumWorkExperiences } from '../../../constants/profile';
+import WorkExperienceEditorModal from '../../modals/WorkExperienceEditorModal';
+import { maximumWorkExperiences } from '../../../constants/profile';
 import type useWorkExperienceForm from '../../../hooks/useWorkExperienceForm';
 
 interface WorkExperienceStepProps {
@@ -14,139 +10,51 @@ interface WorkExperienceStepProps {
 }
 
 function WorkExperienceStep({ form }: WorkExperienceStepProps) {
-  const { draft, errors, workExperiences, isEditing, editingId } = form;
-  const formSectionReference = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (editingId) {
-      formSectionReference.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [editingId]);
+  const { workExperiences } = form;
+  const canAddMore = workExperiences.length < maximumWorkExperiences;
 
   return (
-    <div className="flex flex-col gap-6">
-      <SectionCard
-        ref={formSectionReference}
-        title={isEditing ? 'Editar experiencia' : 'Agregar nueva experiencia'}
-        isHighlighted={isEditing}
-        headerRight={
-          <span className="font-code text-[11px] uppercase tracking-wider text-orbita-muted">
-            {workExperiences.length} de {maximumWorkExperiences}
-          </span>
-        }
-      >
-        <RequiredFieldsNote condition="Si agregas una experiencia" />
+    <div className="flex flex-col">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-heading text-base font-medium text-ui-text">Tus experiencias</h3>
+        <span className="text-[10px] text-ui-moss">
+          {workExperiences.length} de {maximumWorkExperiences} agregadas
+        </span>
+      </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <TextField
-            label="Cargo"
-            name="title"
-            value={draft.title}
-            onChange={form.handleDraftChange}
-            placeholder="Desarrollador backend"
-            maxLength={150}
-            error={errors.title}
-            isRequired
-          />
-          <TextField
-            label="Empresa"
-            name="companyName"
-            value={draft.companyName}
-            onChange={form.handleDraftChange}
-            placeholder="Empresa (opcional)"
-            maxLength={200}
-            error={errors.companyName}
-          />
-          <DateField
-            label="Fecha de inicio"
-            name="startDate"
-            value={draft.startDate}
-            onChange={(value) => form.updateDraftField('startDate', value)}
-            maximumDate={draft.endDate || undefined}
-            error={errors.startDate}
-            isRequired
-          />
-          {!draft.isCurrentJob && (
-            <DateField
-              label="Fecha de fin"
-              name="endDate"
-              value={draft.endDate}
-              onChange={(value) => form.updateDraftField('endDate', value)}
-              minimumDate={draft.startDate || undefined}
-              error={errors.endDate}
-            />
-          )}
-        </div>
-
-        <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-orbita-muted">
-          <input
-            type="checkbox"
-            checked={draft.isCurrentJob}
-            onChange={form.toggleCurrentJob}
-            className="h-4 w-4 accent-orbita-primary"
-          />
-          Trabajo aquí actualmente
-        </label>
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="description" className="text-sm font-medium text-orbita-text">
-            Descripción
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={draft.description}
-            onChange={form.handleDraftChange}
-            maxLength={descriptionMaximumLength}
-            rows={3}
-            placeholder="Cuéntanos qué hacías en este puesto (opcional)"
-            className="orbita-scrollbar resize-none rounded-lg border border-orbita-outline bg-orbita-surface p-3 text-sm text-orbita-text placeholder:text-orbita-disabled focus:border-orbita-accent focus:outline-none"
-          />
-          <p className="text-right font-code text-[11px] text-orbita-muted">
-            {draft.description.length} / {descriptionMaximumLength}
-          </p>
-          {errors.description && (
-            <p className="flex items-center gap-1 text-xs text-orbita-error">
-              <FiAlertCircle aria-hidden="true" /> {errors.description}
-            </p>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={form.saveWorkExperience}
-            disabled={!form.canAddWorkExperience}
-            leftIcon={isEditing ? <FiCheck /> : <FiPlus />}
-          >
-            {isEditing ? 'Guardar cambios' : 'Agregar experiencia'}
-          </Button>
-          {isEditing && (
-            <Button variant="secondary" onClick={form.cancelEditing}>
-              Cancelar
-            </Button>
-          )}
-        </div>
-      </SectionCard>
-
-      <section className="flex flex-col gap-3">
-        <h3 className="font-heading text-base font-semibold text-orbita-text">Experiencias agregadas</h3>
-        {workExperiences.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-orbita-outline p-4 text-center text-sm text-orbita-muted">
-            Aún no agregaste experiencias. Puedes agregar varias o continuar sin ellas.
-          </p>
-        ) : (
-          workExperiences.map((workExperience) => (
+      {workExperiences.length === 0 ? (
+        <p className="mt-5 rounded-control border border-dashed border-ui-field-border p-5 text-center text-[11px] text-ui-muted">
+          Aún no agregaste experiencias. Puedes agregar varias o continuar sin ellas.
+        </p>
+      ) : (
+        <div className="mt-2">
+          {workExperiences.map((workExperience) => (
             <WorkExperienceCard
               key={workExperience.id}
               workExperience={workExperience}
-              isBeingEdited={workExperience.id === editingId}
               onEdit={form.editWorkExperience}
               onRemove={form.removeWorkExperience}
             />
-          ))
-        )}
-      </section>
+          ))}
+        </div>
+      )}
+
+      <div className="border-b border-ui-divider pt-5 pb-12">
+        <Button variant="link" onClick={form.openNewWorkExperience} disabled={!canAddMore} leftIcon={<FiPlus />}>
+          {canAddMore ? 'Agregar experiencia' : 'Llegaste al máximo de experiencias'}
+        </Button>
+      </div>
+
+      <div className="mt-6 flex items-start gap-2.5 text-[10px] leading-5 text-ui-moss">
+        <FiShield className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        <p>
+          Esta información es opcional.
+          <br />
+          Puedes volver, hacer cambios o completar tu perfil más tarde.
+        </p>
+      </div>
+
+      {form.isEditorOpen && <WorkExperienceEditorModal form={form} />}
     </div>
   );
 }

@@ -24,6 +24,7 @@ function useWorkExperienceForm() {
   const [draft, setDraft] = useState<WorkExperienceValues>(emptyWorkExperience);
   const [errors, setErrors] = useState<WorkExperienceErrors>({});
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const isEditing = editingId !== null;
   const canAddWorkExperience = isEditing || workExperiences.length < maximumWorkExperiences;
 
@@ -50,6 +51,17 @@ function useWorkExperienceForm() {
     setEditingId(null);
   }
 
+  function openNewWorkExperience() {
+    if (!canAddWorkExperience) return;
+    resetDraft();
+    setIsEditorOpen(true);
+  }
+
+  function closeEditor() {
+    resetDraft();
+    setIsEditorOpen(false);
+  }
+
   function saveWorkExperience() {
     if (!canAddWorkExperience) return;
     const draftErrors = validateWorkExperience(draft);
@@ -68,7 +80,7 @@ function useWorkExperienceForm() {
         { ...draft, id: createWorkExperienceId() },
       ]);
     }
-    resetDraft();
+    closeEditor();
   }
 
   function editWorkExperience(workExperienceId: string) {
@@ -78,17 +90,14 @@ function useWorkExperienceForm() {
     setDraft(experienceValues);
     setErrors({});
     setEditingId(id);
+    setIsEditorOpen(true);
   }
 
   function removeWorkExperience(workExperienceId: string) {
     setWorkExperiences((previousExperiences) =>
       previousExperiences.filter((experience) => experience.id !== workExperienceId)
     );
-    if (editingId === workExperienceId) resetDraft();
-  }
-
-  function hasUnsavedDraft() {
-    return draft.title.trim().length > 0 || draft.startDate.length > 0;
+    if (editingId === workExperienceId) closeEditor();
   }
 
   return {
@@ -97,15 +106,16 @@ function useWorkExperienceForm() {
     errors,
     editingId,
     isEditing,
+    isEditorOpen,
     canAddWorkExperience,
     handleDraftChange,
     updateDraftField,
     toggleCurrentJob,
     saveWorkExperience,
-    cancelEditing: resetDraft,
+    openNewWorkExperience,
+    closeEditor,
     editWorkExperience,
     removeWorkExperience,
-    hasUnsavedDraft,
   };
 }
 

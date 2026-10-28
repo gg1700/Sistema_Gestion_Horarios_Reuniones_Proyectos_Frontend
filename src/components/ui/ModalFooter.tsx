@@ -12,21 +12,21 @@ interface ModalFooterProps {
 
 function ModalFooter({ skipLabel, confirmLabel, onSkip, onConfirm, onBack, isLoading = false }: ModalFooterProps) {
   return (
-    <div className="flex items-center justify-between gap-3 border-t border-orbita-outline px-6 py-4 sm:px-8">
-      <Button variant="secondary" onClick={onSkip} disabled={isLoading}>
-        {skipLabel}
-      </Button>
-      <div className="flex items-center gap-3">
+    <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-ui-border px-5 py-[18px] sm:px-8">
+      <div className="flex items-center gap-5">
         {onBack && (
-          <Button variant="secondary" onClick={onBack} disabled={isLoading} leftIcon={<FiArrowLeft />}>
+          <Button variant="ghost" onClick={onBack} disabled={isLoading} leftIcon={<FiArrowLeft />}>
             Atrás
           </Button>
         )}
-        <Button onClick={onConfirm} disabled={isLoading} rightIcon={isLoading ? undefined : <FiArrowRight />}>
-          {isLoading ? 'Guardando...' : confirmLabel}
+        <Button variant="ghost" onClick={onSkip} disabled={isLoading}>
+          {skipLabel}
         </Button>
       </div>
-    </div>
+      <Button onClick={onConfirm} disabled={isLoading} rightIcon={isLoading ? undefined : <FiArrowRight />}>
+        {isLoading ? 'Guardando...' : confirmLabel}
+      </Button>
+    </footer>
   );
 }
 

@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { FiAlertCircle } from 'react-icons/fi';
-import BrandHeading from '../ui/BrandHeading';
+import Modal from './Modal';
+import ModalHeader from './ModalHeader';
 import StepIndicator from '../ui/StepIndicator';
 import ModalFooter from '../ui/ModalFooter';
 import AdditionalInfoStep from '../features/profile/AdditionalInfoStep';
@@ -10,16 +9,19 @@ import useCompleteProfile from '../../hooks/useCompleteProfile';
 import useAdditionalInfoForm from '../../hooks/useAdditionalInfoForm';
 import useWorkExperienceForm from '../../hooks/useWorkExperienceForm';
 
+const titleId = 'complete-profile-title';
 const stepNames = ['Información adicional', 'Experiencia laboral'];
 
-function CompleteProfileModal() {
+interface CompleteProfileModalProps {
+  initials: string;
+}
+
+function CompleteProfileModal({ initials }: CompleteProfileModalProps) {
   const completeProfile = useCompleteProfile();
   const additionalInfoForm = useAdditionalInfoForm();
   const workExperienceForm = useWorkExperienceForm();
-  const [draftWarning, setDraftWarning] = useState('');
 
   const isFirstStep = completeProfile.currentStep === 'additionalInfo';
-  const modalRoot = document.getElementById('modal-root') ?? document.body;
 
   function handleContinue() {
     if (additionalInfoForm.isValid()) {
@@ -27,75 +29,65 @@ function CompleteProfileModal() {
     }
   }
 
-  function handleFinish() {
-    if (workExperienceForm.hasUnsavedDraft()) {
-      setDraftWarning('Tienes una experiencia sin guardar. Agrégala, guarda los cambios o vacía el formulario.');
+  function handleClose() {
+    if (isFirstStep) {
+      completeProfile.goToProfile();
       return;
     }
-    setDraftWarning('');
-    completeProfile.finishProfile(workExperienceForm.workExperiences);
+    completeProfile.finishProfile([]);
   }
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 font-body">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="complete-profile-title"
-        className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-orbita-outline bg-orbita-modal text-orbita-text shadow-2xl"
-      >
-        <div className="border-b border-orbita-outline px-6 pt-6 pb-5 sm:px-8">
-          <div id="complete-profile-title">
-            <BrandHeading
-              badge={isFirstStep ? 'Paso 1 de 2' : 'Paso 2 de 2'}
-              title={isFirstStep ? 'Completa tu perfil' : 'Experiencia laboral'}
-              description="Esta información es opcional. Puedes completarla luego desde tu perfil."
-              isCompact
-            />
-          </div>
-          <div className="mt-5">
-            <StepIndicator steps={stepNames} currentStepIndex={isFirstStep ? 0 : 1} />
-          </div>
-        </div>
+  return (
+    <Modal titleId={titleId} widthClassName="max-w-[54rem]">
+      <StepIndicator steps={stepNames} currentStepIndex={isFirstStep ? 0 : 1} note="Opcional" />
 
-        <div className="orbita-scrollbar flex-1 overflow-y-auto px-6 py-6 sm:px-8">
-          {isFirstStep ? (
-            <AdditionalInfoStep form={additionalInfoForm} />
-          ) : (
-            <WorkExperienceStep form={workExperienceForm} />
-          )}
+      <ModalHeader
+        titleId={titleId}
+        title={isFirstStep ? 'Dale forma a tu perfil.' : 'Tu recorrido también conecta.'}
+        description={
+          isFirstStep
+            ? 'Agrega los datos con los que quieres presentarte.'
+            : 'Agrega tus experiencias y revisa cómo quedarán en tu perfil.'
+        }
+        onClose={handleClose}
+      />
 
-          {(completeProfile.submitError || draftWarning) && (
-            <p
-              role="alert"
-              className="mt-4 flex items-center gap-2 rounded-lg bg-orbita-error-tint px-3 py-2 text-sm text-orbita-error"
-            >
-              <FiAlertCircle aria-hidden="true" />
-              {completeProfile.submitError || draftWarning}
-            </p>
-          )}
-        </div>
-
+      <div className="ui-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-8">
         {isFirstStep ? (
-          <ModalFooter
-            skipLabel="Omitir"
-            confirmLabel="Guardar y continuar"
-            onSkip={() => completeProfile.goToWorkExperience(null)}
-            onConfirm={handleContinue}
-          />
+          <AdditionalInfoStep form={additionalInfoForm} initials={initials} />
         ) : (
-          <ModalFooter
-            skipLabel="Completar más tarde"
-            confirmLabel="Guardar e ir a mi perfil"
-            onSkip={() => completeProfile.finishProfile([])}
-            onConfirm={handleFinish}
-            onBack={completeProfile.goBackToAdditionalInfo}
-            isLoading={completeProfile.isSubmitting}
-          />
+          <WorkExperienceStep form={workExperienceForm} />
+        )}
+
+        {completeProfile.submitError && (
+          <p
+            role="alert"
+            className="mt-5 flex items-start gap-2.5 rounded-control border border-ui-danger/30 bg-ui-danger-tint px-4 py-3 text-xs leading-5 text-ui-danger"
+          >
+            <FiAlertCircle className="mt-0.5 shrink-0" aria-hidden="true" />
+            {completeProfile.submitError}
+          </p>
         )}
       </div>
-    </div>,
-    modalRoot
+
+      {isFirstStep ? (
+        <ModalFooter
+          skipLabel="Omitir este paso"
+          confirmLabel="Guardar y continuar"
+          onSkip={() => completeProfile.goToWorkExperience(null)}
+          onConfirm={handleContinue}
+        />
+      ) : (
+        <ModalFooter
+          skipLabel="Completar más tarde"
+          confirmLabel="Guardar e ir a mi perfil"
+          onSkip={() => completeProfile.finishProfile([])}
+          onConfirm={() => completeProfile.finishProfile(workExperienceForm.workExperiences)}
+          onBack={completeProfile.goBackToAdditionalInfo}
+          isLoading={completeProfile.isSubmitting}
+        />
+      )}
+    </Modal>
   );
 }
 
