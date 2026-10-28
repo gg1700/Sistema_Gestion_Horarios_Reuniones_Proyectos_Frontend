@@ -1,12 +1,13 @@
 import { Navigate, useSearchParams } from 'react-router';
 import AuthLayout from '../components/layouts/AuthLayout';
-import BrandHeading from '../components/ui/BrandHeading';
-import RegisterForm from '../components/features/register/RegisterForm';
+import AccessStory from '../components/features/register/AccessStory';
 import ProviderAccess from '../components/features/register/ProviderAccess';
-import SecurityNotice from '../components/features/register/SecurityNotice';
+import RegisterForm from '../components/features/register/RegisterForm';
 import useRegistrationStatus from '../hooks/useRegistrationStatus';
 import { routePaths } from '../constants/routes';
 import { defaultOAuthErrorMessage, oauthErrorMessages } from '../constants/oauth';
+
+const connectionErrorMessage = 'No se pudo conectar con el servidor. Intenta nuevamente.';
 
 function getOAuthErrorMessage(oauthResult: string | null) {
   if (!oauthResult || oauthResult === 'success') return undefined;
@@ -23,32 +24,18 @@ function RegisterPage() {
   }
 
   return (
-    <AuthLayout>
-      <div className="mb-8">
-        <BrandHeading
-          badge="Registro seguro"
-          title="Crea tu cuenta en Orbitia"
-          description="Conecta tus reuniones, horarios y proyectos en un único espacio sincronizado."
+    <AuthLayout
+      headerContent={
+        <span className="hidden text-[8px] tracking-[0.18em] text-[#608875] uppercase sm:block">Google + GitHub</span>
+      }
+    >
+      <div className="grid gap-10 lg:grid-cols-[1.16fr_1fr] lg:gap-20">
+        <AccessStory />
+        <ProviderAccess
+          errorMessage={oauthErrorMessage ?? (status === 'error' ? connectionErrorMessage : undefined)}
         />
       </div>
-      {status === 'loading' && (
-        <p className="rounded-xl border border-orbita-outline bg-orbita-card p-6 text-center text-sm text-orbita-muted">
-          Verificando tu sesión...
-        </p>
-      )}
       {status === 'pending' && user && <RegisterForm user={user} />}
-      {(status === 'unauthenticated' || status === 'error') && (
-        <ProviderAccess
-          errorMessage={
-            oauthErrorMessage ??
-            (status === 'error' ? 'No se pudo conectar con el servidor. Intenta nuevamente.' : undefined)
-          }
-        />
-      )}
-      <SecurityNotice />
-      <p className="mt-6 text-center text-xs text-orbita-muted">
-        Términos del servicio · Política de privacidad · Centro de ayuda
-      </p>
     </AuthLayout>
   );
 }
