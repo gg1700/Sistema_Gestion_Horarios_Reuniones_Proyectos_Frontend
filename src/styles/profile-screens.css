@@ -134,7 +134,7 @@
 .visibility-group + .visibility-group { margin-top: 14px; }
 .visibility-group > h3 { font: 500 14px/22px var(--ui-font-heading); color: #d0e5d8; margin: 0 0 8px; }
 .visibility-row { display: grid; grid-template-columns: 170px minmax(0, 1fr) 60px 30px; gap: 12px; align-items: center; min-height: 36px; border-bottom: 1px solid #263f31; }
-.visibility-row > span:first-child { color: #c0d5c8; font-size: 11px; }
+.visibility-row > span:first-child { min-width: 0; overflow-wrap: anywhere; color: #c0d5c8; font-size: 11px; }
 .visibility-row > p { color: #628a6e; font-size: 10px; line-height: 18px; margin: 6px 0; overflow-wrap: anywhere; }
 .visibility-row > small { color: #678a73; font-size: 9px; text-align: right; }
 .visibility-row > small.is-public { color: #9ed8b6; }

@@ -68,7 +68,9 @@ Aplicar el switch al confirmar la respuesta; si falla, conservar el valor anteri
 Desactivar no borra perfil ni visibilidad. Perfil público y disponibilidad responden
 404 mientras esté inactivo. Errores: 401 sin sesión; 422 enabled no booleano.
 */
-export default function ProfileLinkPage() {
+export { default } from '../features/github/ProfilePublicLinkPage';
+
+export function DemoProfileLinkPage() {
   const { state, dispatch } = useMockFlow();
   const { notify } = useUI();
   const [query, setQuery] = useSearchParams();

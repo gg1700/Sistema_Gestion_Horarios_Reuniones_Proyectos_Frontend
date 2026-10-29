@@ -28,7 +28,9 @@ en un enlace activo y no se aceptan como switches. Vista previa usa el borrador 
 el perfil del visitante usa valores guardados y filtrados por el servidor.
 Errores: 401 sin sesión; 422 si un campo no es booleano o no está permitido.
 */
-export default function VisibilityPage() {
+export { default } from '../features/github/ProfileVisibilityPage';
+
+export function DemoVisibilityPage() {
   const { state, dispatch } = useMockFlow();
   const { notify } = useUI();
   const [query, setQuery] = useSearchParams();

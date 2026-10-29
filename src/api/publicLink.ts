@@ -22,37 +22,11 @@ type ApiResponse<T> = {
 
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
-function getToken(): string {
-  try {
-    const stored = localStorage.getItem('orbitia-session');
-
-    if (stored) {
-      const session: unknown = JSON.parse(stored);
-
-      if (
-        typeof session === 'object' &&
-        session !== null &&
-        'token' in session &&
-        typeof session.token === 'string' &&
-        session.token.length > 0
-      ) {
-        return session.token;
-      }
-    }
-  } catch {
-    throw new Error('No se pudo recuperar la sesión.');
-  }
-
-  throw new Error('Debes iniciar sesión para gestionar tu enlace público.');
-}
-
 async function request<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
   const headers = new Headers(options?.headers);
-
-  headers.set('Authorization', `Bearer ${getToken()}`);
 
   if (options?.body) {
     headers.set('Content-Type', 'application/json');
@@ -63,6 +37,7 @@ async function request<T>(
     {
       ...options,
       headers,
+      credentials: 'include',
     },
   );
 

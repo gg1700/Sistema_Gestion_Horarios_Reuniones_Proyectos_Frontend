@@ -1,14 +1,13 @@
-import { useParams } from 'react-router';
+import { useEffect } from 'react';
 import { FiArrowRight, FiCalendar } from 'react-icons/fi';
 import { VisitorShell } from '../components/features/flows/FlowShell';
 import { PublicProfileView } from '../components/features/profile/PublicProfileView';
 import { PublicProfileUnavailable } from '../components/features/profile/PublicProfileUnavailable';
 import { TextLink } from '../components/features/flows/FlowPrimitives';
-import { ButtonLink } from '../components/ui';
-import { publicProfileSnapshot } from '../mocks/account';
-import { useMockFlow } from '../contexts/MockFlowContext';
+import { Alert, ButtonLink } from '../components/ui';
+import usePublicProfile from '../hooks/usePublicProfile';
+import { toPublicSnapshot } from '../api/publicProfileAdapter';
 import { flowPaths } from '../constants/paths';
-import { publicProfileAvailable } from '../mocks/flow';
 
 /*
 CONTRATO BACKEND PROPUESTO — PERFIL DEL VISITANTE
@@ -26,9 +25,13 @@ omitir repositories/activity aunque sus switches estuvieran activos.
 Mostrar la pantalla de órbita no disponible. El CTA de disponibilidad usa el handle recibido.
 */
 export default function ProfilePublicPage() {
-  const { publicHandle } = useParams();
-  const { state } = useMockFlow();
-  const profile = publicProfileAvailable(state, publicHandle) ? publicProfileSnapshot(state.profile, state.account) : null;
+  const { profile: response, isLoading, error } = usePublicProfile();
+  const profile = response ? toPublicSnapshot(response) : null;
+  useEffect(() => {
+    const previous = document.title;
+    document.title = profile ? `${profile.name} ${profile.firstSurname} | Orbitia` : 'Perfil público | Orbitia';
+    return () => { document.title = previous; };
+  }, [profile?.name, profile?.firstSurname]);
 
-  return <VisitorShell>{profile ? <><PublicProfileView profile={profile} visitor actions={<div className="public-profile-header-action"><ButtonLink to={flowPaths.availability(state.profile.handle)} trailingIcon={<FiArrowRight />}>Consultar disponibilidad</ButtonLink><small>Encuentra un espacio para reunirte.</small></div>} /><div className="public-profile-invitation"><FiCalendar /><div><h3>Hagamos coincidir nuestras órbitas.</h3><p>Consulta los horarios disponibles y envía una solicitud de reunión.</p></div><TextLink to={flowPaths.availability(state.profile.handle)}>Ver disponibilidad</TextLink></div></> : <PublicProfileUnavailable />}</VisitorShell>;
+  return <VisitorShell>{isLoading ? <p role="status">Cargando perfil público…</p> : error ? <Alert tone="danger">{error}</Alert> : profile ? <><PublicProfileView profile={profile} visitor actions={<div className="public-profile-header-action"><ButtonLink to={flowPaths.availability(profile.handle)} trailingIcon={<FiArrowRight />}>Consultar disponibilidad</ButtonLink><small>Encuentra un espacio para reunirte.</small></div>} /><div className="public-profile-invitation"><FiCalendar /><div><h3>Hagamos coincidir nuestras órbitas.</h3><p>Consulta los horarios disponibles y envía una solicitud de reunión.</p></div><TextLink to={flowPaths.availability(profile.handle)}>Ver disponibilidad</TextLink></div></> : <PublicProfileUnavailable />}</VisitorShell>;
 }

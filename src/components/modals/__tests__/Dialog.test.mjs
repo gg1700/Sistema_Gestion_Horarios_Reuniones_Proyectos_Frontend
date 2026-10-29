@@ -141,7 +141,10 @@ test('autorizar Google abre el selector y cancelar solo cierra ese selector', as
   assert.equal(openDialogs().length, 0);
 });
 
-test('autorizar GitHub conserva abierto el selector de repositorios', async () => {
+test('autorizar GitHub conserva abierto el selector de repositorios', async t => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({ success: true, data: { username: 'ana', repositories: [], selectedIds: [], maxSelected: 5, warnings: [] } }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  t.after(() => { globalThis.fetch = previousFetch; });
   await mountPage('/perfil/conexiones?modal=conectar-github');
   await click(button('Continuar con GitHub', openDialogs().at(-1)));
   assert.equal(location(), '/perfil/conexiones?modal=repositorios');

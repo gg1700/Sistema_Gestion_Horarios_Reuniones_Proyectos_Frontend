@@ -4,9 +4,12 @@ import { Avatar } from '../../ui';
 import { useMockFlow } from '../../../contexts/MockFlowContext';
 import { paths } from '../../../constants/paths';
 import type { WorkExperience } from '../../../mocks/account';
+import { useMemberIdentity } from '../../../features/github/MemberIdentityContext';
 
 export function ProfileIdentity() {
   const { state } = useMockFlow();
+  const member = useMemberIdentity();
+  if (member) return member.profile ? <div className="profile-context"><Avatar name={`${member.profile.name} ${member.profile.firstSurname}`} src={member.profile.profilePicture} size="small" /><span>{member.profile.name} {member.profile.firstSurname}</span><small>@{member.profile.handleName}</small></div> : null;
   return <div className="profile-context"><Avatar name={`${state.profile.name} ${state.profile.firstSurname}`} src={state.account.details.image} size="small" />
     <span>{state.profile.name} {state.profile.firstSurname} {state.account.details.secondSurname}</span><small>@{state.profile.handle}</small></div>;
 }
