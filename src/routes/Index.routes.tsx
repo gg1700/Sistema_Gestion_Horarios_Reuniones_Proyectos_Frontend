@@ -21,6 +21,7 @@ import ParticipantPage from "../pages/ParticipantPage";
 import ProfilePage from "../pages/ProfilePage";
 import ProfileSetupPage from "../pages/ProfileSetupPage";
 import VisibilityPage from "../pages/VisibilityPage";
+import VisibilityPreviewPage from "../pages/VisibilityPreviewPage";
 import ConnectionsPage from "../pages/ConnectionsPage";
 import GitHubInfoPage from "../pages/GitHubInfoPage";
 import AccessIssuePage from "../pages/AccessIssuePage";
@@ -74,6 +75,7 @@ function RouterPage() {
       <Route path={paths.publicProfile} element={<ProfilePublicPage />} />
 
       <Route path="/main-menu-preview" element={<MainMenu />} />
+      <Route path="/visibility-flow-preview" element={<VisibilityPreviewPage />} />
       <Route
         path="/repositories-preview"
         element={<RepositoriesPreview />}
