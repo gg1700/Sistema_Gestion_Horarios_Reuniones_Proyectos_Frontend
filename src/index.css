@@ -1,35 +1,33 @@
 
 @import "tailwindcss";
+@import "./styles/tokens.css";
+@import "./styles/fonts.css";
+@import "./styles/shared.css";
+@import "./styles/screens.css";
+@import "./styles/profile-screens.css";
+@import "./styles/calendar-public-screens.css";
 
 @theme {
-  --color-primary: #1E40AF;
-  --color-secondary: #E6E6E6;
-  --color-background: #FFFFFF;
-  --color-modals: #F1F5F9;
-  --color-text: #333333;
-  --color-fields: #666666;
-  --color-sidebar: #1E3A8A;
-  --color-good: #27AE60;
-  --color-danger: #E74C3C;
-  --font-first: 'Inter', sans-serif;
-  --font-second: 'Encode Sans Semi Condensed', sans-serif;
+  --color-primary: var(--ui-mint);
+  --color-secondary: var(--ui-surface-raised);
+  --color-background: var(--ui-bg);
+  --color-modals: var(--ui-surface);
+  --color-text: var(--ui-text);
+  --color-fields: var(--ui-field);
+  --color-sidebar: var(--ui-surface);
+  --color-good: var(--ui-mint);
+  --color-danger: var(--ui-danger);
+  --font-first: var(--ui-font-body);
+  --font-second: var(--ui-font-heading);
 
-  --color-orbita-primary: #10B981;
-  --color-orbita-accent: #4EDEA3;
-  --color-orbita-secondary: #2DD4BF;
-  --color-orbita-background: #101312;
-  --color-orbita-card: #1B1F1D;
-  --color-orbita-surface: #252A27;
-  --color-orbita-modal: #2A2F2C;
-  --color-orbita-outline: #2C312E;
-  --color-orbita-text: #E1E4DF;
-  --color-orbita-muted: #8F968F;
-  --color-orbita-disabled: #6B726D;
-  --color-orbita-on-primary: #00291A;
-  --color-orbita-success: #24372E;
-  --color-orbita-error: #FFB4AB;
-  --color-orbita-error-tint: #3B2422;
-  --color-orbita-error-container: #93000A;
+  --color-orbita-primary: var(--ui-mint);
+  --color-orbita-accent: var(--ui-mint-strong);
+  --color-orbita-background: var(--ui-bg);
+  --color-orbita-card: var(--ui-surface);
+  --color-orbita-surface: var(--ui-surface-raised);
+  --color-orbita-outline: var(--ui-border);
+  --color-orbita-text: var(--ui-text);
+  --color-orbita-muted: var(--ui-muted);
 
   --color-ui-background: #0A1115;
   --color-ui-surface: #111D22;
@@ -61,8 +59,8 @@
   --radius-control: 0.75rem;
   --radius-dialog: 1.5rem;
 
-  --font-heading: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: var(--ui-font-heading);
+  --font-body: var(--ui-font-body);
   --font-code: 'JetBrains Mono', monospace;
 }
 
