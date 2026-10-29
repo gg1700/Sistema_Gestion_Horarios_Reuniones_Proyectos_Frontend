@@ -139,11 +139,6 @@ export default function ConnectionsPage() {
                       <button type="button" className="flow-link connection-unlink" onClick={() => openModal('desconectar-calendar')}>
                         Desconectar Calendar
                       </button>
-                      {google.identityLinked && (
-                        <button type="button" className="flow-link connection-unlink" onClick={() => openModal('desvincular-google')}>
-                          Quitar acceso con Google
-                        </button>
-                      )}
                     </div>
                   </div>
                 </>
@@ -168,11 +163,6 @@ export default function ConnectionsPage() {
                       <button type="button" className="flow-link connection-unlink" onClick={() => openModal('desconectar-calendar')}>
                         Desconectar Calendar
                       </button>
-                      {google.identityLinked && (
-                        <button type="button" className="flow-link connection-unlink" onClick={() => openModal('desvincular-google')}>
-                          Quitar acceso con Google
-                        </button>
-                      )}
                     </div>
                   </div>
                 </>
@@ -197,12 +187,6 @@ export default function ConnectionsPage() {
                     >
                       Conectar Google
                     </Button>
-
-                    {google.identityLinked && (
-                      <button type="button" className="flow-link connection-unlink" onClick={() => openModal('desvincular-google')}>
-                        Quitar acceso con Google
-                      </button>
-                    )}
                   </div>
                 </>
               )}

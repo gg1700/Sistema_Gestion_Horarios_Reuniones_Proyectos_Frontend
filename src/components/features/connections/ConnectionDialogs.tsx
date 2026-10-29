@@ -114,11 +114,20 @@ function DisconnectProvider({ provider, integrationOnly, onClose, onNext, calend
     <ProviderIdentity provider={provider} description={google ? integrationOnly ? 'Google Calendar' : 'Google · identidad y Calendar' : 'GitHub'} />
     {error && <Alert tone="danger">{error}</Alert>}
     <p className="flow-copy">{google ? integrationOnly ? 'Se detendrá la sincronización de tu calendario y sus eventos con Orbitia. Tus eventos se conservan en Google.' : 'Se quitará Google como cuenta de acceso y se detendrá la sincronización de tu calendario. Tus eventos se conservan en Google.' : integrationOnly ? 'Se dejarán de consultar y mostrar tus repositorios y actividad. GitHub continuará disponible como cuenta de acceso.' : 'Orbitia dejará de consultar esta cuenta y de mostrar sus repositorios y actividad en tu perfil público.'}</p>
-    <div className="disconnect-provider-details"><div><span>Para seguir entrando</span><strong>{integrationOnly ? `${google ? 'Google' : 'GitHub'} · cuenta vinculada` : google ? 'GitHub · @mateosilva' : `Google · ${state.profile.email}`}</strong></div><div><span>{google ? 'Calendario en Orbitia' : 'Información personalizada'}</span><strong>{google ? 'Sin sincronización hasta volver a conectar' : 'Se conserva en tu perfil'}</strong></div></div>
+    <div className="disconnect-provider-details">
+      <div>
+        <span>{google && integrationOnly ? 'Tu cuenta de Orbitia' : 'Para seguir entrando'}</span>
+        <strong>{google && integrationOnly ? 'Tu sesión y métodos de acceso se conservan' : integrationOnly ? 'GitHub · cuenta vinculada' : google ? 'GitHub · @mateosilva' : `Google · ${state.profile.email}`}</strong>
+      </div>
+      <div>
+        <span>{google ? 'Calendario en Orbitia' : 'Información personalizada'}</span>
+        <strong>{google ? 'Sin sincronización hasta volver a conectar' : 'Se conserva en tu perfil'}</strong>
+      </div>
+    </div>
     {blocked && <Alert tone="warning">Es tu única cuenta de acceso. Vincula {google ? 'GitHub' : 'Google'} antes de desvincularla.<Button variant="ghost" size="small" onClick={() => onNext(google ? 'conectar-github' : 'conectar-google')}>Vincular otra cuenta</Button></Alert>}
     <p className="flow-note"><FiShield />{integrationOnly ? 'Tu cuenta de Orbitia seguirá disponible. Puedes conectar este servicio de nuevo cuando lo necesites.' : 'Desvincular la cuenta es distinto de detener solo la sincronización.'}</p>
     {!integrationOnly && <button type="button" className="flow-link disconnect-provider-alternative" onClick={() => onNext(google ? 'desconectar-calendar' : 'desconectar-datos-github')}>{google ? 'Solo detener Calendar' : 'Solo detener los datos de GitHub'}<FiArrowRight /></button>}
-    {integrationOnly && <button type="button" className="flow-link disconnect-provider-alternative" onClick={() => onNext(google ? 'desvincular-google' : 'desvincular-github')}>Quitar también la cuenta de acceso <FiArrowRight /></button>}
+    {integrationOnly && !google && <button type="button" className="flow-link disconnect-provider-alternative" onClick={() => onNext('desvincular-github')}>Quitar también la cuenta de acceso <FiArrowRight /></button>}
   </Dialog>;
 }
 
