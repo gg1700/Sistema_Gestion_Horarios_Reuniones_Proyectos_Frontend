@@ -1,15 +1,15 @@
 import type { ComponentProps, ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
+type ActionButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
 
-interface ButtonProps extends ComponentProps<'button'> {
-  variant?: ButtonVariant;
+interface ActionButtonProps extends ComponentProps<'button'> {
+  variant?: ActionButtonVariant;
   isFullWidth?: boolean;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
 }
 
-const variantClassNames: Record<ButtonVariant, string> = {
+const variantClassNames: Record<ActionButtonVariant, string> = {
   primary: 'min-h-[3.25rem] rounded-control bg-ui-mint px-5 font-semibold text-ui-ink hover:bg-ui-mint-strong',
   secondary:
     'min-h-[3.25rem] rounded-control border border-ui-field-border bg-ui-surface px-5 font-semibold text-ui-text hover:border-ui-soft',
@@ -19,7 +19,7 @@ const variantClassNames: Record<ButtonVariant, string> = {
   link: 'min-h-8 text-[11px] text-[#A3E6BE] hover:text-[#DEFFEB]',
 };
 
-function Button({
+function ActionButton({
   variant = 'primary',
   isFullWidth = false,
   leftIcon,
@@ -28,7 +28,7 @@ function Button({
   className = '',
   children,
   ...buttonProps
-}: ButtonProps) {
+}: ActionButtonProps) {
   return (
     <button
       type={type}
@@ -44,4 +44,4 @@ function Button({
   );
 }
 
-export default Button;
+export default ActionButton;

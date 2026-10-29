@@ -3,7 +3,7 @@ import Modal from './Modal';
 import ModalHeader from './ModalHeader';
 import TextField from '../ui/TextField';
 import DateField from '../ui/DateField';
-import Button from '../ui/Button';
+import ActionButton from '../ui/ActionButton';
 import { descriptionMaximumLength } from '../../constants/profile';
 import { fieldBoxClassName, getFieldBorderClassName } from '../../utils/fieldClassNames';
 import type useWorkExperienceForm from '../../hooks/useWorkExperienceForm';
@@ -107,12 +107,12 @@ function WorkExperienceEditorModal({ form }: WorkExperienceEditorModalProps) {
       </div>
 
       <footer className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-ui-border px-5 py-[18px] sm:px-8">
-        <Button variant="secondary" onClick={form.closeEditor}>
+        <ActionButton variant="secondary" onClick={form.closeEditor}>
           Cancelar
-        </Button>
-        <Button onClick={form.saveWorkExperience} leftIcon={<FiCheck />}>
+        </ActionButton>
+        <ActionButton onClick={form.saveWorkExperience} leftIcon={<FiCheck />}>
           {isEditing ? 'Guardar cambios' : 'Guardar experiencia'}
-        </Button>
+        </ActionButton>
       </footer>
     </Modal>
   );

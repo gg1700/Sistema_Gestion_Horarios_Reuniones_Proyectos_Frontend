@@ -1,5 +1,5 @@
 import { FiEye, FiPlus, FiTrash2 } from 'react-icons/fi';
-import Button from '../../ui/Button';
+import ActionButton from '../../ui/ActionButton';
 import IconButton from '../../ui/IconButton';
 import VisibilityToggle from '../../ui/VisibilityToggle';
 import { maximumLinks } from '../../../constants/profile';
@@ -91,9 +91,9 @@ function LinksEditor({ links, errors = {}, canAddLink, onAdd, onUpdate, onRemove
       })}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant="link" onClick={onAdd} disabled={!canAddLink} leftIcon={<FiPlus />}>
+        <ActionButton variant="link" onClick={onAdd} disabled={!canAddLink} leftIcon={<FiPlus />}>
           {canAddLink ? 'Agregar enlace' : 'Llegaste al máximo de enlaces'}
-        </Button>
+        </ActionButton>
         <span className="flex items-center gap-1.5 text-[9px] text-ui-moss">
           <FiEye aria-hidden="true" />
           Usa el ojo para mostrar u ocultar cada enlace en tu perfil.

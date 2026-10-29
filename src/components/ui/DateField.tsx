@@ -8,7 +8,7 @@ import {
   getTodayIsoDate,
   parseIsoDate,
   weekDayNames,
-} from '../../utils/calendar';
+} from '../../utils/calendarGrid';
 
 interface DateFieldProps {
   label: string;

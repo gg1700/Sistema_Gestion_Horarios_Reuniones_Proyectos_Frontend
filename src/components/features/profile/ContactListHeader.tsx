@@ -1,5 +1,5 @@
 import { FiPlus } from 'react-icons/fi';
-import Button from '../../ui/Button';
+import ActionButton from '../../ui/ActionButton';
 
 interface ContactListHeaderProps {
   label: string;
@@ -12,9 +12,9 @@ function ContactListHeader({ label, canAdd, onAdd }: ContactListHeaderProps) {
     <div className="flex min-h-8 items-center justify-between gap-3">
       <span className="text-xs font-medium text-ui-text">{label}</span>
       {canAdd && (
-        <Button variant="link" onClick={onAdd} leftIcon={<FiPlus />} className="text-[10px]">
+        <ActionButton variant="link" onClick={onAdd} leftIcon={<FiPlus />} className="text-[10px]">
           Agregar
-        </Button>
+        </ActionButton>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
-import Button from './Button';
+import ActionButton from './ActionButton';
 
 interface ModalFooterProps {
   skipLabel: string;
@@ -15,17 +15,17 @@ function ModalFooter({ skipLabel, confirmLabel, onSkip, onConfirm, onBack, isLoa
     <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-ui-border px-5 py-[18px] sm:px-8">
       <div className="flex items-center gap-5">
         {onBack && (
-          <Button variant="ghost" onClick={onBack} disabled={isLoading} leftIcon={<FiArrowLeft />}>
+          <ActionButton variant="ghost" onClick={onBack} disabled={isLoading} leftIcon={<FiArrowLeft />}>
             Atrás
-          </Button>
+          </ActionButton>
         )}
-        <Button variant="ghost" onClick={onSkip} disabled={isLoading}>
+        <ActionButton variant="ghost" onClick={onSkip} disabled={isLoading}>
           {skipLabel}
-        </Button>
+        </ActionButton>
       </div>
-      <Button onClick={onConfirm} disabled={isLoading} rightIcon={isLoading ? undefined : <FiArrowRight />}>
+      <ActionButton onClick={onConfirm} disabled={isLoading} rightIcon={isLoading ? undefined : <FiArrowRight />}>
         {isLoading ? 'Guardando...' : confirmLabel}
-      </Button>
+      </ActionButton>
     </footer>
   );
 }
