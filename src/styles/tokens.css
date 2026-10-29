@@ -1,0 +1,35 @@
+:root {
+  color-scheme: dark;
+  --ui-bg: #0a1115;
+  --ui-surface: #111d22;
+  --ui-surface-raised: #17292a;
+  --ui-field: #111c21;
+  --ui-field-border: #2b3d42;
+  --ui-border: #263a3d;
+  --ui-mint: #a3f5ce;
+  --ui-mint-strong: #88f0c3;
+  --ui-text: #edf4f0;
+  --ui-muted: #9aafa9;
+  --ui-soft: #6f8881;
+  --ui-ink: #0b3023;
+  --ui-danger: #e9aa97;
+  --ui-warning: #ddc590;
+  --ui-info: #a5cfe0;
+  --ui-font-body: 'Inter', 'Segoe UI', Arial, sans-serif;
+  --ui-font-heading: 'Space Grotesk', 'Inter', 'Segoe UI', sans-serif;
+  --ui-space-1: 0.25rem;
+  --ui-space-2: 0.5rem;
+  --ui-space-3: 0.75rem;
+  --ui-space-4: 1rem;
+  --ui-space-5: 1.5rem;
+  --ui-space-6: 2rem;
+  --ui-space-7: 3rem;
+  --ui-space-8: 4rem;
+  --ui-radius-control: 0.75rem;
+  --ui-radius-dialog: 1.5rem;
+  --ui-control-height: 3.25rem;
+  --ui-content-width: 82rem;
+  --ui-gutter: clamp(1rem, 4.4vw, 4rem);
+  --ui-header-height: 6rem;
+  --ui-shadow-overlay: 0 2rem 5.5rem #0008;
+}
