@@ -1,33 +1,36 @@
-import { Routes, Route, Navigate } from "react-router";
-import { paths } from "../constants/paths";
+import { Routes, Route, Navigate } from 'react-router';
+import { paths } from '../constants/paths';
+import { routePaths } from '../constants/routes';
 
-import MainMenu from "../pages/MainMenu";
-import RepositoriesPreview from "../pages/RepositoriesPreview";
-import RepositorySelectionPreview from "../pages/RepositorySelectionPreview";
-import ProfileVisibilitySettings from "../pages/ProfileVisibilitySettings";
-import ProfilePreview from "../pages/ProfilePreview";
-import PublicProfilePage from "../pages/PublicProfilePage";
-import PublicLinkPage from "../pages/PublicLinkPage";
+import MainMenu from '../pages/MainMenu';
+import RepositoriesPreview from '../pages/RepositoriesPreview';
+import RepositorySelectionPreview from '../pages/RepositorySelectionPreview';
+import ProfileVisibilitySettings from '../pages/ProfileVisibilitySettings';
+import ProfilePreview from '../pages/ProfilePreview';
+import PublicProfilePage from '../pages/PublicProfilePage';
+import PublicLinkPage from '../pages/PublicLinkPage';
 
-import LandingPage from "../pages/LandingPage";
-import AccessPage from "../pages/AccessPage";
-import WelcomePage from "../pages/WelcomePage";
-import DashboardPage from "../pages/DashboardPage";
-import AgendaPage from "../pages/AgendaPage";
-import AvailabilityPage from "../pages/AvailabilityPage";
-import RequestsPage from "../pages/RequestsPage";
-import ChangeResultPage from "../pages/ChangeResultPage";
-import ParticipantPage from "../pages/ParticipantPage";
-import ProfilePage from "../pages/ProfilePage";
-import ProfileSetupPage from "../pages/ProfileSetupPage";
-import VisibilityPage from "../pages/VisibilityPage";
-import VisibilityPreviewPage from "../pages/VisibilityPreviewPage";
-import ConnectionsPage from "../pages/ConnectionsPage";
-import GitHubInfoPage from "../pages/GitHubInfoPage";
-import AccessIssuePage from "../pages/AccessIssuePage";
-import ProfilePublicPage from "../pages/ProfilePublicPage";
-import ProfileLinkPage from "../pages/ProfileLinkPage";
-import ProfileOriginsPage from "../pages/ProfileOriginsPage";
+import LandingPage from '../pages/LandingPage';
+import AccessPage from '../pages/AccessPage';
+import WelcomePage from '../pages/WelcomePage';
+import DashboardPage from '../pages/DashboardPage';
+import AgendaPage from '../pages/AgendaPage';
+import AvailabilityPage from '../pages/AvailabilityPage';
+import RequestsPage from '../pages/RequestsPage';
+import ChangeResultPage from '../pages/ChangeResultPage';
+import ParticipantPage from '../pages/ParticipantPage';
+import ProfilePage from '../pages/ProfilePage';
+import ProfileSetupPage from '../pages/ProfileSetupPage';
+import VisibilityPage from '../pages/VisibilityPage';
+import VisibilityPreviewPage from '../pages/VisibilityPreviewPage';
+import ConnectionsPage from '../pages/ConnectionsPage';
+import GitHubInfoPage from '../pages/GitHubInfoPage';
+import AccessIssuePage from '../pages/AccessIssuePage';
+import ProfilePublicPage from '../pages/ProfilePublicPage';
+import ProfileLinkPage from '../pages/ProfileLinkPage';
+import ProfileOriginsPage from '../pages/ProfileOriginsPage';
+import RegisterPage from '../pages/RegisterPage';
+import CompleteProfilePage from '../pages/CompleteProfilePage';
 
 /*
 INTEGRACIÓN DE PROTECCIÓN DE RUTAS — COMENTARIO, NO AUTENTICACIÓN IMPLEMENTADA
@@ -51,6 +54,8 @@ function RouterPage() {
       <Route path={paths.home} element={<LandingPage />} />
       <Route path={paths.access} element={<AccessPage />} />
       <Route path={paths.accessIssue} element={<AccessIssuePage />} />
+      <Route path={routePaths.register} element={<RegisterPage />} />
+      <Route path={routePaths.completeProfile} element={<CompleteProfilePage />} />
 
       <Route path={paths.welcome} element={<WelcomePage />} />
       <Route path={paths.dashboard} element={<DashboardPage />} />
