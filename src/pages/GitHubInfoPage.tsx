@@ -28,7 +28,10 @@ Errores: 401 sin sesión; 409 GITHUB_NOT_CONNECTED -> mostrar la vista desconect
 botón Conectar; 502 proveedor no disponible -> conservar últimos datos y permitir reintento.
 Estos datos siguen siendo privados hasta que el usuario active su visibilidad.
 */
-export default function GitHubInfoPage() {
+export { default } from '../features/github/GithubRepositoriesPage';
+
+// Pantalla de demostración conservada; la ruta real usa el servicio de repositorios.
+export function DemoGitHubInfoPage() {
   const { state, dispatch } = useMockFlow();
   const { notify } = useUI();
   const [query, setQuery] = useSearchParams();

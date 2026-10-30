@@ -11,8 +11,9 @@ import { Alert, Button, ProviderIcon, SectionHeading } from '../components/ui';
 import { useMockFlow } from '../contexts/MockFlowContext';
 import { paths } from '../constants/paths';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
+import { GithubConnectionPanel } from '../features/github/GithubConnectionPanel';
 
-export default function ConnectionsPage() {
+function ConnectionsContent({ legacy = false }: { legacy?: boolean }) {
   const { state } = useMockFlow();
   const [query, setQuery] = useSearchParams();
   const { github } = state.account;
@@ -193,6 +194,7 @@ export default function ConnectionsPage() {
             </div>
           </article>
 
+          {legacy ? (
           <article className="connection-provider">
             <ProviderIcon provider="github" />
             <div>
@@ -261,6 +263,9 @@ export default function ConnectionsPage() {
               )}
             </div>
           </article>
+          ) : (
+            <GithubConnectionPanel />
+          )}
 
           <p className="flow-note">
             <FiShield />Puedes conectar, volver a autorizar o desvincular cada servicio desde aquí.
@@ -287,4 +292,13 @@ export default function ConnectionsPage() {
       />
     </MemberShell>
   );
+}
+
+export default function ConnectionsPage() {
+  return <ConnectionsContent />;
+}
+
+// Compatibilidad con las pruebas y pantallas de demostración existentes.
+export function DemoConnectionsPage() {
+  return <ConnectionsContent legacy />;
 }

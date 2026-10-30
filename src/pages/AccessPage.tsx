@@ -8,6 +8,7 @@ import { Dialog } from '../components/modals';
 import { Alert, Button, Input, ProviderIcon } from '../components/ui';
 import { useMockFlow } from '../contexts/MockFlowContext';
 import { paths } from '../constants/paths';
+import { apiBase } from '../features/github/api';
 
 export default function AccessPage() {
   const { state, dispatch } = useMockFlow();
@@ -22,27 +23,23 @@ export default function AccessPage() {
 
   useEffect(() => {
     const calendarOAuth = query.get('calendar_oauth');
-    if (!calendarOAuth) return;
-
-    navigate(
-      `${paths.connections}?calendar_oauth=${encodeURIComponent(calendarOAuth)}`,
-      { replace: true }
-    );
-  }, [query, navigate]);
-
-  function enter(provider: 'google' | 'github') {
-    if (state.profileCompleted) {
-      if (!state.account[provider].identityLinked) {
-        navigate(paths.accessIssue);
-        return;
-      }
-
-      navigate(paths.dashboard);
+    if (calendarOAuth) {
+      navigate(
+        `${paths.connections}?calendar_oauth=${encodeURIComponent(calendarOAuth)}`,
+        { replace: true }
+      );
       return;
     }
 
-    setError('');
-    setQuery({ completar: provider });
+    if (query.get('oauth') === 'success') {
+      navigate(paths.githubInfo, { replace: true });
+    } else if (query.has('oauth')) {
+      setError('No se completó el acceso. Vuelve a autorizar tu cuenta.');
+    }
+  }, [query, navigate]);
+
+  function enter(provider: 'google' | 'github') {
+    window.location.assign(`${apiBase}/api/v1/auth/${provider}?intent=login`);
   }
 
   function complete(event: FormEvent<HTMLFormElement>) {
@@ -102,6 +99,7 @@ export default function AccessPage() {
             Si es tu primera vez, crearás tu perfil en el siguiente paso.
           </p>
 
+          {error && !completing && <Alert tone="danger">{error}</Alert>}
           <div className="access-providers">
             {(['google', 'github'] as const).map(provider => (
               <button

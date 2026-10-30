@@ -22,7 +22,10 @@ permitida. [] limpia la selección. Esto no publica: publicación depende de Vis
 Errores: 401 sin sesión; 409 GITHUB_NOT_CONNECTED -> autorizar; 422 id ajeno, repetido
 o más de cinco. Mantener selección y mostrar error. Guardar solo tras confirmar respuesta.
 */
-export function RepositorySelection({ onClose }: { onClose: () => void }) {
+export { RemoteRepositorySelection as RepositorySelection } from '../../../features/github/RepositoryPicker';
+
+// Maqueta original conservada como referencia visual del equipo.
+export function DemoRepositorySelection({ onClose }: { onClose: () => void }) {
   const { state, dispatch } = useMockFlow();
   const [selected, setSelected] = useState([...state.account.github.selectedRepositories]);
   const [search, setSearch] = useState('');

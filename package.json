@@ -4,6 +4,7 @@
   "description": "Frontend del Sistema de Gestión de Horarios, Reuniones y Proyectos",
   "type": "module",
   "scripts": {
+    "test:github": "node --experimental-strip-types --test src/features/github/__tests__/*.test.mjs",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
