@@ -30,4 +30,12 @@ export type PublicProfile = {
     url: string;
   }[];
   githubActivity?: string[];
+  
+  githubActivityList?: {
+  activity: string;
+  }[];
+
+  githubActivityGrid?: {
+  activity: string;
+  }[];
 };
