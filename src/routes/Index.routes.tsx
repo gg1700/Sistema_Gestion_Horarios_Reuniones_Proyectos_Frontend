@@ -18,6 +18,8 @@ import AccessIssuePage from '../pages/AccessIssuePage';
 import ProfilePublicPage from '../pages/ProfilePublicPage';
 import ProfileLinkPage from '../pages/ProfileLinkPage';
 import ProfileOriginsPage from '../pages/ProfileOriginsPage';
+import RegisterPage from '../pages/RegisterPage';
+import { routePaths } from '../constants/routes';
 
 /*
 INTEGRACIÓN DE PROTECCIÓN DE RUTAS — COMENTARIO, NO AUTENTICACIÓN IMPLEMENTADA
@@ -40,6 +42,7 @@ function RouterPage() {
       <Route path={paths.home} element={<LandingPage />} />
       <Route path={paths.access} element={<AccessPage />} />
       <Route path={paths.accessIssue} element={<AccessIssuePage />} />
+      <Route path={routePaths.register} element={<RegisterPage />} />
 
       <Route path={paths.welcome} element={<WelcomePage />} />
       <Route path={paths.dashboard} element={<DashboardPage />} />

@@ -29,9 +29,44 @@
   --color-orbita-text: var(--ui-text);
   --color-orbita-muted: var(--ui-muted);
 
+  --color-ui-background: #0A1115;
+  --color-ui-surface: #111D22;
+  --color-ui-raised: #17292A;
+  --color-ui-dialog: #122328;
+  --color-ui-dialog-border: #3B5550;
+  --color-ui-field: #111C21;
+  --color-ui-field-border: #2B3D42;
+  --color-ui-border: #263A3D;
+  --color-ui-divider: #2A4235;
+  --color-ui-panel: #142720;
+  --color-ui-panel-border: #385348;
+  --color-ui-mint: #A3F5CE;
+  --color-ui-mint-strong: #88F0C3;
+  --color-ui-ink: #0B3023;
+  --color-ui-text: #EDF4F0;
+  --color-ui-sage: #C9E1D1;
+  --color-ui-muted: #9AAFA9;
+  --color-ui-leaf: #86AA92;
+  --color-ui-moss: #739B81;
+  --color-ui-soft: #6F8881;
+  --color-ui-danger: #E9AA97;
+  --color-ui-danger-tint: #2B1D1A;
+
+  --radius-control: 0.75rem;
+  --radius-dialog: 1.5rem;
+
   --font-heading: var(--ui-font-heading);
   --font-body: var(--ui-font-body);
   --font-code: 'JetBrains Mono', monospace;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-ui-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-ui-field) inset;
+  caret-color: var(--color-ui-text);
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 .orbita-scrollbar {
