@@ -5,10 +5,14 @@ import { ProfileTabs, WorkTimeline } from '../components/features/profile/Profil
 import { Alert, Avatar, Button, OrbitalGraphic, ProviderIcon, SectionHeading } from '../components/ui';
 import { useMemberIdentity } from '../features/github/MemberIdentityContext';
 import { paths } from '../constants/paths';
+import { useState } from 'react';
+import { EditProfileDialog } from '../components/features/profile/EditProfileDialog';
 
 export default function ProfilePage() {
   const member = useMemberIdentity();
   const profile = member?.profile;
+  const [editing, setEditing] = useState(false);
+
   if (!member) return <Alert tone="warning">No se pudo consultar tu perfil.</Alert>;
   if (!profile) return <MemberShell />;
 
@@ -21,7 +25,7 @@ export default function ProfilePage() {
   return <MemberShell>
     <SectionHeading title="Mi perfil" eyebrow="MI CUENTA" accentPeriod actions={<>
       <span className="profile-private-indicator"><FiLock />Vista privada</span>
-      <Button variant="secondary" size="small" disabled title={editingUnavailable}>Editar información</Button>
+      <Button variant="secondary" size="small" onClick={() => setEditing(true)}>Editar información</Button>
     </>} />
     <div className="profile-hero">
       <Avatar name={fullName || profile.handleName} src={profile.profilePicture} size="large" />
@@ -55,5 +59,11 @@ export default function ProfilePage() {
       </aside>
     </div>
     <div className="profile-connections-entry"><ProviderIcon provider="google" /><ProviderIcon provider="github" /><div><h3>Conecta tus herramientas a tu perfil.</h3><p>Gestiona Google Calendar y GitHub desde Conexiones.</p></div><TextLink to={paths.connections}>Ir a conexiones</TextLink></div>
+    {editing && (
+      <EditProfileDialog
+        profile={profile}
+        onClose={() => setEditing(false)}
+      />
+    )}
   </MemberShell>;
 }

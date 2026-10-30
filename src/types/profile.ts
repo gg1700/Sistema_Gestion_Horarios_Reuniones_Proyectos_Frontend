@@ -72,3 +72,56 @@ export interface CreateAdditionalInfoResponse {
   success: boolean;
   message: string;
 }
+
+export interface UpdateProfileSurname {
+  surname: string;
+  visibility: boolean;
+}
+
+export interface UpdateProfilePhone {
+  id: string;
+  phoneNumber: string;
+  countryCode: string;
+  visibility: boolean;
+}
+
+export interface UpdateProfileContactEmail {
+  id: string;
+  email: string;
+  visibility: boolean;
+}
+
+export interface UpdateProfileAddress {
+  id: string;
+  address: string;
+  visibility: boolean;
+}
+
+export interface UpdateProfileLink {
+  id: string;
+  text: string;
+  url: string;
+  visibility: boolean;
+}
+
+export interface UpdateProfileCountry {
+  id: string;
+  countryName: string;
+  visibility: boolean;
+}
+
+export interface UpdateProfilePayload {
+  name?: string;
+  firstSurname?: string;
+  surname?: UpdateProfileSurname;
+  phones?: UpdateProfilePhone[];
+  contactEmails?: UpdateProfileContactEmail[];
+  addresses?: UpdateProfileAddress[];
+  links?: UpdateProfileLink[];
+  countries?: UpdateProfileCountry[];
+}
+
+export interface UpdateProfileResponse {
+  success: boolean;
+  message: string;
+}
