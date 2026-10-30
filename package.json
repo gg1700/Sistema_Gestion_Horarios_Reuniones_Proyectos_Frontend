@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "node --experimental-strip-types --test src/mocks/__tests__/*.test.mjs src/components/modals/__tests__/*.test.mjs",
-    "test:ui": "node --experimental-strip-types --test src/components/modals/__tests__/*.test.mjs"
+    "test": "node --experimental-strip-types --test src/mocks/__tests__/*.test.mjs src/components/modals/__tests__/*.test.mjs tests/*.test.mjs",
+    "test:ui": "node --experimental-strip-types --test src/components/modals/__tests__/*.test.mjs",
+    "test:visibility": "node --experimental-strip-types --test tests/visibility.test.mjs"
   },
   "repository": {
     "type": "git",

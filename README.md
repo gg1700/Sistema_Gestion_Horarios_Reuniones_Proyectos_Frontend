@@ -39,6 +39,17 @@ src/
 └── utils/
 ```
 
+## Integración de visibilidad (T-17)
+
+- `/perfil/visibilidad` consulta `GET /api/v1/profile` y `GET /api/v1/profile/visibility`.
+- Guarda únicamente los elementos modificados mediante `PATCH /api/v1/profile/visibility`, con `{ changes: [{ type, id, visible }] }`.
+- `api/visibilityApi.ts` gestiona HTTP, `hooks/useVisibilitySettings.ts` el estado y `types/visibility.ts` el contrato. Las rutas antiguas de demostración conservan sus mocks.
+- Configurar `VITE_API_URL` con el origen del backend (por defecto `http://localhost:3000`). Las peticiones incluyen la cookie de sesión; el origen del frontend debe coincidir con el permitido por CORS en el backend. El acceso simulado no crea esa sesión.
+- El backend necesita las tablas que consulta T-15, incluidas `repository`, `github_activity_list` y `github_activity_grid`. Un error del backend se presenta en pantalla; no se reemplaza por datos ficticios.
+- La vista previa de T-18 consulta `GET /api/v1/profile/preview` y muestra la configuración guardada usando el filtro público de T-16. La versión anterior simulada se conserva en `/visibility-flow-preview`.
+- Los registros de repositorio de T-15 incluyen `name`, tomado de la copia guardada en la base de datos. Se muestra en la pantalla de visibilidad y el PATCH envía únicamente `type`, `id` y `visible`. La cabecera global y el menú de cuenta todavía pertenecen al flujo simulado compartido.
+- Ejecutar `npm run test:visibility` para verificar el contrato HTTP y la selección de cambios.
+
 ## Base visual compartida
 
 - `styles/tokens.css`: paleta oscura, tipografías, espaciado, radios y tamaños comunes.

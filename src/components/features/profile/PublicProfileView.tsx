@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import { FiArrowRight, FiExternalLink, FiMapPin, FiServer, FiStar } from 'react-icons/fi';
 import { Avatar, OrbitalGraphic } from '../../ui';
 import { WorkTimeline } from './ProfileParts';
-import { publicProfileSnapshot } from '../../../mocks/account';
+import type { PublicProfileViewData } from '../../../types/publicProfile';
 
-export type PublicSnapshot = NonNullable<ReturnType<typeof publicProfileSnapshot>>;
+export type PublicSnapshot = PublicProfileViewData;
 
 // Recibe solo la información permitida para el visitante, sin el estado privado.
 export function PublicProfileView({ profile, visitor = false, actions }: { profile: PublicSnapshot; visitor?: boolean; actions?: ReactNode }) {
