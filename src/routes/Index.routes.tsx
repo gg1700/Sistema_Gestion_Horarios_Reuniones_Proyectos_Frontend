@@ -2,10 +2,6 @@ import { Routes, Route, Navigate } from 'react-router';
 import { paths } from '../constants/paths';
 import { routePaths } from '../constants/routes';
 
-import MainMenu from '../pages/MainMenu';
-import RepositoriesPreview from '../pages/RepositoriesPreview';
-import RepositorySelectionPreview from '../pages/RepositorySelectionPreview';
-import ProfileVisibilitySettings from '../pages/ProfileVisibilitySettings';
 import ProfilePreview from '../pages/ProfilePreview';
 import PublicProfilePage from '../pages/PublicProfilePage';
 import PublicLinkPage from '../pages/PublicLinkPage';
@@ -55,7 +51,10 @@ function RouterPage() {
       <Route path={paths.access} element={<AccessPage />} />
       <Route path={paths.accessIssue} element={<AccessIssuePage />} />
       <Route path={routePaths.register} element={<RegisterPage />} />
-      <Route path={routePaths.completeProfile} element={<CompleteProfilePage />} />
+      <Route
+        path={routePaths.completeProfile}
+        element={<CompleteProfilePage />}
+      />
 
       <Route path={paths.welcome} element={<WelcomePage />} />
       <Route path={paths.dashboard} element={<DashboardPage />} />
@@ -79,28 +78,24 @@ function RouterPage() {
       <Route path={paths.participant} element={<ParticipantPage />} />
       <Route path={paths.publicProfile} element={<ProfilePublicPage />} />
 
-      <Route path="/main-menu-preview" element={<MainMenu />} />
-      <Route path="/visibility-flow-preview" element={<VisibilityPreviewPage />} />
       <Route
-        path="/repositories-preview"
-        element={<RepositoriesPreview />}
+        path="/visibility-flow-preview"
+        element={<VisibilityPreviewPage />}
       />
-      <Route
-        path="/repository-selection-preview"
-        element={<RepositorySelectionPreview />}
-      />
+
+      {/* Compatibilidad con los enlaces de la vista previa conservada. */}
       <Route
         path="/profile-visibility"
-        element={<ProfileVisibilitySettings />}
+        element={<Navigate to={paths.visibility} replace />}
       />
-      <Route
-        path="/profile-preview"
-        element={<ProfilePreview />}
-      />
+
+      <Route path="/profile-preview" element={<ProfilePreview />} />
+
       <Route
         path="/legacy-public-profile/:publicHandle"
         element={<PublicProfilePage />}
       />
+
       <Route
         path="/perfil/enlace-publico"
         element={<PublicLinkPage />}
