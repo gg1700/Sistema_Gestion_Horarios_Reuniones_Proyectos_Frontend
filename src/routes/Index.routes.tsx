@@ -1,5 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router';
 import { paths } from '../constants/paths';
+import { routePaths } from '../constants/routes';
+
+import ProfilePreview from '../pages/ProfilePreview';
+import PublicProfilePage from '../pages/PublicProfilePage';
+import PublicLinkPage from '../pages/PublicLinkPage';
+
 import LandingPage from '../pages/LandingPage';
 import AccessPage from '../pages/AccessPage';
 import WelcomePage from '../pages/WelcomePage';
@@ -12,12 +18,15 @@ import ParticipantPage from '../pages/ParticipantPage';
 import ProfilePage from '../pages/ProfilePage';
 import ProfileSetupPage from '../pages/ProfileSetupPage';
 import VisibilityPage from '../pages/VisibilityPage';
+import VisibilityPreviewPage from '../pages/VisibilityPreviewPage';
 import ConnectionsPage from '../pages/ConnectionsPage';
 import GitHubInfoPage from '../pages/GitHubInfoPage';
 import AccessIssuePage from '../pages/AccessIssuePage';
 import ProfilePublicPage from '../pages/ProfilePublicPage';
 import ProfileLinkPage from '../pages/ProfileLinkPage';
 import ProfileOriginsPage from '../pages/ProfileOriginsPage';
+import RegisterPage from '../pages/RegisterPage';
+import CompleteProfilePage from '../pages/CompleteProfilePage';
 
 /*
 INTEGRACIÓN DE PROTECCIÓN DE RUTAS — COMENTARIO, NO AUTENTICACIÓN IMPLEMENTADA
@@ -34,12 +43,18 @@ Landing/acceso/perfil público/disponibilidad admiten visitantes. /reuniones/:to
 protege por la invitación concreta (ParticipantPage.tsx), sin exigir la sesión del dueño.
 Estos guards se conectarán al integrar backend; las rutas mock siguen abiertas para revisión.
 */
+
 function RouterPage() {
   return (
     <Routes>
       <Route path={paths.home} element={<LandingPage />} />
       <Route path={paths.access} element={<AccessPage />} />
       <Route path={paths.accessIssue} element={<AccessIssuePage />} />
+      <Route path={routePaths.register} element={<RegisterPage />} />
+      <Route
+        path={routePaths.completeProfile}
+        element={<CompleteProfilePage />}
+      />
 
       <Route path={paths.welcome} element={<WelcomePage />} />
       <Route path={paths.dashboard} element={<DashboardPage />} />
@@ -58,9 +73,34 @@ function RouterPage() {
       <Route path={paths.connections} element={<ConnectionsPage />} />
       <Route path={paths.githubInfo} element={<GitHubInfoPage />} />
       <Route path={paths.availability} element={<AvailabilityPage />} />
+
       {/* El acceso de participante se protege por invitación, no por sesión del dueño. */}
       <Route path={paths.participant} element={<ParticipantPage />} />
       <Route path={paths.publicProfile} element={<ProfilePublicPage />} />
+
+      <Route
+        path="/visibility-flow-preview"
+        element={<VisibilityPreviewPage />}
+      />
+
+      {/* Compatibilidad con los enlaces de la vista previa conservada. */}
+      <Route
+        path="/profile-visibility"
+        element={<Navigate to={paths.visibility} replace />}
+      />
+
+      <Route path="/profile-preview" element={<ProfilePreview />} />
+
+      <Route
+        path="/legacy-public-profile/:publicHandle"
+        element={<PublicProfilePage />}
+      />
+
+      <Route
+        path="/perfil/enlace-publico"
+        element={<PublicLinkPage />}
+      />
+
       <Route path="*" element={<Navigate to={paths.home} replace />} />
     </Routes>
   );
