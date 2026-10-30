@@ -9,7 +9,7 @@ import type { NavigationItem } from '../../../types/ui';
 import { Navigate, useLocation, useParams } from 'react-router';
 import { publicProfilePath } from '../../../constants/paths';
 import { useMemberIdentity } from '../../../features/github/MemberIdentityContext';
-import { Alert, ButtonLink } from '../../ui';
+import { Alert, Button, ButtonLink } from '../../ui';
 
 const privateNavigation: NavigationItem[] = [
   { to: paths.dashboard, label: 'Inicio' }, { to: paths.agenda, label: 'Agenda' },
@@ -24,7 +24,7 @@ export function MemberShell({ children }: PropsWithChildren) {
   const [accountOpen, setAccountOpen] = useState(false);
   const closeAccount = useCallback(() => setAccountOpen(false), []);
   if (member?.loading) return <p role="status">Consultando tu sesión…</p>;
-  if (member && !member.profile) return <div className="flow-surface"><Alert tone="warning">{member.error || 'Inicia sesión para continuar.'}</Alert><ButtonLink to={paths.access}>Iniciar sesión</ButtonLink></div>;
+  if (member && !member.profile) return <div className="flow-surface"><Alert tone="warning">{member.error || 'Inicia sesión para continuar.'}</Alert><Button variant="secondary" onClick={member.retry}>Reintentar</Button><ButtonLink to={paths.access}>Iniciar sesión</ButtonLink></div>;
   // La aplicación instala MemberIdentityProvider. Sin él se conserva la maqueta
   // para las pruebas visuales; los endpoints privados siempre verifican sesión.
   if (!member && state.account.deleted) return <Navigate to={paths.access} replace />;
