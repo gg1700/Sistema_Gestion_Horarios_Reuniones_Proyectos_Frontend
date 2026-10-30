@@ -67,6 +67,10 @@ function isVisibilityRecord(value: unknown): value is VisibilityRecord {
     return false;
   }
 
+  if (record.name !== undefined && typeof record.name !== 'string') {
+    return false;
+  }
+
   if (
     record.type === 'repositories' ||
     record.type === 'githubActivity'
@@ -121,6 +125,10 @@ export async function updateVisibility(
 ): Promise<void> {
   await request('/visibility', {
     method: 'PATCH',
-    body: JSON.stringify({ changes }),
+    body: JSON.stringify({
+      changes: changes.map(({ type, id, visible }) => (
+        id === undefined ? { type, visible } : { type, id, visible }
+      )),
+    }),
   });
 }

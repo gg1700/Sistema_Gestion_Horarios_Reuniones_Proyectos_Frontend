@@ -1,4 +1,6 @@
-import { FiCheck, FiLock } from 'react-icons/fi';
+import { useState } from 'react';
+import { FiCheck, FiEye, FiLock } from 'react-icons/fi';
+import { ProfilePreviewDialog } from '../components/features/profile/ProfilePreviewDialog';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { ProfileTabs } from '../components/features/profile/ProfileParts';
 import {
@@ -57,6 +59,8 @@ const labels: Record<VisibilityType, string> = {
 
 export default function VisibilityPage() {
   const settings = useVisibilitySettings();
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewRevision, setPreviewRevision] = useState(0);
   const { notify } = useUI();
 
   const {
@@ -72,6 +76,7 @@ export default function VisibilityPage() {
   async function save() {
     if (await settings.save()) {
       notify('Visibilidad guardada.', 'success');
+      setPreviewRevision(current => current + 1);
     }
   }
 
@@ -81,6 +86,16 @@ export default function VisibilityPage() {
         title="Decide qué compartes"
         eyebrow="MI CUENTA / PERFIL"
         accentPeriod
+        actions={(
+          <Button
+            variant="secondary"
+            leadingIcon={<FiEye />}
+            disabled={isLoading || isSaving || !profile}
+            onClick={() => setPreviewOpen(true)}
+          >
+            Vista previa
+          </Button>
+        )}
       />
 
       {profile && (
@@ -234,6 +249,12 @@ export default function VisibilityPage() {
           </footer>
         </>
       )}
+      <ProfilePreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        hasPendingChanges={hasPendingChanges}
+        revision={previewRevision}
+      />
     </MemberShell>
   );
 }

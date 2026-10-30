@@ -27,6 +27,7 @@ export interface VisibilityRecord {
   type: VisibilityType;
   id?: string;
   visible: boolean;
+  name?: string;
 }
 
 export interface VisibilityProfile {

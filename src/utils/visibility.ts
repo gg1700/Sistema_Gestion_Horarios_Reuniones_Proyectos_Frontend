@@ -96,7 +96,7 @@ export function visibilityValue(
       return 'Permite publicar los repositorios que marques individualmente.';
 
     case 'repository':
-      return `Repositorio ${record.id}`;
+      return record.name?.trim() || 'Repositorio seleccionado';
 
     case 'githubActivity':
       return 'Permite publicar los elementos de actividad que marques individualmente.';
