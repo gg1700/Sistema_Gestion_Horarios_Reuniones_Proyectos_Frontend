@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiArrowRight, FiCalendar, FiCheck, FiExternalLink, FiShield } from 'react-icons/fi';
+import { FiArrowRight, FiCalendar, FiCheck, FiExternalLink, FiRefreshCw, FiShield } from 'react-icons/fi';
 import { Dialog } from '../../modals';
 import { Alert, Button, ProviderIcon } from '../../ui';
 import { useMockFlow } from '../../../contexts/MockFlowContext';
@@ -7,7 +7,7 @@ import { useUI } from '../../../contexts/UIContext';
 import type { Provider } from '../../../mocks/account';
 import { RepositorySelection } from './RepositorySelection';
 import { useGoogleCalendar } from '../../../hooks/useGoogleCalendar';
-
+import { CalendarApiError } from '../../../api/googleCalendar';
 type CalendarController = ReturnType<typeof useGoogleCalendar>;
 function ProviderIdentity({ provider, description }: { provider: Provider; description: string }) {
   const { state } = useMockFlow();
@@ -40,50 +40,209 @@ function AuthorizeProvider({ provider, reconnect, onClose, onNext, calendar }: {
     <ProviderIdentity provider={provider} description={google ? `Google Calendar · ${chosen}` : 'Datos básicos de tu cuenta de GitHub'} />
     <p className="flow-copy">{google ? 'Autoriza las funciones que usarás en el calendario elegido.' : 'Autoriza a Orbitia desde tu cuenta de GitHub. Este acceso permite:'}</p>
     <ul className="connection-permissions">{permissions.map(([title, text]) => <li key={title}><FiCheck /><div><strong>{title}</strong><p>{text}</p></div></li>)}</ul>
-    <p className="flow-note"><FiExternalLink />{google && reconnect ? `Continuarás en Google. Al regresar, ${chosen} seguirá seleccionado; puedes cambiarlo desde tus conexiones.` : `Continuarás en ${google ? 'Google' : 'GitHub'} para elegir tu cuenta y autorizar.`}</p>
+    <p className="flow-note"><FiExternalLink />{google && reconnect ? `Continuarás en Google. Al regresar, ${chosen} seguirá siendo tu calendario seleccionado y no podrás cambiarlo.`: `Continuarás en ${google ? 'Google' : 'GitHub'} para elegir tu cuenta y autorizar.`}</p>
   </Dialog>;
 }
+
 
 function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void; onNext: (modal: string) => void; calendar: CalendarController }) {
   const [chosen, setChosen] = useState('');
   const [error, setError] = useState('');
+  const [locked, setLocked] = useState(false);
   const { loadCalendars } = calendar;
+
+  async function refreshCalendars() {
+    setError('');
+    try {
+      const result = await loadCalendars();
+      const selectedId = result.selectedCalendarId;
+
+      if (selectedId) {
+        setLocked(true);
+        setChosen(selectedId);
+        return;
+      }
+
+      setLocked(false);
+      const primary = result.calendars.find(item => item.primary && item.canWrite);
+      const first = result.calendars.find(item => item.canWrite);
+
+      setChosen(current =>
+        result.calendars.some(item => item.id === current && item.canWrite)
+          ? current
+          : primary?.id ?? first?.id ?? ''
+      );
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'No se pudieron cargar los calendarios.');
+    }
+  }
 
   useEffect(() => {
     let active = true;
+
     void loadCalendars().then(result => {
       if (!active) return;
-      const selected = result.calendars.find(item => item.id === result.selectedCalendarId && item.canWrite);
+
+      const selectedId = result.selectedCalendarId;
+      setLocked(Boolean(selectedId));
+
+      if (selectedId) {
+        setChosen(selectedId);
+        return;
+      }
+
       const primary = result.calendars.find(item => item.primary && item.canWrite);
       const first = result.calendars.find(item => item.canWrite);
-      setChosen(selected?.id ?? primary?.id ?? first?.id ?? '');
+      setChosen(primary?.id ?? first?.id ?? '');
     }).catch(failure => {
       if (active) setError(failure instanceof Error ? failure.message : 'No se pudieron cargar los calendarios.');
     });
+
     return () => { active = false; };
   }, [loadCalendars]);
 
   async function save() {
-    if (!chosen) return;
+    if (!chosen || locked || calendar.saving) return;
+
     setError('');
+
     try {
       await calendar.selectCalendar(chosen);
+      setLocked(true);
       onClose();
     } catch (failure) {
+      if (failure instanceof CalendarApiError && failure.code === 'calendar_selection_locked') {
+        setLocked(true);
+        setError('Ya tienes un calendario seleccionado. No puedes cambiarlo después de guardarlo.');
+        void refreshCalendars();
+        return;
+      }
+
       setError(failure instanceof Error ? failure.message : 'No se pudo guardar el calendario.');
     }
   }
 
   const available = calendar.calendarList?.calendars ?? [];
-  const needsReconnect = calendar.status.reconnectRequired || error === 'reconnection_required';
+  const needsReconnect = calendar.status.reconnectRequired ||
+    (error === 'reconnection_required');
 
-  return <Dialog open onOpenChange={value => { if (!value) onClose(); }} title="Elige tu calendario." eyebrow="GOOGLE CALENDAR" description="Orbitia utilizará los eventos del calendario que selecciones." className="calendar-selection-dialog"
-    footer={<><Button variant="secondary" onClick={onClose}>Volver</Button>{needsReconnect ? <Button onClick={() => onNext('reconectar-google')}>Reconectar Google</Button> : <Button disabled={!chosen || calendar.loading || calendar.saving} onClick={() => void save()} trailingIcon={<FiCheck />}>{calendar.saving ? 'Guardando...' : 'Guardar calendario'}</Button>}</>}>
-    <ProviderIdentity provider="google" description="Selecciona un calendario de tu cuenta" />
-    {error && <Alert tone="danger">{error}</Alert>}
-    {calendar.loading ? <p className="flow-copy">Cargando calendarios...</p> : available.length === 0 ? <Alert tone="warning">No hay calendarios disponibles. Revisa la autorización de Google.</Alert> : <fieldset className="calendar-options"><legend className="ui-sr-only">Calendario que utilizará Orbitia</legend>{available.map(item => <label key={item.id}><input type="radio" name="calendar" value={item.id} checked={chosen === item.id} disabled={!item.canWrite} onChange={() => setChosen(item.id)} /><i style={{ background: item.color ?? '#8ab4e8' }} /><span><strong>{item.name}</strong><small>{item.description || item.timezone}</small></span>{item.primary && <small>Principal</small>}{!item.canWrite && <small>Solo lectura</small>}</label>)}</fieldset>}
-    <p className="flow-note"><FiCalendar />Puedes cambiar esta selección desde Conexiones.</p>
-  </Dialog>;
+  return (
+    <Dialog
+      open
+      onOpenChange={value => { if (!value) onClose(); }}
+      title={locked ? 'Tu calendario seleccionado.' : 'Elige tu calendario.'}
+      eyebrow="GOOGLE CALENDAR"
+      description={
+        locked
+          ? 'Esta elección es permanente y no puede modificarse.'
+          : 'Puedes utilizar un calendario existente o crear uno nuevo antes de seleccionar.'
+      }
+      className="calendar-selection-dialog"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            Volver
+          </Button>
+
+          {needsReconnect ? (
+            <Button onClick={() => onNext('reconectar-google')}>
+              Reconectar Google
+            </Button>
+          ) : !locked ? (
+            <Button
+              disabled={!chosen || calendar.loading || calendar.saving}
+              onClick={() => void save()}
+              trailingIcon={<FiCheck />}
+            >
+              {calendar.saving ? 'Guardando...' : 'Guardar calendario'}
+            </Button>
+          ) : null}
+        </>
+      }
+    >
+      <ProviderIdentity
+        provider="google"
+        description={locked ? 'Calendario permanente de Orbitia' : 'Selecciona un calendario de tu cuenta'}
+      />
+
+      {error && <Alert tone="danger">{error}</Alert>}
+
+      {locked && (
+        <Alert tone="warning">
+          Ya tienes un calendario seleccionado. No es posible cambiarlo por otro, incluso si vuelves a conectar Google.
+        </Alert>
+      )}
+
+      {!locked && (
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href="https://calendar.google.com/calendar/u/0/r/settings/createcalendar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flow-link"
+          >
+            <FiExternalLink />
+            Crear nuevo calendario en Google
+          </a>
+
+          <Button
+            variant="secondary"
+            size="small"
+            disabled={calendar.loading}
+            onClick={() => void refreshCalendars()}
+          >
+            <FiRefreshCw />
+            Actualizar lista
+          </Button>
+        </div>
+      )}
+
+      {calendar.loading ? (
+        <p className="flow-copy">Cargando calendarios...</p>
+      ) : available.length === 0 ? (
+        <Alert tone="warning">
+          No hay calendarios disponibles. Comprueba los permisos de Google o crea uno nuevo.
+        </Alert>
+      ) : (
+        <fieldset className="calendar-options" disabled={locked}>
+          <legend className="ui-sr-only">
+            Calendario que utilizará Orbitia
+          </legend>
+
+          {available.map(item => (
+            <label key={item.id}>
+              <input
+                type="radio"
+                name="calendar"
+                value={item.id}
+                checked={chosen === item.id}
+                disabled={locked || !item.canWrite}
+                onChange={() => setChosen(item.id)}
+              />
+
+              <i style={{ background: item.color ?? '#8ab4e8' }} />
+
+              <span>
+                <strong>{item.name}</strong>
+                <small>{item.description || item.timezone}</small>
+              </span>
+
+              {item.primary && <small>Principal</small>}
+              {!item.canWrite && <small>Solo lectura</small>}
+              {locked && chosen === item.id && <small>Seleccionado</small>}
+            </label>
+          ))}
+        </fieldset>
+      )}
+
+      <p className="flow-note">
+        <FiCalendar />
+        {locked
+          ? 'Este calendario permanecerá asociado a tu cuenta.'
+          : 'Después de guardar un calendario, no podrás seleccionar otro.'}
+      </p>
+    </Dialog>
+  );
 }
 
 function DisconnectProvider({ provider, integrationOnly, onClose, onNext, calendar }: { provider: Provider; integrationOnly: boolean; onClose: () => void; onNext: (modal: string) => void; calendar: CalendarController }) {

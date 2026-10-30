@@ -108,15 +108,16 @@ function ConnectionsContent({ legacy = false }: { legacy?: boolean }) {
                   {connectedGoogle ? (
                     <div className="connection-calendar-line">
                       <FiCalendar />
-                      <span>Calendario elegido</span>
+                      <span>Calendario seleccionado</span>
                       <strong>{chosen}</strong>
-                      <button type="button" className="flow-link" onClick={() => openModal('calendario')}>
-                        Cambiar
-                      </button>
+                      <span className="text-xs font-medium text-orbita-accent">
+                        Selección permanente
+                      </span>
                     </div>
                   ) : (
                     <p className="connection-provider-note">
-                      Ya autorizaste Google Calendar. Selecciona el calendario que utilizarás en Orbitia.
+                      Ya autorizaste Google Calendar. Puedes elegir uno de tus calendarios
+                      existentes o crear uno nuevo. Una vez seleccionado, no podrás cambiarlo.
                     </p>
                   )}
 
@@ -133,7 +134,7 @@ function ConnectionsContent({ legacy = false }: { legacy?: boolean }) {
                       </button>
                     ) : (
                       <Button variant="secondary" size="small" onClick={() => openModal('calendario')}>
-                        Elegir calendario
+                        Seleccionar calendario
                       </Button>
                     )}
 
