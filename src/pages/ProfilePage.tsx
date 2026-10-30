@@ -6,15 +6,6 @@ import { Alert, Avatar, Button, OrbitalGraphic, ProviderIcon, SectionHeading } f
 import { useMemberIdentity } from '../features/github/MemberIdentityContext';
 import { paths } from '../constants/paths';
 
-/*
-T-07: GET /api/v1/profile, sin body ni identificadores del cliente.
-Cookie HttpOnly del login; 200 { success: true, data: Profile }.
-Contrato de lectura: src/types/profile-response.types.ts, igual al del backend.
-Incluye registros privados con visible=false; null y [] indican datos sin completar.
-401: sesión ausente/expirada o usuario eliminado. 500: error de consulta.
-MemberIdentityProvider comparte esta única lectura con la cabecera y el menú.
-Los editores mock no operan sobre los datos reales en esta tarea de consulta.
-*/
 export default function ProfilePage() {
   const member = useMemberIdentity();
   const profile = member?.profile;

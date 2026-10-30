@@ -3,7 +3,6 @@ import type { CreateAdditionalInfoResponse } from '../types/profile';
 import type { Profile, ProfileResponse } from '../types/profile-response.types';
 import { ApiError } from '../types/api';
 
-// GET privado: sin body ni userId; el backend identifica al propietario por sesión.
 export async function getOwnProfile(signal?: AbortSignal): Promise<Profile> {
   const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
   let response: Response;
