@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { FiArrowRight, FiCalendar, FiRefreshCw, FiServer, FiShield } from 'react-icons/fi';
@@ -12,6 +11,7 @@ import { useMockFlow } from '../contexts/MockFlowContext';
 import { paths } from '../constants/paths';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 import { GithubConnectionPanel } from '../features/github/GithubConnectionPanel';
+import { LinkedAccountsSection } from '../components/features/connections/LinkedAccountsSection';
 
 function ConnectionsContent({ legacy = false }: { legacy?: boolean }) {
   const { state } = useMockFlow();
@@ -84,6 +84,7 @@ function ConnectionsContent({ legacy = false }: { legacy?: boolean }) {
 
       <div className="connections-columns">
         <section className="connections-provider-list">
+          {!legacy && <LinkedAccountsSection />}
           <article className="connection-provider">
             <ProviderIcon provider="google" />
             <div>

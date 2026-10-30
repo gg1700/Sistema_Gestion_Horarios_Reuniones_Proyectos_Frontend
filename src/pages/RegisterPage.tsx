@@ -22,7 +22,7 @@ function RegisterPage() {
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(true);
   const oauthErrorMessage = getOAuthErrorMessage(searchParams.get('oauth'));
 
-  if (status === 'completed') {
+  if (status === 'completed' && !oauthErrorMessage) {
     return <Navigate to={paths.profile} replace />;
   }
 

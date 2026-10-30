@@ -21,3 +21,41 @@ export async function completeRegistration(values: RegisterFormValues) {
     },
   });
 }
+
+export interface LinkedAccount {
+  provider: OAuthProvider;
+  provider_username: string | null;
+  provider_user_email: string | null;
+  scopes: string | null;
+  state: string;
+}
+
+interface LinkedAccountsResponse {
+  success: boolean;
+  message?: string;
+  data?: LinkedAccount[];
+}
+
+export async function getLinkedAccounts(): Promise<LinkedAccount[]> {
+  const response = await sendRequest<LinkedAccountsResponse>(
+    '/api/v1/auth/accounts',
+    { method: 'GET' }
+  );
+
+  return response.data ?? [];
+}
+
+export function getProviderLinkUrl(provider: OAuthProvider): string {
+  const url = new URL(getProviderAuthorizationUrl(provider));
+  url.searchParams.set('intent', 'link');
+  return url.toString();
+}
+
+export async function unlinkLinkedAccount(
+  provider: OAuthProvider
+): Promise<void> {
+  await sendRequest<{ success: boolean; message?: string }>(
+    `/api/v1/auth/accounts/${provider}`,
+    { method: 'DELETE' }
+  );
+}
