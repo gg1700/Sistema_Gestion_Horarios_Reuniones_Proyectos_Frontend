@@ -1,10 +1,34 @@
-export const visibilityTypes = ['surname', 'email', 'phone', 'address', 'country', 'workExperience', 'link', 'repository', 'githubActivityList', 'githubActivityGrid'] as const;
+export const recordVisibilityTypes = [
+  'surname',
+  'email',
+  'phone',
+  'address',
+  'country',
+  'workExperience',
+  'link',
+  'repository',
+  'githubActivityList',
+  'githubActivityGrid',
+] as const;
+
+export const generalVisibilityTypes = [
+  'repositories',
+  'githubActivity',
+] as const;
+
+export const visibilityTypes = [
+  ...recordVisibilityTypes,
+  ...generalVisibilityTypes,
+] as const;
+
 export type VisibilityType = typeof visibilityTypes[number];
+
 export interface VisibilityRecord {
   type: VisibilityType;
-  id: string;
+  id?: string;
   visible: boolean;
 }
+
 export interface VisibilityProfile {
   handleName: string;
   name: string;
@@ -15,6 +39,10 @@ export interface VisibilityProfile {
   phones: { id: string; countryCode: string; phoneNumber: string }[];
   addresses: { id: string; address: string }[];
   countries: { id: string; countryName: string }[];
-  workExperiences: { id: string; title: string; companyName: string | null }[];
+  workExperiences: {
+    id: string;
+    title: string;
+    companyName: string | null;
+  }[];
   links: { id: string; text: string; url: string }[];
 }
