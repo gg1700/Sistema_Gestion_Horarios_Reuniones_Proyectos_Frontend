@@ -82,12 +82,11 @@ test('StrictMode conserva abierto el primer ingreso y no navega al perfil por cl
   assert.match(openDialogs()[0].textContent, /Dale forma a tu perfil/);
 });
 
-test('editar perfil sigue abierto después del clic y conserva su URL', async () => {
-  await mountPage('/perfil');
-  await click(button('Editar información'));
+test('el perfil propio no abre el editor mock sin una sesión real', async () => {
+  await mountPage('/perfil?editar=1');
   assert.equal(location(), '/perfil?editar=1');
-  assert.equal(openDialogs().length, 1);
-  assert.match(openDialogs()[0].textContent, /Mantén tu perfil al día/);
+  assert.equal(openDialogs().length, 0);
+  assert.doesNotMatch(container.textContent, /Mateo|Mantén tu perfil al día/);
 });
 
 test('cerrar un modal hijo no cierra el asistente ni cambia de página', async () => {
