@@ -7,6 +7,7 @@ import CompleteRegistrationModal from '../components/modals/CompleteRegistration
 import useRegistrationStatus from '../hooks/useRegistrationStatus';
 import { routePaths } from '../constants/routes';
 import { defaultOAuthErrorMessage, oauthErrorMessages } from '../constants/oauth';
+import { paths } from '../constants/paths';
 
 const connectionErrorMessage = 'No se pudo conectar con el servidor. Intenta nuevamente.';
 
@@ -22,7 +23,7 @@ function RegisterPage() {
   const oauthErrorMessage = getOAuthErrorMessage(searchParams.get('oauth'));
 
   if (status === 'completed') {
-    return <Navigate to={routePaths.home} replace />;
+    return <Navigate to={paths.profile} replace />;
   }
 
   return (
@@ -37,6 +38,13 @@ function RegisterPage() {
           errorMessage={oauthErrorMessage ?? (status === 'error' ? connectionErrorMessage : undefined)}
         />
       </div>
+      
+      {status === 'loading' && (
+        <p role="status" className="mt-4 text-xs text-[#A7C4B1]">
+          Verificando tu acceso...
+         </p>
+      )}
+
       {status === 'pending' && user && isRegistrationModalOpen && (
         <CompleteRegistrationModal user={user} onClose={() => setIsRegistrationModalOpen(false)} />
       )}
