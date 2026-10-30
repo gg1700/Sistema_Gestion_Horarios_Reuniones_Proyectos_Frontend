@@ -19,6 +19,7 @@ import ProfilePublicPage from '../pages/ProfilePublicPage';
 import ProfileLinkPage from '../pages/ProfileLinkPage';
 import ProfileOriginsPage from '../pages/ProfileOriginsPage';
 import RegisterPage from '../pages/RegisterPage';
+import CompleteProfilePage from '../pages/CompleteProfilePage';
 import { routePaths } from '../constants/routes';
 
 /*
@@ -43,6 +44,7 @@ function RouterPage() {
       <Route path={paths.access} element={<AccessPage />} />
       <Route path={paths.accessIssue} element={<AccessIssuePage />} />
       <Route path={routePaths.register} element={<RegisterPage />} />
+      <Route path={routePaths.completeProfile} element={<CompleteProfilePage />} />
 
       <Route path={paths.welcome} element={<WelcomePage />} />
       <Route path={paths.dashboard} element={<DashboardPage />} />
