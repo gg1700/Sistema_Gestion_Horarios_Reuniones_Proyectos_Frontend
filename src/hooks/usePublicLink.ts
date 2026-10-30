@@ -4,6 +4,8 @@ import {
   getPublicLink,
   updatePublicLink,
 } from '../api/publicLink';
+import { getVisibility } from '../api/visibilityApi';
+import { visibilityIsPublic } from '../utils/visibility';
 import type {
   HandleAvailability,
   PublicLink,
@@ -39,6 +41,8 @@ function usePublicLink() {
   const [isSaving, setIsSaving] = useState(false);
   const [serverError, setServerError] = useState('');
   const [notice, setNotice] = useState('');
+  const [visibilityLoaded, setVisibilityLoaded] = useState(false);
+  const [visibilityError, setVisibilityError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -65,6 +69,42 @@ function usePublicLink() {
 
     return () => {
       cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    getVisibility(controller.signal)
+      .then(records => {
+        if (controller.signal.aborted) return;
+
+        const hasPublicOptionalField = records.some(record =>
+          record.type !== 'repositories' &&
+          record.type !== 'githubActivity' &&
+          visibilityIsPublic(record, records)
+        );
+
+        setPublicLink(current => ({
+          ...current,
+          allOptionalFieldsPrivate: !hasPublicOptionalField,
+        }));
+
+        setVisibilityLoaded(true);
+      })
+      .catch(error => {
+        if (controller.signal.aborted) return;
+
+        setVisibilityError(
+          getErrorMessage(
+            error,
+            'No se pudo consultar la visibilidad del perfil.',
+          ),
+        );
+      });
+
+    return () => {
+      controller.abort();
     };
   }, []);
 
@@ -209,6 +249,8 @@ function usePublicLink() {
     isSaving,
     serverError,
     notice,
+    visibilityLoaded,
+    visibilityError,
     updateDraftHandle,
     saveHandle,
     togglePublicLink,
