@@ -9,6 +9,7 @@ import { Alert, Button, Input, ProviderIcon } from '../components/ui';
 import { useMockFlow } from '../contexts/MockFlowContext';
 import { paths } from '../constants/paths';
 import { apiBase } from '../features/github/api';
+import { routePaths } from '../constants/routes';
 
 export default function AccessPage() {
   const { state, dispatch } = useMockFlow();
@@ -31,10 +32,12 @@ export default function AccessPage() {
       return;
     }
 
-    if (query.get('oauth') === 'success') {
-      navigate(paths.githubInfo, { replace: true });
-    } else if (query.has('oauth')) {
-      setError('No se completó el acceso. Vuelve a autorizar tu cuenta.');
+    const oauthResult = query.get('oauth');
+    if (oauthResult) {
+      navigate(
+        `${routePaths.register}?oauth=${encodeURIComponent(oauthResult)}`,
+        { replace: true }
+     );
     }
   }, [query, navigate]);
 
