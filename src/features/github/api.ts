@@ -29,3 +29,57 @@ export const saveRepositories = (repositoryIds: number[]) => githubApi<{ selecte
 export const saveRepositoryVisibility = (changes: { id: string; visible: boolean; type: string }[]) => githubApi('/profile/visibility', {
   method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ changes }),
 });
+
+export type GithubActivityType = 'list' | 'grid';
+
+export interface GithubActivityPayload {
+  action?: string;
+  size?: number;
+  commits?: {
+    message?: string;
+  }[];
+  pull_request?: {
+    title?: string;
+  };
+  issue?: {
+    title?: string;
+  };
+  release?: {
+    name?: string;
+    tag_name?: string;
+  };
+}
+
+export interface GithubActivityEvent {
+  type: string | null;
+  repo: {
+    id: number;
+    name: string;
+    url: string;
+  };
+  date: string | null;
+  payload: GithubActivityPayload;
+}
+
+export interface GithubContributionDay {
+  date: string;
+  contributionCount: number;
+  color: string;
+}
+
+export interface GithubContributionGrid {
+  totalContributions: number;
+  weeks: {
+    contributionDays: GithubContributionDay[];
+  }[];
+}
+
+export function getGithubActivity(
+  type: GithubActivityType,
+  signal?: AbortSignal
+) {
+  return githubApi<GithubActivityEvent[] | GithubContributionGrid>(
+    `/integrations/github/activity/${type}`,
+    { signal }
+  );
+}

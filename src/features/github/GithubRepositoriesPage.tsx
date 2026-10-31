@@ -8,6 +8,7 @@ import { paths } from '../../constants/paths';
 import { apiBase, RepositoryApiError } from './api';
 import { useRepositories } from './useRepositories';
 import { RepositoryPicker } from './RepositoryPicker';
+import { GithubActivitySection } from './GithubActivitySection';
 
 export default function GithubRepositoriesPage() {
   const { data, error, loading, reload } = useRepositories();
@@ -22,6 +23,7 @@ export default function GithubRepositoriesPage() {
       <div className="profile-section-head"><h3>Repositorios seleccionados</h3><Button variant="secondary" disabled={loading || Boolean(error)} onClick={() => setQuery({ modal: 'repositorios' })}>Gestionar</Button></div>
       {selected.map(repo => <article key={repo.id} className="github-repository"><header><FiServer /><h4>{repo.name}</h4><span>{repo.visible ? 'Visible en tu perfil' : 'Solo tú'}</span><a href={repo.url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir ${repo.name} en GitHub`}><FiExternalLink /></a></header><p>{repo.description ?? 'Sin descripción.'}</p><footer><span>{repo.language ?? 'Lenguaje no especificado'}</span><span><FiStar />{repo.stars}</span><small>Desde GitHub</small></footer></article>)}
       {!selected.length && <EmptyState title="Elige tus repositorios" description={`Selecciona hasta ${data.maxSelected} proyectos públicos para tu perfil.`} actions={<Button disabled={loading || Boolean(error)} onClick={() => setQuery({ modal: 'repositorios' })}>Seleccionar repositorios</Button>} />}
+      <GithubActivitySection />
       <footer className="github-privacy-footer"><p>Los proyectos nuevos se guardan como privados en Orbitia hasta que decidas publicarlos.</p><ButtonLink to={paths.visibility} variant="secondary">Configurar visibilidad</ButtonLink></footer>
       {query.get('modal') === 'repositorios' && !loading && !error && <RepositoryPicker data={data} onClose={() => setQuery({})} onSaved={() => { setQuery({}); void reload(); }} />}
     </>}
