@@ -44,34 +44,30 @@ function AuthorizeProvider({ provider, reconnect, onClose, onNext, calendar }: {
   </Dialog>;
 }
 
-
 function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void; onNext: (modal: string) => void; calendar: CalendarController }) {
   const [chosen, setChosen] = useState('');
+  const [name, setName] = useState('');
+  const [timeZone, setTimeZone] = useState('America/La_Paz');
+  const [mode, setMode] = useState<'select' | 'create'>('select');
   const [error, setError] = useState('');
-  const [locked, setLocked] = useState(false);
+  const [locked, setLocked] = useState(Boolean(calendar.status.calendarId));
+
   const { loadCalendars } = calendar;
 
   async function refreshCalendars() {
     setError('');
     try {
       const result = await loadCalendars();
-      const selectedId = result.selectedCalendarId;
-
-      if (selectedId) {
+      if (result.selectedCalendarId) {
         setLocked(true);
-        setChosen(selectedId);
+        setChosen(result.selectedCalendarId);
         return;
       }
 
       setLocked(false);
       const primary = result.calendars.find(item => item.primary && item.canWrite);
       const first = result.calendars.find(item => item.canWrite);
-
-      setChosen(current =>
-        result.calendars.some(item => item.id === current && item.canWrite)
-          ? current
-          : primary?.id ?? first?.id ?? ''
-      );
+      setChosen(primary?.id ?? first?.id ?? '');
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'No se pudieron cargar los calendarios.');
     }
@@ -83,11 +79,9 @@ function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void;
     void loadCalendars().then(result => {
       if (!active) return;
 
-      const selectedId = result.selectedCalendarId;
-      setLocked(Boolean(selectedId));
-
-      if (selectedId) {
-        setChosen(selectedId);
+      if (result.selectedCalendarId) {
+        setLocked(true);
+        setChosen(result.selectedCalendarId);
         return;
       }
 
@@ -101,24 +95,42 @@ function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void;
     return () => { active = false; };
   }, [loadCalendars]);
 
-  async function save() {
-    if (!chosen || locked || calendar.saving) return;
+  function handleError(failure: unknown) {
+    if (failure instanceof CalendarApiError && failure.code === 'calendar_selection_locked') {
+      setLocked(true);
+      setError('Ya tienes un calendario seleccionado y no puedes cambiarlo.');
+      void refreshCalendars();
+      return;
+    }
 
+    setError(failure instanceof Error ? failure.message : 'No se pudo completar la operación.');
+  }
+
+  async function save() {
+    if (locked || calendar.saving || calendar.loading) return;
     setError('');
 
     try {
-      await calendar.selectCalendar(chosen);
+      if (mode === 'create') {
+        if (!name.trim()) {
+          setError('Ingresa un nombre para el calendario.');
+          return;
+        }
+
+        await calendar.createCalendar(name.trim(), timeZone);
+      } else {
+        if (!chosen) {
+          setError('Selecciona un calendario.');
+          return;
+        }
+
+        await calendar.selectCalendar(chosen);
+      }
+
       setLocked(true);
       onClose();
     } catch (failure) {
-      if (failure instanceof CalendarApiError && failure.code === 'calendar_selection_locked') {
-        setLocked(true);
-        setError('Ya tienes un calendario seleccionado. No puedes cambiarlo después de guardarlo.');
-        void refreshCalendars();
-        return;
-      }
-
-      setError(failure instanceof Error ? failure.message : 'No se pudo guardar el calendario.');
+      handleError(failure);
     }
   }
 
@@ -130,31 +142,28 @@ function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void;
     <Dialog
       open
       onOpenChange={value => { if (!value) onClose(); }}
-      title={locked ? 'Tu calendario seleccionado.' : 'Elige tu calendario.'}
+      title={locked ? 'Tu calendario seleccionado.' : 'Configura tu calendario.'}
       eyebrow="GOOGLE CALENDAR"
-      description={
-        locked
-          ? 'Esta elección es permanente y no puede modificarse.'
-          : 'Puedes utilizar un calendario existente o crear uno nuevo antes de seleccionar.'
-      }
+      description={locked
+        ? 'Esta elección es permanente y no puede modificarse.'
+        : 'Selecciona un calendario existente o crea uno nuevo para Orbitia.'}
       className="calendar-selection-dialog"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>
-            Volver
-          </Button>
-
+          <Button variant="secondary" onClick={onClose}>Volver</Button>
           {needsReconnect ? (
-            <Button onClick={() => onNext('reconectar-google')}>
-              Reconectar Google
-            </Button>
+            <Button onClick={() => onNext('reconectar-google')}>Reconectar Google</Button>
           ) : !locked ? (
             <Button
-              disabled={!chosen || calendar.loading || calendar.saving}
+              disabled={calendar.loading || calendar.saving || (mode === 'select' ? !chosen : !name.trim())}
               onClick={() => void save()}
               trailingIcon={<FiCheck />}
             >
-              {calendar.saving ? 'Guardando...' : 'Guardar calendario'}
+              {calendar.saving
+                ? 'Guardando...'
+                : mode === 'create'
+                  ? 'Crear y seleccionar'
+                  : 'Guardar calendario'}
             </Button>
           ) : null}
         </>
@@ -162,84 +171,123 @@ function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void;
     >
       <ProviderIdentity
         provider="google"
-        description={locked ? 'Calendario permanente de Orbitia' : 'Selecciona un calendario de tu cuenta'}
+        description={locked ? 'Calendario permanente de Orbitia' : 'Configura tu calendario de Google'}
       />
 
       {error && <Alert tone="danger">{error}</Alert>}
 
-      {locked && (
+      {locked ? (
         <Alert tone="warning">
-          Ya tienes un calendario seleccionado. No es posible cambiarlo por otro, incluso si vuelves a conectar Google.
-        </Alert>
-      )}
-
-      {!locked && (
-        <div className="flex flex-wrap items-center gap-3">
-          <a
-            href="https://calendar.google.com/calendar/u/0/r/settings/createcalendar"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flow-link"
-          >
-            <FiExternalLink />
-            Crear nuevo calendario en Google
-          </a>
-
-          <Button
-            variant="secondary"
-            size="small"
-            disabled={calendar.loading}
-            onClick={() => void refreshCalendars()}
-          >
-            <FiRefreshCw />
-            Actualizar lista
-          </Button>
-        </div>
-      )}
-
-      {calendar.loading ? (
-        <p className="flow-copy">Cargando calendarios...</p>
-      ) : available.length === 0 ? (
-        <Alert tone="warning">
-          No hay calendarios disponibles. Comprueba los permisos de Google o crea uno nuevo.
+          Ya tienes un calendario seleccionado. No podrás elegir ni crear otro, incluso después de reconectar Google.
         </Alert>
       ) : (
-        <fieldset className="calendar-options" disabled={locked}>
-          <legend className="ui-sr-only">
-            Calendario que utilizará Orbitia
-          </legend>
+        <>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant={mode === 'select' ? 'primary' : 'secondary'}
+              onClick={() => { setMode('select'); setError(''); }}
+            >
+              Elegir existente
+            </Button>
+            <Button
+              variant={mode === 'create' ? 'primary' : 'secondary'}
+              onClick={() => { setMode('create'); setError(''); }}
+            >
+              Crear nuevo
+            </Button>
+          </div>
 
-          {available.map(item => (
-            <label key={item.id}>
-              <input
-                type="radio"
-                name="calendar"
-                value={item.id}
-                checked={chosen === item.id}
-                disabled={locked || !item.canWrite}
-                onChange={() => setChosen(item.id)}
-              />
+          {mode === 'create' ? (
+            <div className="mt-4 flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="new-calendar-name" className="text-sm font-medium">
+                  Nombre del calendario
+                </label>
+                <input
+                  id="new-calendar-name"
+                  type="text"
+                  maxLength={150}
+                  value={name}
+                  onChange={event => setName(event.target.value)}
+                  placeholder="Ej. Calendario Orbitia"
+                  className="w-full rounded-lg border border-orbita-outline bg-orbita-surface px-4 py-3 text-orbita-text"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="new-calendar-timezone" className="text-sm font-medium">
+                  Zona horaria
+                </label>
+                <select
+                  id="new-calendar-timezone"
+                  value={timeZone}
+                  onChange={event => setTimeZone(event.target.value)}
+                  className="w-full rounded-lg border border-orbita-outline bg-orbita-surface px-4 py-3 text-orbita-text"
+                >
+                  <option value="America/La_Paz">Bolivia (America/La_Paz)</option>
+                  <option value="America/Lima">Perú (America/Lima)</option>
+                  <option value="America/Santiago">Chile (America/Santiago)</option>
+                  <option value="America/Argentina/Buenos_Aires">Argentina (Buenos Aires)</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+              <Alert tone="warning">
+                Se creará un calendario nuevo en tu cuenta de Google y quedará seleccionado permanentemente.
+              </Alert>
+            </div>
+          ) : (
+            <>
+              <div className="mt-4">
+                <Button
+                  variant="secondary"
+                  size="small"
+                  disabled={calendar.loading}
+                  onClick={() => void refreshCalendars()}
+                >
+                  <FiRefreshCw />
+                  Actualizar lista
+                </Button>
+              </div>
 
-              <i style={{ background: item.color ?? '#8ab4e8' }} />
-
-              <span>
-                <strong>{item.name}</strong>
-                <small>{item.description || item.timezone}</small>
-              </span>
-
-              {item.primary && <small>Principal</small>}
-              {!item.canWrite && <small>Solo lectura</small>}
-              {locked && chosen === item.id && <small>Seleccionado</small>}
-            </label>
-          ))}
-        </fieldset>
+              {calendar.loading ? (
+                <p className="flow-copy">Cargando calendarios...</p>
+              ) : available.length === 0 ? (
+                <Alert tone="warning">
+                  No hay calendarios disponibles. Puedes crear uno nuevo.
+                </Alert>
+              ) : (
+                <fieldset className="calendar-options">
+                  <legend className="ui-sr-only">Calendario que utilizará Orbitia</legend>
+                  {available.map(item => (
+                    <label key={item.id}>
+                      <input
+                        type="radio"
+                        name="calendar"
+                        value={item.id}
+                        checked={chosen === item.id}
+                        disabled={!item.canWrite}
+                        onChange={() => setChosen(item.id)}
+                      />
+                      <i style={{ background: item.color ?? '#8ab4e8' }} />
+                      <span>
+                        <strong>{item.name}</strong>
+                        <small>{item.description || item.timezone}</small>
+                      </span>
+                      {item.primary && <small>Principal</small>}
+                      {!item.canWrite && <small>Solo lectura</small>}
+                    </label>
+                  ))}
+                </fieldset>
+              )}
+            </>
+          )}
+        </>
       )}
 
       <p className="flow-note">
         <FiCalendar />
         {locked
           ? 'Este calendario permanecerá asociado a tu cuenta.'
-          : 'Después de guardar un calendario, no podrás seleccionar otro.'}
+          : 'Después de guardar, no podrás seleccionar otro calendario.'}
       </p>
     </Dialog>
   );
