@@ -5,10 +5,21 @@ import { ProfileTabs, WorkTimeline } from '../components/features/profile/Profil
 import { Alert, Avatar, Button, OrbitalGraphic, ProviderIcon, SectionHeading } from '../components/ui';
 import { useMemberIdentity } from '../features/github/MemberIdentityContext';
 import { paths } from '../constants/paths';
+import { useState } from 'react';
+import { EditProfileDialog } from '../components/features/profile/EditProfileDialog';
+import { ExperienceEditor } from '../components/features/profile/ExperienceEditor';
+import { updateWorkExperience } from '../api/profileApi';
+import { useUI } from '../contexts/UIContext';
 
 export default function ProfilePage() {
   const member = useMemberIdentity();
   const profile = member?.profile;
+  const [editing, setEditing] = useState(false);
+  const [editingExperienceId, setEditingExperienceId] = useState<string | null>(null);
+  const [savingExperience, setSavingExperience] = useState(false);
+
+  const { notify } = useUI();
+
   if (!member) return <Alert tone="warning">No se pudo consultar tu perfil.</Alert>;
   if (!profile) return <MemberShell />;
 
@@ -21,7 +32,7 @@ export default function ProfilePage() {
   return <MemberShell>
     <SectionHeading title="Mi perfil" eyebrow="MI CUENTA" accentPeriod actions={<>
       <span className="profile-private-indicator"><FiLock />Vista privada</span>
-      <Button variant="secondary" size="small" disabled title={editingUnavailable}>Editar información</Button>
+      <Button variant="secondary" size="small" onClick={() => setEditing(true)}>Editar información</Button>
     </>} />
     <div className="profile-hero">
       <Avatar name={fullName || profile.handleName} src={profile.profilePicture} size="large" />
@@ -50,10 +61,63 @@ export default function ProfilePage() {
       </section>
       <aside>
         <div className="profile-section-head"><h3>Experiencia laboral</h3><small>Añadida por ti</small></div>
-        {experiences.length ? <WorkTimeline experiences={experiences} /> : <p className="flow-note">Aún no agregaste experiencia laboral.</p>}
+        {experiences.length ? (
+          <WorkTimeline
+            experiences={experiences}
+            onEdit={setEditingExperienceId}
+          />
+        ) : (
+          <p className="flow-note">
+            Aún no agregaste experiencia laboral.
+          </p>
+        )}
         <button type="button" className="flow-link profile-add-experience" disabled title={editingUnavailable}><FiPlus />Agregar experiencia</button>
       </aside>
     </div>
     <div className="profile-connections-entry"><ProviderIcon provider="google" /><ProviderIcon provider="github" /><div><h3>Conecta tus herramientas a tu perfil.</h3><p>Gestiona Google Calendar y GitHub desde Conexiones.</p></div><TextLink to={paths.connections}>Ir a conexiones</TextLink></div>
+    {editing && (
+      <EditProfileDialog
+        profile={profile}
+        onClose={() => setEditing(false)}
+      />
+    )}
+    {editingExperienceId && (() => {
+      const selectedExperience = profile.workExperiences.find(
+        experience => experience.id === editingExperienceId
+      );
+
+      if (!selectedExperience) return null;
+
+      return (
+        <ExperienceEditor
+          experience={selectedExperience}
+          saving={savingExperience}
+          onClose={() => setEditingExperienceId(null)}
+          onSave={handleSaveExperience}
+        />
+      );
+    })()}
   </MemberShell>;
+
+  async function handleSaveExperience(
+    payload: Parameters<typeof updateWorkExperience>[1]
+  ) {
+    if (!editingExperienceId)
+      throw new Error('No se seleccionó una experiencia laboral.');
+    setSavingExperience(true);
+
+    try {
+      const result = await updateWorkExperience(editingExperienceId, payload);
+      setEditingExperienceId(null);
+
+      member!.retry();
+
+      notify(
+        result.message || 'Experiencia laboral actualizada correctamente.',
+        'success'
+      );
+    } finally {
+      setSavingExperience(false);
+    }
+  }
 }

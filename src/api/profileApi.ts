@@ -2,6 +2,7 @@ import { sendRequest } from './httpClient';
 import type { CreateAdditionalInfoResponse } from '../types/profile';
 import type { Profile, ProfileResponse } from '../types/profile-response.types';
 import { ApiError } from '../types/api';
+import type { UpdateProfilePayload, UpdateProfileResponse } from '../types/profile';
 
 export async function getOwnProfile(signal?: AbortSignal): Promise<Profile> {
   const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
@@ -32,4 +33,60 @@ export async function createAdditionalInfo(formData: FormData) {
     method: 'POST',
     body: formData,
   });
+}
+
+export async function updateOwnProfile(payload: UpdateProfilePayload):
+  Promise<UpdateProfileResponse> {
+  const result = await sendRequest<UpdateProfileResponse>(
+    '/api/v1/profile', {
+    method: 'PATCH',
+    body: payload,
+  }
+  );
+  if (!result?.success) {
+    throw new ApiError(result?.message ?? 'No se pudo actualizar el perfil.', 500);
+  }
+
+  return result;
+}
+
+export async function updateProfilePicture(file: File): Promise<UpdateProfileResponse> {
+  const formData = new FormData();
+  formData.append('profilePicture', file);
+
+  const result = await sendRequest<UpdateProfileResponse>(
+    '/api/v1/profile', {
+    method: 'PATCH',
+    body: formData,
+  }
+  );
+  if (!result?.success) {
+    throw new ApiError(result?.message ?? 'No se pudo actualizar la foto de perfil.', 500);
+  }
+
+  return result;
+}
+
+export interface UpdateWorkExperiencePayload {
+  title?: string;
+  companyName?: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string | null;
+  visibility?: boolean;
+}
+
+export async function updateWorkExperience(id: string, payload: UpdateWorkExperiencePayload):
+  Promise<{ success: boolean; message: string }> {
+  const result = await sendRequest<{ success: boolean; message: string; }>(
+    `/api/v1/profile/work-experience/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: payload,
+  }
+  );
+  if (!result?.success) {
+    throw new ApiError(result?.message ?? 'No se pudo actualizar la experiencia laboral.', 500);
+  }
+
+  return result;
 }
