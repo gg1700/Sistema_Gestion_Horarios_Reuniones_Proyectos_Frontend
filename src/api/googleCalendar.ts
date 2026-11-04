@@ -75,6 +75,11 @@ export const googleCalendarApi = {
       method: "PUT",
       body: JSON.stringify({ calendarId })
     }),
+  createCalendar: (name: string, timeZone: string) =>
+    request<SelectedCalendar>("/calendars", {
+      method: "POST",
+      body: JSON.stringify({ name, timeZone })
+    }),
   disconnect: () => request<DisconnectResult>("", { method: "DELETE" }),
   connect: () => window.location.assign(`${baseUrl}/connect`)
 };

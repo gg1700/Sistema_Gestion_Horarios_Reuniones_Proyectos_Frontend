@@ -76,7 +76,44 @@ export function useGoogleCalendar() {
       setSaving(false);
     }
   }, []);
+  const createCalendar = useCallback(async (name: string, timeZone: string) => {
+    setSaving(true);
+    setError("");
 
+    try {
+      const result = await googleCalendarApi.createCalendar(name, timeZone);
+
+      setStatus({
+        status: "connected",
+        calendarId: result.calendarId,
+        calendarName: result.calendarName,
+        reconnectRequired: false
+      });
+
+      setCalendarList(prev => prev ? {
+        ...prev,
+        selectedCalendarId: result.calendarId,
+        connectionStatus: "connected",
+        calendars: [...prev.calendars, {
+          id: result.calendarId,
+          name: result.calendarName,
+          description: "",
+          timezone: result.timezone,
+          primary: false,
+          canWrite: true,
+          accessRole: "owner",
+          color: null
+        }]
+      } : prev);
+
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear el calendario.");
+      throw err;
+    } finally {
+      setSaving(false);
+    }
+  }, []);
   const disconnect = useCallback(async () => {
     setSaving(true);
     setError("");
@@ -106,6 +143,7 @@ export function useGoogleCalendar() {
     refreshStatus,
     loadCalendars,
     selectCalendar,
+    createCalendar,
     disconnect,
     connect: googleCalendarApi.connect
   };
