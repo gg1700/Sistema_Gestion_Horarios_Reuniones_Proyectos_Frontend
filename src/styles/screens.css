@@ -529,3 +529,91 @@ button.agenda-event:hover { background: #254b3a; }
   .proposal-result-people { flex-direction: column; gap: 8px; }
   .flow-account-menu { position: fixed; right: 16px; top: 74px; max-width: calc(100vw - 32px); }
 }
+
+
+/* Listado real de solicitudes de reunión. */
+.meeting-requests-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0 0 24px;
+}
+
+.meeting-requests-direction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meeting-requests-direction button {
+  border: 1px solid #355341;
+  border-radius: 999px;
+  padding: 9px 16px;
+  background: transparent;
+  color: #90b69e;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.meeting-requests-direction button:hover {
+  border-color: #7ab993;
+  color: #c5e8d0;
+}
+
+.meeting-requests-direction button.is-active {
+  background: #1b382b;
+  border-color: var(--ui-mint);
+  color: #c6f4d7;
+}
+
+.meeting-requests-direction button:focus-visible {
+  outline: 2px solid var(--ui-mint);
+  outline-offset: 3px;
+}
+
+.meeting-requests-filters {
+  width: min(230px, 100%);
+}
+
+.meeting-requests-filters .ui-field {
+  margin: 0;
+}
+
+.meeting-request-response {
+  color: #a3d8b5 !important;
+}
+
+.meeting-requests-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.meeting-requests-pagination > span {
+  color: #83a891;
+  font-size: 10px;
+}
+
+@media (max-width: 520px) {
+  .meeting-requests-toolbar {
+    align-items: stretch;
+  }
+
+  .meeting-requests-filters {
+    width: 100%;
+  }
+
+  .meeting-requests-toolbar > .ui-button {
+    align-self: flex-start;
+  }
+
+  .meeting-requests-pagination {
+    gap: 8px;
+  }
+}

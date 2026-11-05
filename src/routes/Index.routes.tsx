@@ -27,6 +27,7 @@ import ProfileLinkPage from '../pages/ProfileLinkPage';
 import ProfileOriginsPage from '../pages/ProfileOriginsPage';
 import RegisterPage from '../pages/RegisterPage';
 import CompleteProfilePage from '../pages/CompleteProfilePage';
+import MeetingRequestsPage from '../pages/MeetingRequestsPage';
 
 /*
 INTEGRACIÓN DE PROTECCIÓN DE RUTAS — COMENTARIO, NO AUTENTICACIÓN IMPLEMENTADA
@@ -59,10 +60,12 @@ function RouterPage() {
       <Route path={paths.welcome} element={<WelcomePage />} />
       <Route path={paths.dashboard} element={<DashboardPage />} />
       <Route path={paths.agenda} element={<AgendaPage />} />
-      <Route path={paths.requests} element={<RequestsPage />} />
+
+      <Route path={paths.requests} element={<MeetingRequestsPage />} />
       <Route path={paths.requestReview} element={<RequestsPage />} />
       <Route path={paths.changes} element={<RequestsPage />} />
       <Route path={paths.changeReview} element={<RequestsPage />} />
+
       <Route path={paths.changeResult} element={<ChangeResultPage />} />
 
       <Route path={paths.profile} element={<ProfilePage />} />
