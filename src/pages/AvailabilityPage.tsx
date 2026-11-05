@@ -6,10 +6,13 @@ import { Person, StatusDot, TextLink } from '../components/features/flows/FlowPr
 import { Dialog } from '../components/modals';
 import { Alert, Button, ButtonLink, EmptyState, Input, SectionHeading, Textarea } from '../components/ui';
 import { useMockFlow } from '../contexts/MockFlowContext';
-import { DEMO_TODAY, guest, isRangeFree, publicProfileAvailable, calendarReady } from '../mocks/flow';
+import { OWNER_TIME_ZONE, DEMO_TODAY, isRangeFree, publicProfileAvailable, calendarReady } from '../mocks/flow';
 import { PublicProfileUnavailable } from '../components/features/profile/PublicProfileUnavailable';
 import { paths, flowPaths } from '../constants/paths';
-import { dateLabel, isDateKey, newMockId, rangeLabel, shiftDate } from '../utils/calendar';
+import { dateLabel, isDateKey, rangeLabel, shiftDate } from '../utils/calendar';
+import { createMeetingRequest } from '../api/meetingRequestsApi';
+import { useMemberIdentity } from '../features/github/MemberIdentityContext';
+import type { CreateMeetingRequestPayload, CreatedMeetingRequest } from '../types/meetingRequests';
 
 const slotTimes = [['09:00', '09:30'], ['10:30', '11:00'], ['14:00', '14:30'], ['16:00', '16:30']];
 /*
@@ -41,16 +44,20 @@ esta solicitud; 404 token inválido/caducado. pending -> sin reunión; rejected 
 reunión; accepted -> habilitar "Ver mi reunión" con participantUrl devuelto.
 */
 export default function AvailabilityPage({ overlay }: { overlay?: ReactNode }) {
-  const { state, dispatch } = useMockFlow();
+  const { state } = useMockFlow();
+  const member = useMemberIdentity();
   const { publicHandle } = useParams();
   const [query, setQuery] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(isDateKey(query.get('fecha')) ? query.get('fecha')! : '2026-10-28');
   const [month, setMonth] = useState(`${selectedDate.slice(0, 7)}-01`);
   const [chosenTime, setChosenTime] = useState('10:30');
-  const [name, setName] = useState(guest.name);
-  const [email, setEmail] = useState(guest.email);
-  const [title, setTitle] = useState('Revisión de arquitectura');
-  const [message, setMessage] = useState('Me gustaría revisar la propuesta de integración de servicios y acordar los próximos pasos.');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [createdRequest, setCreatedRequest] =
+    useState<CreatedMeetingRequest | null>(null);
   const [error, setError] = useState('');
   const first = new Date(`${month}T12:00:00Z`);
   const firstWeekDay = (first.getUTCDay() + 6) % 7;
@@ -61,22 +68,47 @@ export default function AvailabilityPage({ overlay }: { overlay?: ReactNode }) {
   const availabilityEnabled = calendarReady(state);
   const availableSlots = availabilityEnabled && isWeekday(selectedDate) && selectedDate >= DEMO_TODAY ? slots.filter(slot => isRangeFree(state, slot)) : [];
   const selected = availableSlots.find(slot => slot.start.includes(`T${chosenTime}:`)) ?? availableSlots[0];
-  const booking = state.requests.find(request => request.id === query.get('solicitud'));
-  const bookingMeeting = state.meetings.find(meeting => meeting.id === booking?.meetingId);
   const ownerName = `${state.profile.name} ${state.profile.firstSurname}`;
+  const isGuest = member?.error === 'Sesion no proporcionada';
+  const identityReady =
+    Boolean(member?.profile) || isGuest;
 
-
-  function closeDialog() { setQuery(current => { const next = new URLSearchParams(current); next.delete('solicitar'); next.delete('solicitud'); return next; }); }
+  function closeDialog() {
+    setCreatedRequest(null);
+    setQuery(current => {
+      const next = new URLSearchParams(current);
+      next.delete('solicitar');
+      next.delete('solicitud');
+      return next;
+    });
+  }
   function moveMonth(offset: number) { setMonth(new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + offset, 1, 12)).toISOString().slice(0, 10)); }
-  function sendRequest(event: FormEvent<HTMLFormElement>) {
+  async function sendRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selected) return;
+    if (!selected || !publicHandle || !identityReady || sending)
+      return;
+
     try {
-      const id = newMockId('request');
-      dispatch({ type: 'request-booking', request: { id, calendarId: state.account.google.calendarId!, title: title.trim(), guestName: name.trim(), guestEmail: email.trim(), message: message.trim(), ...selected, status: 'pending' } });
-      setQuery({ fecha: selectedDate, solicitud: id });
+      setSending(true);
       setError('');
-    } catch (failure) { setError(failure instanceof Error ? failure.message : 'No se pudo enviar la solicitud.'); }
+      const payload: CreateMeetingRequestPayload = {
+        recipientHandle: publicHandle.replace(/^@/, ''),
+        title: title.trim(),
+        startsAt: new Date(selected.start).toISOString(),
+        endsAt: new Date(selected.end).toISOString(),
+        timeZone: OWNER_TIME_ZONE,
+        ...(isGuest ? { guestName: name.trim(), guestEmail: email.trim(), } : {}),
+        ...(message.trim() ? { message: message.trim() } : {}),
+      };
+
+      const result = await createMeetingRequest(payload);
+      setCreatedRequest(result);
+      setQuery({ fecha: selectedDate });
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'No se pudo enviar la solicitud.');
+    } finally {
+      setSending(false);
+    }
   }
 
   if (state.account.deleted || (!overlay && !publicProfileAvailable(state, publicHandle))) return <VisitorShell><PublicProfileUnavailable /></VisitorShell>;
@@ -96,30 +128,151 @@ export default function AvailabilityPage({ overlay }: { overlay?: ReactNode }) {
         })}</div></div><div className="availability-calendar-legend"><span>• &nbsp; Día con horarios disponibles</span><span>La Paz · UTC−4</span></div>
       <p className="flow-note"><FiClock /><span>Los horarios se muestran en la zona de {state.profile.name}.<br />America/La_Paz · UTC−4</span></p>
     </section><aside className="availability-slots"><p className="ui-eyebrow">ELIGE UN HORARIO</p><h2>{dateLabel(selectedDate, { year: undefined })}.</h2><p>Consulta los espacios de este día.</p>
-      <div className="availability-slot-list">{availabilityEnabled && isWeekday(selectedDate) && selectedDate >= DEMO_TODAY ? slots.map(slot => {
-        const free = isRangeFree(state, slot);
-        const isSelected = selected?.start === slot.start;
-        return <button type="button" key={slot.start} disabled={!free} aria-pressed={isSelected} className={isSelected ? 'is-selected' : ''} onClick={() => { setChosenTime(slot.start.slice(11, 16)); setError(''); }}>
-          {isSelected ? <FiCheck /> : <FiClock />}<span>{rangeLabel(slot)}</span><small>{free ? 'Disponible' : 'Ocupado'}</small>
-        </button>;
-      }) : <p className="availability-no-slots">{availabilityEnabled ? 'No hay espacios publicados para este día. Elige otra fecha.' : 'La disponibilidad está temporalmente deshabilitada.'}</p>}</div>
-      <Button disabled={!selected} onClick={() => setQuery(current => { const next = new URLSearchParams(current); next.set('solicitar', '1'); return next; })} trailingIcon={<FiArrowRight />}>Solicitar este horario</Button>
-      <p className="flow-note"><FiShield />Solo se muestra disponibilidad. Los títulos y detalles de la agenda de {state.profile.name} son privados.</p>
-    </aside></div>
+        <div className="availability-slot-list">{availabilityEnabled && isWeekday(selectedDate) && selectedDate >= DEMO_TODAY ? slots.map(slot => {
+          const free = isRangeFree(state, slot);
+          const isSelected = selected?.start === slot.start;
+          return <button type="button" key={slot.start} disabled={!free} aria-pressed={isSelected} className={isSelected ? 'is-selected' : ''} onClick={() => { setChosenTime(slot.start.slice(11, 16)); setError(''); }}>
+            {isSelected ? <FiCheck /> : <FiClock />}<span>{rangeLabel(slot)}</span><small>{free ? 'Disponible' : 'Ocupado'}</small>
+          </button>;
+        }) : <p className="availability-no-slots">{availabilityEnabled ? 'No hay espacios publicados para este día. Elige otra fecha.' : 'La disponibilidad está temporalmente deshabilitada.'}</p>}</div>
+        <Button disabled={!selected} onClick={() => setQuery(current => { const next = new URLSearchParams(current); next.set('solicitar', '1'); return next; })} trailingIcon={<FiArrowRight />}>Solicitar este horario</Button>
+        <p className="flow-note"><FiShield />Solo se muestra disponibilidad. Los títulos y detalles de la agenda de {state.profile.name} son privados.</p>
+      </aside></div>
     {query.has('solicitar') && selected && <Dialog open onOpenChange={open => { if (!open) closeDialog(); }} title="Da el primer paso." eyebrow="SOLICITUD DE REUNIÓN" size="large" className="booking-dialog"
-      footer={<><Button variant="ghost" onClick={closeDialog}>Volver a horarios</Button><Button type="submit" form="booking-form" trailingIcon={<FiArrowRight />}>Enviar solicitud</Button></>}>
-      <Person name={ownerName} detail={`Reunión con ${ownerName} · @${state.profile.handle}`} /><div className="booking-slot-summary"><p><FiCalendar />{dateLabel(selected.start)}</p><p><FiClock />{rangeLabel(selected)}<small>La Paz · UTC−4</small></p></div>
-      <form id="booking-form" className="flow-form" onSubmit={sendRequest}>
-        {error && <Alert tone="danger">{error}</Alert>}<div className="flow-fields"><Input label="Nombre y apellido" required autoFocus maxLength={150} autoComplete="name" value={name} onChange={event => setName(event.target.value)} /><Input label="Correo electrónico" type="email" required maxLength={254} autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} /></div>
-        <Input label="Asunto" required maxLength={150} value={title} onChange={event => setTitle(event.target.value)} /><Textarea label="Mensaje (opcional)" maxLength={1000} rows={3} value={message} onChange={event => setMessage(event.target.value)} />
-      </form><p className="flow-note"><FiClock />La reunión quedará pendiente hasta que {state.profile.name} acepte tu solicitud.</p>
-    </Dialog>}
-    {booking && <Dialog open onOpenChange={open => { if (!open) closeDialog(); }} title={booking.status === 'pending' ? 'Solicitud enviada.' : booking.status === 'accepted' ? 'Tu reunión está confirmada.' : 'Tu solicitud no fue aceptada.'} eyebrow="REUNIÓN / SOLICITUD RECIBIDA" className="booking-receipt-dialog"
-      footer={<><Button variant="secondary" onClick={closeDialog}>Volver a horarios</Button>{bookingMeeting ? <ButtonLink to={flowPaths.participant(bookingMeeting.participantToken)} trailingIcon={<FiArrowRight />}>Ver mi reunión</ButtonLink> : <Button onClick={closeDialog} trailingIcon={<FiArrowRight />}>Ver disponibilidad</Button>}</>}>
-      <span className="flow-outcome-icon"><FiCheck /></span><h3>Tu solicitud llegó a {ownerName}.</h3><p className="flow-copy">{booking.status === 'pending' ? 'El horario todavía necesita su aprobación.' : booking.status === 'accepted' ? 'Ya puedes consultar los datos de tu reunión.' : 'El horario no se añadió a la agenda.'}<br />Recibirás la respuesta en <strong>{booking.guestEmail}</strong>.</p>
-      <div className="booking-receipt-summary"><StatusDot tone={booking.status === 'pending' ? 'warning' : booking.status === 'rejected' ? 'danger' : 'success'}>{booking.status === 'pending' ? 'Pendiente de respuesta' : booking.status === 'accepted' ? 'Confirmada' : 'Rechazada'}</StatusDot><h3>{booking.title}</h3><p><FiCalendar />{dateLabel(booking.start)}</p><p><FiClock />{rangeLabel(booking)} · La Paz (UTC−4)</p></div>
-      <p className="flow-note">El enlace de la reunión estará disponible cuando la solicitud se confirme.</p>
-    </Dialog>}
-    {overlay}
-  </VisitorShell>;
+      footer={<><Button variant="ghost" onClick={closeDialog}>Volver a horarios</Button>
+        <Button
+          type="submit"
+          form="booking-form"
+          loading={sending}
+          disabled={!identityReady}
+          trailingIcon={<FiArrowRight />}
+        >
+          Enviar solicitud
+        </Button>
+        <Person name={ownerName} detail={`Reunión con ${ownerName} · @${state.profile.handle}`} /><div className="booking-slot-summary"><p><FiCalendar />{dateLabel(selected.start)}</p><p><FiClock />{rangeLabel(selected)}<small>La Paz · UTC−4</small></p></div>
+        <form id="booking-form" className="flow-form" onSubmit={sendRequest}>
+          {error && <Alert tone="danger">{error}</Alert>}
+
+          {member?.loading ? (
+            <p role="status">Comprobando tu sesión...</p>
+          ) : member?.profile ? (
+            <>
+              <p className="flow-copy">
+                Estás enviando esta solicitud con tu cuenta.
+              </p>
+
+              <Person
+                name={`${member.profile.name} ${member.profile.firstSurname}`}
+                detail={member.profile.email}
+              />
+            </>
+          ) : isGuest ? (
+            <>
+              <div className="flow-fields">
+                <Input
+                  label="Nombre y apellido"
+                  required
+                  maxLength={100}
+                  autoComplete="name"
+                  value={name}
+                  onChange={event => setName(event.target.value)}
+                />
+
+                <Input
+                  label="Correo electrónico"
+                  type="email"
+                  required
+                  maxLength={200}
+                  autoComplete="email"
+                  value={email}
+                  onChange={event => setEmail(event.target.value)}
+                />
+              </div>
+            </>
+          ) : (
+            <Alert tone="warning">
+              No se pudo comprobar tu sesión. Reintenta antes de enviar la solicitud.
+
+              <Button
+                size="small"
+                variant="secondary"
+                onClick={() => member?.retry()}
+              >
+                Reintentar
+              </Button>
+            </Alert>
+          )}
+
+          <Input
+            label="Asunto"
+            required
+            maxLength={100}
+            value={title}
+            onChange={event => setTitle(event.target.value)}
+          />
+
+          <Textarea
+            label="Mensaje (opcional)"
+            minLength={10}
+            maxLength={2000}
+            rows={3}
+            value={message}
+            onChange={event => setMessage(event.target.value)}
+          />
+        </form>
+        <p className="flow-note"><FiClock />La reunión quedará pendiente hasta que {state.profile.name} acepte tu solicitud.</p>
+      </Dialog>}
+      {createdRequest && (
+        <Dialog
+          open
+          onOpenChange={open => {
+            if (!open) closeDialog();
+          }}
+          title="Solicitud enviada."
+          eyebrow="REUNIÓN / SOLICITUD RECIBIDA"
+          className="booking-receipt-dialog"
+          footer={
+            <Button
+              variant="secondary"
+              onClick={closeDialog}
+            >
+              Volver a disponibilidad
+            </Button>
+          }
+        >
+          <span className="flow-outcome-icon">
+            <FiCheck />
+          </span>
+
+          <h3>Tu solicitud ha sido registrada.</h3>
+
+          <p className="flow-copy">
+            El propietario del calendario podrá revisar tu solicitud.
+            El horario todavía no está confirmado.
+          </p>
+
+          <div className="booking-receipt-summary">
+            <StatusDot tone="warning">
+              Pendiente de respuesta
+            </StatusDot>
+
+            <h3>{createdRequest.title}</h3>
+
+            <p>
+              <FiCalendar />
+              {dateLabel(createdRequest.startsAt)}
+            </p>
+
+            <p>
+              <FiClock />
+              {rangeLabel({
+                start: createdRequest.startsAt,
+                end: createdRequest.endsAt,
+              })}
+            </p>
+          </div>
+        </Dialog>
+      )}
+      {overlay}
+    </VisitorShell>;
 }

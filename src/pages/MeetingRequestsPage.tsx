@@ -239,7 +239,10 @@ export default function MeetingRequestsPage() {
                 cell: request => (
                   <Person
                     name={getCounterpartName(request)}
-                    detail={`@${request.handleName}`}
+                    detail={
+                        request.guestEmail ??
+                        (request.handleName ? `@${request.handleName}` : '')
+                    }
                   />
                 ),
               },

@@ -5,6 +5,8 @@ import type {
   MeetingRequestItem,
   MeetingRequestsQuery,
   MeetingRequestsResponse,
+  CreateMeetingRequestPayload,
+  CreatedMeetingRequest
 } from '../types/meetingRequests';
 
 export async function getMeetingRequests(
@@ -38,6 +40,31 @@ export async function getMeetingRequests(
   if (!response.success || !Array.isArray(response.data)) {
     throw new Error(
       response.message || 'No se pudieron obtener las solicitudes.'
+    );
+  }
+
+  return response.data;
+}
+
+interface CreateMeetingRequestApiResponse {
+  success: boolean;
+  message: string;
+  data?: CreatedMeetingRequest;
+}
+
+export async function createMeetingRequest(
+  payload: CreateMeetingRequestPayload): Promise<CreatedMeetingRequest> {
+  const response = await sendRequest<CreateMeetingRequestApiResponse>(
+    '/api/v1/meeting-requests/',
+    {
+      method: 'POST',
+      body: payload,
+    }
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(
+      response.message || 'No se pudo enviar la solicitud.'
     );
   }
 
