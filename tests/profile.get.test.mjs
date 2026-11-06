@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { Window } from 'happy-dom';
 import { createServer } from 'vite';
 
-let dom, server, React, act, createRoot, MemoryRouter, AppProviders, MockFlowProvider, MemberIdentityProvider, ProfilePage;
+let dom, server, React, act, createRoot, MemoryRouter, AppProviders, MemberIdentityProvider, ProfilePage;
 let root, container, requests, responder;
 const originalFetch = globalThis.fetch;
 const json = (data, status = 200) => Response.json(data, { status });
@@ -13,6 +13,7 @@ const incomplete = () => ({
   phones: [], contactEmails: [], addresses: [], countries: [], workExperiences: [], links: [],
   requiresProfileCompletion: false,
 });
+
 const complete = () => ({
   ...incomplete(), profilePicture: 'https://example.test/avatar.png', surname: { surname: 'López', visible: false },
   phones: [{ id: 'p1', phoneNumber: '71234567', countryCode: '591', countryName: 'Bolivia', visible: false }],
@@ -37,10 +38,10 @@ before(async () => {
   ({ MemoryRouter } = await import('react-router'));
   server = await createServer({ server: { middlewareMode: true, hmr: false, watch: null }, appType: 'custom' });
   ({ AppProviders } = await server.ssrLoadModule('/src/contexts/AppProviders.tsx'));
-  ({ MockFlowProvider } = await server.ssrLoadModule('/src/contexts/MockFlowContext.tsx'));
   ({ MemberIdentityProvider } = await server.ssrLoadModule('/src/features/github/MemberIdentityContext.tsx'));
   ({ default: ProfilePage } = await server.ssrLoadModule('/src/pages/ProfilePage.tsx'));
 });
+
 beforeEach(() => {
   dom.sessionStorage.clear(); requests = [];
   responder = () => json({ success: true, data: complete() });
@@ -50,15 +51,32 @@ beforeEach(() => {
   };
   container = dom.document.createElement('div'); dom.document.body.append(container); root = createRoot(container);
 });
+
 afterEach(async () => { await act(() => root.unmount()); container.remove(); });
+
 after(async () => { globalThis.fetch = originalFetch; await server?.close(); await dom.happyDOM.close(); });
+
 async function mount() {
-  await act(async () => root.render(React.createElement(AppProviders, null,
-    React.createElement(MockFlowProvider, null, React.createElement(MemoryRouter, { initialEntries: ['/perfil?editar=1&experiencia=nueva'] },
-      React.createElement(MemberIdentityProvider, null, React.createElement(ProfilePage)))))));
+  await act(async () => root.render(
+    React.createElement(
+      AppProviders,
+      null,
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/perfil?editar=1&experiencia=nueva'] },
+        React.createElement(
+          MemberIdentityProvider,
+          null,
+          React.createElement(ProfilePage)
+        )
+      )
+    )
+  ));
 }
+
 const text = () => container.textContent;
 const button = label => [...container.querySelectorAll('button')].find(item => item.textContent.trim() === label);
+
 function noMock() { assert.doesNotMatch(text(), /Mateo|Gutiérrez|mateosilva|Nexo Digital/); }
 
 test('consulta una vez por sesión y muestra todos los datos propios, también los privados', async () => {
