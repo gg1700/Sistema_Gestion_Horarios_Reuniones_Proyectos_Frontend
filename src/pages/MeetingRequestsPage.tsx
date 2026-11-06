@@ -86,6 +86,17 @@ function formatRequestSchedule(request: MeetingRequestItem) {
     };
 }
 
+function formatRequestCreatedAt(createdAt: string) {
+    return new Intl.DateTimeFormat('es-BO', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'America/La_Paz',
+    }).format(new Date(createdAt));
+}
+
 function getCounterpartName(request: MeetingRequestItem) {
     return (
         `${request.name} ${request.firstSurname}`.trim()
@@ -105,6 +116,9 @@ export default function MeetingRequestsPage() {
     const [decidingId, setDecidingId] = useState<string | null>(null);
     const [decisionError, setDecisionError] = useState('');
     const [decisionMessage, setDecisionMessage] = useState('');
+
+    const [viewingRequest, setViewingRequest] =
+        useState<MeetingRequestItem | null>(null);
 
     const [editingRequest, setEditingRequest] =
         useState<MeetingRequestItem | null>(null);
@@ -166,6 +180,7 @@ export default function MeetingRequestsPage() {
                     : 'Solicitud rechazada.',
             );
 
+            setViewingRequest(null);
             refresh();
         } catch (failure) {
             setDecisionError(
@@ -477,59 +492,15 @@ export default function MeetingRequestsPage() {
                             {
                                 id: 'actions',
                                 heading: 'ACCIONES',
-                                cell: request => {
-                                    if (request.status !== 'pending') {
-                                        return <span>—</span>;
-                                    }
-
-                                    if (action === 'sent') {
-                                        return (
-                                            <div className="meeting-request-actions">
-                                                <Button
-                                                    size="small"
-                                                    variant="secondary"
-                                                    onClick={() => openEditDialog(request)}
-                                                >
-                                                    Editar
-                                                </Button>
-
-                                                <Button
-                                                    size="small"
-                                                    variant="danger"
-                                                    onClick={() => openCancelDialog(request)}
-                                                >
-                                                    Cancelar
-                                                </Button>
-                                            </div>
-                                        );
-                                    }
-
-                                    return (
-                                        <div className="meeting-request-actions">
-                                            <Button
-                                                size="small"
-                                                disabled={decidingId !== null}
-                                                loading={decidingId === request.id}
-                                                onClick={() =>
-                                                    void resolveRequest(request, 'accepted')
-                                                }
-                                            >
-                                                Aceptar
-                                            </Button>
-
-                                            <Button
-                                                size="small"
-                                                variant="danger"
-                                                disabled={decidingId !== null}
-                                                onClick={() =>
-                                                    void resolveRequest(request, 'rejected')
-                                                }
-                                            >
-                                                Rechazar
-                                            </Button>
-                                        </div>
-                                    );
-                                },
+                                cell: request => (
+                                    <Button
+                                        size="small"
+                                        variant="secondary"
+                                        onClick={() => setViewingRequest(request)}
+                                    >
+                                        Ver detalle
+                                    </Button>
+                                ),
                             },
                         ]}
                     />
@@ -692,6 +663,204 @@ export default function MeetingRequestsPage() {
                                 {cancellingRequest.timeZone}
                             </small>
                         </div>
+                    </div>
+                )}
+            </Dialog>
+
+            <Dialog
+                open={viewingRequest !== null}
+                onOpenChange={open => {
+                    if (!open && decidingId === null) {
+                        setViewingRequest(null);
+                    }
+                }}
+                title="Detalle de la solicitud"
+                eyebrow="SOLICITUD DE REUNIÓN"
+                description="Consulta toda la información relacionada con esta solicitud."
+                size="large"
+                footer={
+                    <>
+                        <Button
+                            variant="ghost"
+                            disabled={
+                                decidingId !== null ||
+                                savingEdit ||
+                                cancelling
+                            }
+                            onClick={() => setViewingRequest(null)}
+                        >
+                            Cerrar
+                        </Button>
+
+                        {viewingRequest?.status === 'pending' && action === 'received' && (
+                            <>
+                                <Button
+                                    variant="danger"
+                                    disabled={decidingId !== null}
+                                    loading={decidingId === viewingRequest.id}
+                                    onClick={() =>
+                                        void resolveRequest(viewingRequest, 'rejected')
+                                    }
+                                >
+                                    Rechazar
+                                </Button>
+
+                                <Button
+                                    disabled={decidingId !== null}
+                                    loading={decidingId === viewingRequest.id}
+                                    onClick={() =>
+                                        void resolveRequest(viewingRequest, 'accepted')
+                                    }
+                                >
+                                    Aceptar
+                                </Button>
+                            </>
+                        )}
+
+                        {viewingRequest?.status === 'pending' && action === 'sent' && (
+                            <>
+                                <Button
+                                    variant="danger"
+                                    disabled={cancelling || savingEdit}
+                                    onClick={() => {
+                                        const request = viewingRequest;
+
+                                        setViewingRequest(null);
+                                        openCancelDialog(request);
+                                    }}
+                                >
+                                    Cancelar solicitud
+                                </Button>
+
+                                <Button
+                                    variant="secondary"
+                                    disabled={cancelling || savingEdit}
+                                    onClick={() => {
+                                        const request = viewingRequest;
+
+                                        setViewingRequest(null);
+                                        openEditDialog(request);
+                                    }}
+                                >
+                                    Editar solicitud
+                                </Button>
+                            </>
+                        )}
+                    </>
+                }
+            >
+                {viewingRequest && (
+                    <div className="flow-form">
+                        {decisionError && (
+                            <Alert tone="danger">
+                                {decisionError}
+                            </Alert>
+                        )}
+
+                        <div>
+                            <p className="ui-eyebrow">
+                                ESTADO DE LA SOLICITUD
+                            </p>
+
+                            <StatusDot tone={getStatusTone(viewingRequest.status)}>
+                                {getStatusLabel(viewingRequest.status)}
+                            </StatusDot>
+                        </div>
+
+                        <div className="requests-table-title">
+                            <p className="ui-eyebrow">
+                                REUNIÓN
+                            </p>
+
+                            <strong>{viewingRequest.title}</strong>
+
+                            <small>
+                                {viewingRequest.message || 'No se añadió un mensaje.'}
+                            </small>
+                        </div>
+
+                        <div>
+                            <p className="ui-eyebrow">
+                                {action === 'received'
+                                    ? 'PERSONA QUE ENVÍA LA SOLICITUD'
+                                    : 'DESTINATARIO DE LA SOLICITUD'}
+                            </p>
+
+                            <Person
+                                name={getCounterpartName(viewingRequest)}
+                                detail={
+                                    viewingRequest.guestEmail ??
+                                    (viewingRequest.handleName
+                                        ? `@${viewingRequest.handleName}`
+                                        : '')
+                                }
+                                profilePicture={viewingRequest.profilePicture}
+                            />
+                        </div>
+
+                        <div className="requests-table-time">
+                            <p className="ui-eyebrow">
+                                HORARIO SOLICITADO
+                            </p>
+
+                            <strong>
+                                {formatRequestSchedule(viewingRequest).date}
+                            </strong>
+
+                            <small>
+                                {formatRequestSchedule(viewingRequest).range}
+                                <br />
+                                Zona horaria: {viewingRequest.timeZone}
+                            </small>
+                        </div>
+
+                        <div className="requests-table-time">
+                            <p className="ui-eyebrow">
+                                FECHA DE ENVÍO
+                            </p>
+
+                            <small>
+                                {formatRequestCreatedAt(viewingRequest.createdAt)}
+                            </small>
+                        </div>
+
+                        {viewingRequest.resolvedAt && (
+                            <div className="requests-table-time">
+                                <p className="ui-eyebrow">
+                                    FECHA DE RESOLUCIÓN
+                                </p>
+
+                                <small>
+                                    {formatRequestCreatedAt(viewingRequest.resolvedAt)}
+                                </small>
+                            </div>
+                        )}
+
+                        {viewingRequest.ownerResponseMessage && (
+                            <div className="requests-table-title">
+                                <p className="ui-eyebrow">
+                                    RESPUESTA DEL DESTINATARIO
+                                </p>
+
+                                <small>
+                                    {viewingRequest.ownerResponseMessage}
+                                </small>
+                            </div>
+                        )}
+
+                        {viewingRequest.status === 'pending' && action === 'received' && (
+                            <p className="flow-note">
+                                Al aceptar, la reunión quedará confirmada en tu agenda.
+                                Si rechazas la solicitud, no se creará la reunión.
+                            </p>
+                        )}
+
+                        {viewingRequest.status === 'pending' && action === 'sent' && (
+                            <p className="flow-note">
+                                Esta solicitud todavía está pendiente de respuesta.
+                                Puedes editarla o cancelarla desde el listado.
+                            </p>
+                        )}
                     </div>
                 )}
             </Dialog>
