@@ -73,6 +73,7 @@ test('consulta una vez por sesión y muestra todos los datos propios, también l
   assert.equal(requests[0].method, 'GET'); assert.equal(requests[0].credentials, 'include');
   assert.equal(requests[0].cache, 'no-store'); assert.equal(requests[0].body, undefined);
 });
+
 test('perfil incompleto conserva vacíos, sin completar con el mock o el correo de login', async () => {
   responder = () => json({ success: true, data: incomplete() });
   await mount();
@@ -82,15 +83,23 @@ test('perfil incompleto conserva vacíos, sin completar con el mock o el correo 
   const contact = container.querySelector('.profile-contact-section').textContent;
   assert.ok(!contact.includes('login@example.test')); noMock();
 });
-test('la consulta no abre editores mock ni envía escrituras', async () => {
+
+
+test('la consulta no envía escrituras y mantiene deshabilitada la acción no integrada', async () => {
   await mount();
-  for (const label of ['Editar información', 'Agregar experiencia']) {
-    assert.equal(button(label).disabled, true);
-    await act(async () => button(label).click());
-  }
+  const editButton = button('Editar información');
+  const addExperienceButton = button('Agregar experiencia');
+  assert.ok(editButton);
+  assert.equal(editButton.disabled, false);
+  assert.ok(addExperienceButton);
+  assert.equal(addExperienceButton.disabled, true);
   assert.equal(container.querySelectorAll('dialog').length, 0);
   assert.equal(requests.length, 1);
+  assert.match(requests[0].url, /\/api\/v1\/profile$/);
+  assert.equal(requests[0].method, 'GET');
+  assert.equal(requests[0].body, undefined);
 });
+
 test('401 por sesión ausente o usuario eliminado retira el contenido privado', async () => {
   responder = () => json({ success: false, message: 'Usuario no disponible' }, 401);
   await mount();
@@ -99,6 +108,7 @@ test('401 por sesión ausente o usuario eliminado retira el contenido privado', 
   assert.ok(!text().includes('login@example.test'));
   assert.ok(!text().includes('Datos personales')); noMock();
 });
+
 test('un error de servidor permite reintentar y recuperar el perfil real', async () => {
   responder = () => json({ success: false, message: 'No se pudo consultar el perfil' }, 500);
   await mount(); assert.match(text(), /No se pudo consultar el perfil/); noMock();
@@ -106,10 +116,12 @@ test('un error de servidor permite reintentar y recuperar el perfil real', async
   await act(async () => button('Reintentar').click());
   assert.match(text(), /Ana Pérez López/); assert.equal(requests.length, 2); noMock();
 });
+
 test('un fallo de red se comunica sin mostrar el perfil de demostración', async () => {
   responder = () => { throw new TypeError('Failed to fetch'); };
   await mount(); assert.match(text(), /No se pudo conectar con el servidor/); noMock();
 });
+
 test('mientras carga no muestra datos anteriores y cancela la lectura al salir', async () => {
   let resolve;
   responder = () => new Promise(done => { resolve = done; });
