@@ -3,7 +3,7 @@ import { Link, type LinkProps } from 'react-router';
 import { FiArrowRight, FiClock } from 'react-icons/fi';
 import { Avatar } from '../../ui/Avatar';
 import { dateLabel, rangeLabel } from '../../../utils/calendar';
-import type { TimeRange } from '../../../mocks/flow';
+import type { TimeRange } from '../../../types/calendar';
 
 export function TextLink({ children, icon = <FiArrowRight />, className = '', ...props }: LinkProps & { icon?: ReactNode }) {
   return <Link {...props} className={`flow-link ${className}`}>{children}<span aria-hidden="true">{icon}</span></Link>;
