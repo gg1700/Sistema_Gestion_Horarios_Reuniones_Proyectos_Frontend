@@ -24,7 +24,7 @@ const deferred = () => {
 };
 
 let dom, server, api, React, act, createRoot, MemoryRouter;
-let ProfilePreviewDialog, VisibilityPage, AppProviders, MockFlowProvider;
+let ProfilePreviewDialog, VisibilityPage, AppProviders, MemberIdentityProvider;
 let root, container;
 
 before(async () => {
@@ -55,7 +55,7 @@ before(async () => {
   ({ ProfilePreviewDialog } = await server.ssrLoadModule('/src/components/features/profile/ProfilePreviewDialog.tsx'));
   ({ default: VisibilityPage } = await server.ssrLoadModule('/src/pages/VisibilityPage.tsx'));
   ({ AppProviders } = await server.ssrLoadModule('/src/contexts/AppProviders.tsx'));
-  ({ MockFlowProvider } = await server.ssrLoadModule('/src/contexts/MockFlowContext.tsx'));
+  ({ MemberIdentityProvider } = await server.ssrLoadModule('/src/features/github/MemberIdentityContext.tsx'));
 });
 
 beforeEach(() => {
@@ -78,7 +78,7 @@ after(async () => {
 
 async function renderPreview(props = {}) {
   await act(() => root.render(React.createElement(ProfilePreviewDialog, {
-    open: true, onOpenChange() {}, ...props,
+    open: true, onOpenChange() { }, ...props,
   })));
 }
 
@@ -237,25 +237,78 @@ test('desde Visibilidad: abrir, cerrar, ocultar un contacto, guardar y volver a 
   globalThis.fetch = async (url, options) => {
     if (url.endsWith('/profile/preview')) {
       previewCalls += 1;
-      return response({ ...publicProfile(), contactEmails: visible ? [{ email: 'publico@example.test' }] : [] });
+
+      return response({
+        ...publicProfile(),
+        contactEmails: visible
+          ? [{ email: 'publico@example.test' }]
+          : [],
+      });
     }
     if (url.endsWith('/profile/visibility')) {
       if (options.method === 'PATCH') {
-        assert.deepEqual(JSON.parse(options.body), { changes: [{ type: 'email', id: 'contact-1', visible: false }] });
+        assert.deepEqual(JSON.parse(options.body), {
+          changes: [
+            {
+              type: 'email',
+              id: 'contact-1',
+              visible: false,
+            },
+          ],
+        });
+
         visible = false;
         return Response.json({ success: true });
       }
-      return response([{ type: 'email', id: 'contact-1', visible }]);
+
+      return response([
+        {
+          type: 'email',
+          id: 'contact-1',
+          visible,
+        },
+      ]);
     }
     assert.ok(url.endsWith('/profile'));
+
     return response({
-      ...publicProfile(), email: 'acceso@example.test',
-      contactEmails: [{ id: 'contact-1', email: 'publico@example.test' }],
+      ...publicProfile(),
+      id: 'user-1',
+      email: 'acceso@example.test',
+      profilePicture: null,
+      surname: null,
+      phones: [],
+      addresses: [],
+      countries: [],
+      workExperiences: [],
+      links: [],
+      requiresProfileCompletion: false,
+      contactEmails: [
+        {
+          id: 'contact-1',
+          email: 'publico@example.test',
+        },
+      ],
     });
   };
-  await act(() => root.render(React.createElement(AppProviders, null,
-    React.createElement(MemoryRouter, { initialEntries: ['/perfil/visibilidad'] },
-      React.createElement(MockFlowProvider, null, React.createElement(VisibilityPage))))));
+  await act(() => root.render(
+    React.createElement(
+      AppProviders,
+      null,
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/perfil/visibilidad'] },
+        React.createElement(
+          MemberIdentityProvider,
+          null,
+          React.createElement(VisibilityPage),
+        ),
+      ),
+    ),
+  ));
+  await act(async () => {
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
   await click(button('Vista previa'));
   assert.match(dialog().textContent, /publico@example.test/);
   await click(button('Volver a visibilidad', dialog()));
@@ -264,6 +317,9 @@ test('desde Visibilidad: abrir, cerrar, ocultar un contacto, guardar y volver a 
   assert.equal(visible, false);
   await click(button('Vista previa'));
   assert.equal(previewCalls, 2);
-  assert.doesNotMatch(dialog().textContent, /publico@example.test|acceso@example.test/);
+  assert.doesNotMatch(
+    dialog().textContent,
+    /publico@example.test|acceso@example.test/,
+  );
   assert.match(dialog().textContent, /Ana Pérez/);
 });
