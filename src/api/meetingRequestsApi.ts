@@ -6,7 +6,8 @@ import type {
   MeetingRequestsQuery,
   MeetingRequestsResponse,
   CreateMeetingRequestPayload,
-  CreatedMeetingRequest
+  CreatedMeetingRequest,
+  MeetingRequestDecisionPayload,
 } from '../types/meetingRequests';
 
 export async function getMeetingRequests(
@@ -65,6 +66,34 @@ export async function createMeetingRequest(
   if (!response.success || !response.data) {
     throw new Error(
       response.message || 'No se pudo enviar la solicitud.'
+    );
+  }
+
+  return response.data;
+}
+
+interface MeetingRequestDecisionApiResponse {
+  success: boolean;
+  message: string;
+  data?: CreatedMeetingRequest;
+}
+
+export async function decideMeetingRequest(
+  requestId: string,
+  payload: MeetingRequestDecisionPayload,
+): Promise<CreatedMeetingRequest> {
+  const response =
+    await sendRequest<MeetingRequestDecisionApiResponse>(
+      `/api/v1/meeting-requests/received/${encodeURIComponent(requestId)}/decision`,
+      {
+        method: 'PATCH',
+        body: payload,
+      },
+    );
+
+  if (!response.success || !response.data) {
+    throw new Error(
+      response.message || 'No se pudo resolver la solicitud.',
     );
   }
 

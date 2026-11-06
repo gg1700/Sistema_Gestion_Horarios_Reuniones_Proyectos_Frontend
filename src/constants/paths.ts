@@ -20,6 +20,7 @@ export const paths = {
   githubInfo: '/perfil/conexiones/github',
   accessIssue: '/acceso/no-completado',
   publicProfile: '/:publicHandle',
+  availabilitySettings: '/perfil/disponibilidad',
 } as const;
 
 export function publicProfilePath(handle: string): string {

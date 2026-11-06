@@ -28,6 +28,7 @@ import ProfileOriginsPage from '../pages/ProfileOriginsPage';
 import RegisterPage from '../pages/RegisterPage';
 import CompleteProfilePage from '../pages/CompleteProfilePage';
 import MeetingRequestsPage from '../pages/MeetingRequestsPage';
+import CalendarAvailabilitySettingsPage from '../pages/CalendarAvailabilitySettingsPage';
 
 /*
 INTEGRACIÓN DE PROTECCIÓN DE RUTAS — COMENTARIO, NO AUTENTICACIÓN IMPLEMENTADA
@@ -55,6 +56,10 @@ function RouterPage() {
       <Route
         path={routePaths.completeProfile}
         element={<CompleteProfilePage />}
+      />
+      <Route
+        path={paths.availabilitySettings}
+        element={<CalendarAvailabilitySettingsPage />}
       />
 
       <Route path={paths.welcome} element={<WelcomePage />} />

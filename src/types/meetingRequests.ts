@@ -61,3 +61,10 @@ export interface CreatedMeetingRequest {
   guestName: string | null;
   guestEmail: string | null;
 }
+
+export type MeetingRequestDecision = 'accepted' | 'rejected';
+
+export interface MeetingRequestDecisionPayload {
+  decision: MeetingRequestDecision;
+  responseMessage?: string;
+}

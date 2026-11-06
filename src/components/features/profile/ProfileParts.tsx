@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router';
-import { FiEdit2, FiEye, FiLink, FiLock, FiTrash2, FiUser } from 'react-icons/fi';
+import { FiCalendar, FiEdit2, FiEye, FiLink, FiLock, FiTrash2, FiUser } from 'react-icons/fi';
 import { Avatar } from '../../ui';
 import { useMockFlow } from '../../../contexts/MockFlowContext';
 import { paths } from '../../../constants/paths';
@@ -18,6 +18,10 @@ export function ProfileTabs({ connections = false }: { connections?: boolean }) 
   const { pathname } = useLocation();
   return <div className="profile-tabs-row"><nav aria-label="Secciones de mi perfil" className="profile-tabs">
     <NavLink to={paths.profile} end className={({ isActive }) => isActive || pathname === paths.profileOrigins ? 'active' : undefined}><FiUser />Información</NavLink><NavLink to={paths.connections}><FiLink />Conexiones</NavLink><NavLink to={paths.visibility}><FiEye />Visibilidad</NavLink><NavLink to={paths.profileLink}><FiLink />Enlace público</NavLink>
+    <NavLink to={paths.availabilitySettings}>
+      <FiCalendar />
+      Disponibilidad
+    </NavLink>
   </nav><span>{connections ? <FiEye /> : <FiLock />}{connections ? 'Tú autorizas cada conexión' : 'Solo tú puedes cambiar esta configuración'}</span></div>;
 }
 

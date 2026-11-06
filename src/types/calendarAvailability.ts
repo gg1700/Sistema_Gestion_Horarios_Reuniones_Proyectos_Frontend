@@ -22,3 +22,16 @@ export interface PublicCalendarLink {
   url: string;
   publicApiPath: string;
 }
+
+export interface PublicAvailabilitySlot {
+  startsAt: string;
+  endsAt: string;
+}
+
+export interface PublicAvailabilityData {
+  handleName: string;
+  name: string;
+  firstSurname: string;
+  timeZone: string;
+  slots: PublicAvailabilitySlot[];
+}
