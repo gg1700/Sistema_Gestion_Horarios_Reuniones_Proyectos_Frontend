@@ -293,6 +293,7 @@ export default function MeetingRequestsPage() {
                                             request.guestEmail ??
                                             (request.handleName ? `@${request.handleName}` : '')
                                         }
+                                        profilePicture={request.profilePicture}
                                     />
                                 ),
                             },

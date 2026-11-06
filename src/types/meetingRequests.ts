@@ -12,6 +12,7 @@ export interface MeetingRequestItem {
   handleName: string | null;
   name: string;
   firstSurname: string;
+  profilePicture: string | null;
   title: string;
   message: string | null;
   startsAt: string;
