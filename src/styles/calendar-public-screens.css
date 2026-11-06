@@ -46,7 +46,6 @@
 .public-handle-available { display: flex; align-items: center; gap: 7px; font-size: 10px; color: #9cd9b5; margin: -13px 0 0; }
 .public-handle-available > svg { width: 12px; height: 12px; }
 
-/* Procedencia por campo; se conserva al personalizar un valor importado. */
 .profile-origin-identity { display: flex; align-items: center; gap: 26px; min-height: 117px; margin: -4px 0 28px; }
 .profile-origin-identity > .ui-avatar { width: 76px; height: 76px; font-size: 29px; margin: 0 8px; box-shadow: 0 0 0 9px #192d27; }
 .profile-origin-identity h2 { font: 500 30px/40px var(--ui-font-heading); letter-spacing: -.7px; color: #cce4d4; margin: 0 0 12px; }
@@ -71,7 +70,6 @@
 .profile-origin-columns aside > section h3 { font-size: 12px; color: #bad7c6; font-weight: 500; margin: 0 0 9px; }
 .profile-origin-columns aside > section p { font-size: 10px; line-height: 20px; color: #7a9e85; margin: 0; }
 
-/* Vista del visitante: misma selección filtrada que la vista previa del perfil. */
 .public-profile-columns--single { grid-template-columns: 1fr; }
 .public-profile-view--visitor > header { min-height: 151px; margin-bottom: 28px; padding-bottom: 30px; }
 .public-profile-view--visitor > header > .ui-avatar { width: 96px; height: 96px; font-size: 35px; }
@@ -106,7 +104,6 @@
 .public-profile-unavailable .ui-button { margin-top: 18px; padding: 0 30px; }
 .public-profile-unavailable > div > .flow-note { margin-top: 26px; font-size: 10px; }
 
-/* Agenda y sus diálogos comparten un único estado de eventos. */
 .agenda-context-line { min-height: 26px; margin: -3px 0 16px; }
 .agenda-context-line > p { display: flex; align-items: center; gap: 10px; font-size: 10px; line-height: 20px; color: #8eb79e; margin: 0; }
 .agenda-context-line svg { width: 14px; height: 14px; flex-shrink: 0; }
