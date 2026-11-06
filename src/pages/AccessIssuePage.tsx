@@ -6,15 +6,6 @@ import { TextLink } from '../components/features/flows/FlowPrimitives';
 import { ButtonLink } from '../components/ui';
 import { paths } from '../constants/paths';
 
-/*
-CONTRATO BACKEND — RETORNO DE AUTORIZACIÓN NO COMPLETADA
-Esta pantalla no necesita un GET propio ni envía datos para mostrar el aviso.
-El callback del servidor redirige aquí con provider=google|github y, si era integración,
-volver=conexiones. No poner tokens, correos ni mensajes internos del proveedor en la URL.
-Reintentar acceso -> iniciar GET /api/v1/auth/:provider con intent=login (AccessPage.tsx).
-Volver a conexiones -> /perfil/conexiones para reabrir la autorización correspondiente.
-Solo aceptar destinos internos previstos; nunca una URL de retorno arbitraria.
-*/
 export default function AccessIssuePage() {
   const [query] = useSearchParams();
   const returnTo = query.get('volver') === 'conexiones' ? paths.connections : paths.access;

@@ -1,7 +1,11 @@
 import { FiExternalLink, FiLink, FiLock, FiMail, FiPlus } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { TextLink } from '../components/features/flows/FlowPrimitives';
-import { ProfileTabs, WorkTimeline } from '../components/features/profile/ProfileParts';
+import {
+  ProfileTabs,
+  WorkTimeline,
+  type WorkExperienceView,
+} from '../components/features/profile/ProfileParts';
 import { Alert, Avatar, Button, OrbitalGraphic, ProviderIcon, SectionHeading } from '../components/ui';
 import { useMemberIdentity } from '../features/github/MemberIdentityContext';
 import { paths } from '../constants/paths';
@@ -24,9 +28,12 @@ export default function ProfilePage() {
   if (!profile) return <MemberShell />;
 
   const fullName = [profile.name, profile.firstSurname, profile.surname?.surname].filter(Boolean).join(' ');
-  const experiences = profile.workExperiences.map(item => ({
-    ...item, company: item.companyName ?? '', description: item.description ?? '',
-  }));
+  const experiences: WorkExperienceView[] =
+    profile.workExperiences.map(item => ({
+      ...item,
+      company: item.companyName ?? '',
+      description: item.description ?? '',
+    }));
   const editingUnavailable = 'La edición del perfil aún no está conectada.';
 
   return <MemberShell>

@@ -176,8 +176,6 @@ export function ProfileForm({
         firstSurname: firstSurname.trim(),
       };
 
-      // El backend permite actualizar el segundo apellido.
-      // Si queda vacío, omitimos el campo para no intentar eliminarlo.
       if (surname.trim()) {
         payload.surname = {
           surname: surname.trim(),
@@ -185,8 +183,6 @@ export function ProfileForm({
         };
       }
 
-      // Solo mandamos listas que tengan elementos.
-      // Cada elemento conserva su ID y visibilidad originales.
       if (phones.length > 0) {
         payload.phones = phones.map(phone => ({
           ...phone,

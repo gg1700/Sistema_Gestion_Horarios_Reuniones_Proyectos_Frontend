@@ -234,13 +234,6 @@ function usePublicLink() {
     }
   }
 
-  function setOptionalFieldsPrivate(value: boolean) {
-    setPublicLink(current => ({
-      ...current,
-      allOptionalFieldsPrivate: value,
-    }));
-  }
-
   return {
     publicLink,
     draftHandle,
@@ -254,7 +247,6 @@ function usePublicLink() {
     updateDraftHandle,
     saveHandle,
     togglePublicLink,
-    setOptionalFieldsPrivate,
   };
 }
 

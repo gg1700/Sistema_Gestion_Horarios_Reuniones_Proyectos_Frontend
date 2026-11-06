@@ -10,13 +10,15 @@ export const useMemberIdentity = () => useContext(Context);
 
 export function MemberIdentityProvider({ children }: PropsWithChildren) {
   const { pathname } = useLocation();
-  const privatePage = /^\/(perfil|panel|agenda|solicitudes|bienvenida)(\/|$)/.test(pathname);
+  const needsProfile =
+    /^\/(perfil|panel|agenda|solicitudes|bienvenida)(\/|$)/.test(pathname) ||
+    /^\/[^/]+\/disponibilidad$/.test(pathname);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(privatePage);
+  const [loading, setLoading] = useState(needsProfile);
   const [error, setError] = useState('');
   const [revision, setRevision] = useState(0);
   useEffect(() => {
-    if (!privatePage) { setProfile(null); setLoading(false); return; }
+    if (!needsProfile) { setProfile(null); setLoading(false); return; }
     const controller = new AbortController();
     setProfile(null); setLoading(true); setError('');
     getOwnProfile(controller.signal).then(data => {
@@ -25,12 +27,12 @@ export function MemberIdentityProvider({ children }: PropsWithChildren) {
       if (!controller.signal.aborted) { setProfile(null); setError(failure instanceof Error ? failure.message : 'No se pudo consultar tu sesión.'); }
     }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [privatePage, pathname, revision]);
+  }, [needsProfile, pathname, revision]);
   function retry() { setRevision(value => value + 1); }
   async function signOut() {
-    const response = await fetch(`${apiBase}/api/v1/auth/logout`, { method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:'{}' });
+    const response = await fetch(`${apiBase}/api/v1/auth/logout`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     if (!response.ok) throw new Error('No se pudo cerrar la sesión.');
     setProfile(null);
   }
-  return <Context.Provider value={{profile,loading,error,retry,signOut}}>{children}</Context.Provider>;
+  return <Context.Provider value={{ profile, loading, error, retry, signOut }}>{children}</Context.Provider>;
 }

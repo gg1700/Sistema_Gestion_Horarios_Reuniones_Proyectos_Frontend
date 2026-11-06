@@ -1,4 +1,3 @@
-/* Pantallas de esta tanda. Datos variables en MockFlowContext; texto editorial fijo. */
 .flow-surface { --ui-muted: #86aa92; --ui-soft: #6d947c; --ui-border: #294234; --ui-surface: #122328; color: #c9e1d1; font-size: 12px; }
 .flow-surface .ui-content { padding-top: 28px; padding-bottom: 26px; min-height: calc(100svh - 160px); }
 .flow-surface .ui-header { border-bottom: 0; }
@@ -72,7 +71,6 @@
 .flow-inline > span { display: flex; align-items: center; gap: 6px; font-size: 9px; color: #7da68a; }
 .flow-inline svg { width: 12px; height: 12px; }
 
-/* Gráficos orbitales compartidos por landing, acceso y primer ingreso. */
 .flow-orbit { position: relative; width: 100%; aspect-ratio: 600 / 440; }
 .flow-orbit > svg { width: 100%; height: 100%; display: block; }
 .flow-orbit__google { position: absolute; left: 73%; top: 18%; display: flex; align-items: center; gap: 13px; }
@@ -88,7 +86,6 @@
 .flow-orbit__tag--code { right: 5%; bottom: 5%; }
 .flow-orbit__caption { position: absolute; top: 69%; left: 37%; padding: 7px 14px; border: 1px solid #2b443c; border-radius: 16px; background: #0e1c1d; color: #b0c7be; font-size: 9px; white-space: nowrap; }
 
-/* Entrada y acceso. */
 .landing-hero { display: grid; grid-template-columns: 1.05fr 1fr; align-items: center; gap: 24px; min-height: 487px; padding-top: 13px; }
 .landing-hero .ui-eyebrow { display: flex; align-items: center; gap: 10px; font-size: 9px; letter-spacing: 1.6px; }
 .landing-hero h1 { font: 500 54px/1.14 var(--ui-font-heading); color: #e0f0e5; letter-spacing: -2.2px; margin: 24px 0 0; }
@@ -145,7 +142,6 @@
 .verified-identity span, .verified-identity small { font-size: 10px; color: #739c81; }
 .verified-identity > small { margin-left: auto; }
 
-/* Primer ingreso y panel. */
 .welcome-columns { display: grid; grid-template-columns: 1.5fr 1fr; gap: 58px; margin-top: 30px; }
 .welcome-steps { border-top: 1px solid #2a4336; }
 .welcome-steps article { display: flex; align-items: center; gap: 18px; padding: 28px 0; border-bottom: 1px solid #294234; }
@@ -236,7 +232,6 @@
 .flow-account-menu button svg { width: 16px; height: 16px; color: #77a887; }
 .flow-account-menu > button.flow-account-menu__logout { width: 100%; color: #e0b6a2; padding: 16px 20px; border-top: 1px solid #2b4535; }
 
-/* Calendarios, sin detalles privados en la disponibilidad pública. */
 .agenda-layout { display: grid; grid-template-columns: minmax(0, 1fr) 244px; gap: 28px; }
 .agenda-toolbar { display: flex; align-items: center; gap: 6px; height: 38px; margin: 0 0 14px; }
 .agenda-toolbar strong { font: 500 16px var(--ui-font-heading); color: #bfdcca; margin-left: 14px; }
@@ -316,7 +311,6 @@ button.agenda-event:hover { background: #254b3a; }
 .availability-slots > .flow-note { margin-top: 24px; }
 .availability-no-slots { color: #83a58c; font-size: 12px; line-height: 24px; min-height: 160px; padding-top: 20px; }
 
-/* Diálogos reutilizan Dialog, Button y controles compartidos. */
 .ui-dialog:has(.flow-form), .meeting-dialog, .review-request-dialog, .review-change-dialog, .booking-receipt-dialog { color: #c9e1d1; background: #122328; }
 .ui-dialog .ui-dialog__header { padding: 26px 32px 23px; position: relative; }
 .ui-dialog .ui-dialog__header > div { width: 100%; padding-right: 20px; }
@@ -328,7 +322,7 @@ button.agenda-event:hover { background: #254b3a; }
 .ui-dialog .ui-dialog__footer .ui-button { font-size: 11px; }
 .ui-dialog .ui-dialog__footer > .ui-button--ghost { margin-right: auto; padding-left: 0; }
 .account-completion-dialog { width: min(704px, calc(100vw - 2rem)); }
-.booking-dialog, .propose-change-dialog { width: min(744px, calc(100vw - 2rem)); }
+.booking-dialog { width: min(744px, calc(100vw - 2rem)); }
 .booking-receipt-dialog { width: min(672px, calc(100vw - 2rem)); }
 .meeting-dialog { width: min(760px, calc(100vw - 2rem)); }
 .review-request-dialog { width: min(704px, calc(100vw - 2rem)); }
@@ -356,7 +350,6 @@ button.agenda-event:hover { background: #254b3a; }
 .meeting-call small { display: block; color: #749d80; font-size: 10px; margin-top: 10px; }
 .meeting-call > a { font-size: 10px; }
 
-/* Solicitudes, decisiones y propuesta del participante. */
 .requests-tabs { display: flex; gap: 25px; border-bottom: 1px solid #2a4136; margin: 3px 0 26px; height: 43px; }
 .requests-tabs a { display: flex; align-items: center; font-size: 11px; color: #7dab8d; height: 43px; text-decoration: none; }
 .requests-tabs a.active { color: #b6edcb; border-bottom: 2px solid var(--ui-mint); }
@@ -528,4 +521,90 @@ button.agenda-event:hover { background: #254b3a; }
   .proposal-result h2 { font-size: 25px; line-height: 34px; }
   .proposal-result-people { flex-direction: column; gap: 8px; }
   .flow-account-menu { position: fixed; right: 16px; top: 74px; max-width: calc(100vw - 32px); }
+}
+
+.meeting-requests-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0 0 24px;
+}
+
+.meeting-requests-direction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meeting-requests-direction button {
+  border: 1px solid #355341;
+  border-radius: 999px;
+  padding: 9px 16px;
+  background: transparent;
+  color: #90b69e;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.meeting-requests-direction button:hover {
+  border-color: #7ab993;
+  color: #c5e8d0;
+}
+
+.meeting-requests-direction button.is-active {
+  background: #1b382b;
+  border-color: var(--ui-mint);
+  color: #c6f4d7;
+}
+
+.meeting-requests-direction button:focus-visible {
+  outline: 2px solid var(--ui-mint);
+  outline-offset: 3px;
+}
+
+.meeting-requests-filters {
+  width: min(230px, 100%);
+}
+
+.meeting-requests-filters .ui-field {
+  margin: 0;
+}
+
+.meeting-request-response {
+  color: #a3d8b5 !important;
+}
+
+.meeting-requests-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.meeting-requests-pagination > span {
+  color: #83a891;
+  font-size: 10px;
+}
+
+@media (max-width: 520px) {
+  .meeting-requests-toolbar {
+    align-items: stretch;
+  }
+
+  .meeting-requests-filters {
+    width: 100%;
+  }
+
+  .meeting-requests-toolbar > .ui-button {
+    align-self: flex-start;
+  }
+
+  .meeting-requests-pagination {
+    gap: 8px;
+  }
 }

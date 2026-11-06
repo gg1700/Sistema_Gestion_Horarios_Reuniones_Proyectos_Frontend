@@ -5,7 +5,6 @@ import { WorkTimeline } from './ProfileParts';
 import type { PublicSnapshot } from '../../../types/publicSnapshot';
 export type { PublicSnapshot } from '../../../types/publicSnapshot';
 
-// Recibe solo la información permitida para el visitante, sin el estado privado.
 export function PublicProfileView({ profile, visitor = false, actions }: { profile: PublicSnapshot; visitor?: boolean; actions?: ReactNode }) {
   const fullName = [profile.name, profile.firstSurname, profile.secondSurname].filter(Boolean).join(' ');
   const personalLinks = profile.links && profile.links.length > 0 && <section className="public-personal-links-section"><h3>Enlaces personales</h3>{profile.links.map(link => <a className="public-personal-link" key={link.id} href={link.url} target="_blank" rel="noopener noreferrer"><FiExternalLink /><div><strong>{link.label}</strong><span>{link.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span></div><FiArrowRight /></a>)}</section>;

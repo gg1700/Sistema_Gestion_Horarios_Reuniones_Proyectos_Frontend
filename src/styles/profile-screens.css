@@ -1,4 +1,3 @@
-/* Perfil y conexiones comparten los tokens, layouts, controles y diálogos existentes. */
 .ui-input-affix { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: var(--ui-control-height); padding: 0 15px; border: 1px solid var(--ui-field-border); border-radius: var(--ui-radius-control); background: var(--ui-field); color: #7e9990; }
 .ui-input-affix > svg { width: 17px; height: 17px; flex-shrink: 0; }
 .ui-input-affix:focus-within { outline: 2px solid var(--ui-mint); outline-offset: 2px; }
@@ -72,7 +71,6 @@
 .flow-account-menu__links > .flow-link { width: 100%; padding: 11px 20px; justify-content: flex-start; color: #abcdb7; font-size: 11px; }
 .flow-account-menu__links > a > svg { width: 16px; height: 16px; color: #77a887; }
 
-/* Formularios y pasos opcionales. */
 .profile-form.flow-form { margin: 0; gap: 19px; }
 .profile-form .ui-field__label > span { display: inline; }
 .profile-photo-editor { display: flex; align-items: center; gap: 15px; padding-bottom: 20px; border-bottom: 1px solid #2a4136; }
@@ -129,7 +127,6 @@
 .profile-work-step > .flow-link { margin: 11px 0 25px; }
 .profile-work-step > .flow-note { margin-top: 30px; padding-top: 18px; }
 
-/* Visibilidad y la misma vista pública dentro y fuera del modal. */
 .visibility-columns { display: grid; grid-template-columns: minmax(0, 1fr) 276px; gap: 68px; min-height: 460px; }
 .visibility-group + .visibility-group { margin-top: 14px; }
 .visibility-group > h3 { font: 500 14px/22px var(--ui-font-heading); color: #d0e5d8; margin: 0 0 8px; }
@@ -200,7 +197,6 @@
 .delete-profile-dialog .ui-input { border-color: #6a4a3f; background: #231f1e; color: #e8b6a0; }
 .delete-profile-note { font-size: 9px; text-align: center; color: #82917d; margin-top: 22px; }
 
-/* Conexiones: filas continuas, sin multiplicar tarjetas. */
 .connections-heading-note { color: #6f9b7c; font-size: 10px; letter-spacing: .2px; }
 .connections-columns { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 68px; }
 .connection-provider { display: flex; align-items: flex-start; gap: 28px; padding: 30px 0 32px 7px; min-height: 220px; border-bottom: 1px solid #2d4936; }
@@ -262,7 +258,6 @@
 .disconnect-provider-details strong { font-size: 12px; line-height: 22px; color: #bdd9c6; font-weight: 400; }
 .disconnect-provider-alternative { margin-top: 15px; font-size: 10px; }
 
-/* Repositorios y actividad: datos derivados de la selección compartida. */
 .repository-selection-dialog { width: min(1072px, calc(100vw - 2rem)); }
 .repository-selection-columns { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 32px; margin-top: 20px; }
 .repository-selection-columns > aside { padding-left: 25px; border-left: 1px solid #2b4535; }
@@ -325,7 +320,6 @@
 .access-issue > p:not(.ui-eyebrow) { font-size: 13px; line-height: 25px; color: #83ac90; margin: 22px 0 0; max-width: 650px; }
 .access-issue > div:not(.flow-orbit) { display: flex; align-items: center; gap: 24px; margin-top: 30px; }
 
-/* El panel anterior conserva agenda y solicitudes y ahora refleja las conexiones. */
 .dashboard-summary.dashboard-summary--today { grid-template-columns: 1.12fr 1fr .85fr; }
 .dashboard-next-label { display: block; font-size: 7px; letter-spacing: 1.1px; color: #568f67; margin-bottom: 4px; }
 .dashboard-next-event + .dashboard-featured { margin-top: 17px; }
@@ -430,8 +424,6 @@
   .dashboard-services > div > span { font-size: 8px; }
 }
 
-
-/* Actividad real de GitHub */
 .github-activity-section {
   margin-top: 32px;
   padding-top: 24px;

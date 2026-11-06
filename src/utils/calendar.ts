@@ -1,4 +1,4 @@
-import { OWNER_TIME_ZONE, type TimeRange } from '../mocks/flow.ts';
+import { OWNER_TIME_ZONE, type TimeRange } from '../types/calendar';
 
 const locale = 'es-BO';
 export function dateLabel(value: string, options: Intl.DateTimeFormatOptions = {}) {
@@ -9,7 +9,6 @@ export function timeLabel(value: string) { return new Intl.DateTimeFormat(locale
 export function rangeLabel(range: TimeRange) { return `${timeLabel(range.start)} — ${timeLabel(range.end)}`; }
 export function dateKey(value: string) { return new Intl.DateTimeFormat('en-CA', { timeZone: OWNER_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(value)); }
 export function shiftDate(value: string, days: number) { const date = new Date(`${value}T12:00:00Z`); date.setUTCDate(date.getUTCDate() + days); return date.toISOString().slice(0, 10); }
-export function newMockId(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
 export function isDateKey(value: string | null): value is string {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T12:00:00Z`);
@@ -21,7 +20,6 @@ export function weekStart(value: string) {
   return shiftDate(value, -((day + 6) % 7));
 }
 
-/** Recorta eventos a un día y separa los que se solapan para que sigan siendo accesibles. */
 export function calendarDaySegments<T extends TimeRange>(events: T[], day: string) {
   const from = Date.parse(`${day}T00:00:00-04:00`);
   const to = from + 86_400_000;

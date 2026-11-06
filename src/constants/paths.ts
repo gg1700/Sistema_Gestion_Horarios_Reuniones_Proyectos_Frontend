@@ -10,7 +10,6 @@ export const paths = {
   changeReview: '/solicitudes/cambios/:changeId/revisar',
   changeResult: '/solicitudes/cambios/:changeId/resultado',
   availability: '/:publicHandle/disponibilidad',
-  participant: '/reuniones/:token',
   profile: '/perfil',
   profileSetup: '/perfil/completar',
   profileOrigins: '/perfil/procedencia',
@@ -20,6 +19,7 @@ export const paths = {
   githubInfo: '/perfil/conexiones/github',
   accessIssue: '/acceso/no-completado',
   publicProfile: '/:publicHandle',
+  availabilitySettings: '/perfil/disponibilidad',
 } as const;
 
 export function publicProfilePath(handle: string): string {
@@ -28,8 +28,4 @@ export function publicProfilePath(handle: string): string {
 
 export const flowPaths = {
   availability: (handle: string) => `${publicProfilePath(handle)}/disponibilidad`,
-  participant: (token: string) => `/reuniones/${encodeURIComponent(token)}`,
-  reviewRequest: (id: string) => `/solicitudes/${encodeURIComponent(id)}/revisar`,
-  reviewChange: (id: string) => `/solicitudes/cambios/${encodeURIComponent(id)}/revisar`,
-  changeResult: (id: string) => `/solicitudes/cambios/${encodeURIComponent(id)}/resultado`,
 };

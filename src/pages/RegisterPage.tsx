@@ -5,7 +5,6 @@ import AccessStory from '../components/features/register/AccessStory';
 import ProviderAccess from '../components/features/register/ProviderAccess';
 import CompleteRegistrationModal from '../components/modals/CompleteRegistrationModal';
 import useRegistrationStatus from '../hooks/useRegistrationStatus';
-import { routePaths } from '../constants/routes';
 import { defaultOAuthErrorMessage, oauthErrorMessages } from '../constants/oauth';
 import { paths } from '../constants/paths';
 
