@@ -6,20 +6,19 @@ export interface Meeting extends TimeRange {
   id: string; title: string; description: string; guestName: string; guestEmail: string;
   participantToken: string; meetUrl: string; calendarId: string;
 }
+
 export interface BookingRequest extends TimeRange {
   id: string; title: string; message: string; guestName: string; guestEmail: string;
   status: 'pending' | 'accepted' | 'rejected'; meetingId?: string; calendarId: string;
 }
-export interface ScheduleChange extends TimeRange {
-  id: string; meetingId: string; message: string; originalStart: string; originalEnd: string;
-  status: 'pending' | 'accepted' | 'rejected';
-}
+
 export interface CalendarEvent extends TimeRange {
   id: string; title: string; description: string; calendarId: string; canEdit: boolean; meetUrl?: string;
 }
+
 export interface FlowState {
   version: 1; profile: DemoProfile; profileCompleted: boolean; demoSignedIn: boolean;
-  requests: BookingRequest[]; meetings: Meeting[]; changes: ScheduleChange[];
+  requests: BookingRequest[]; meetings: Meeting[];
   account: AccountState;
   calendarEvents: CalendarEvent[];
 }
@@ -40,7 +39,6 @@ export function createInitialFlow(): FlowState {
     version: 1, profile: { ...initialProfile }, profileCompleted: false, demoSignedIn: false, account: createInitialAccount(), calendarEvents: personalEvents.map(event => ({ ...event })),
     requests: [{ id: 'request-elena', calendarId: 'personal', title: 'Revisión de arquitectura', message: 'Me gustaría revisar la propuesta de integración de servicios y resolver algunas dudas sobre la arquitectura.', guestName: guest.name, guestEmail: guest.email, start: '2026-10-28T14:00:00-04:00', end: '2026-10-28T14:30:00-04:00', status: 'pending' }],
     meetings: [{ id: 'meeting-review', calendarId: 'personal', title: 'Revisión de arquitectura', description: 'Revisar la propuesta de integración de servicios y acordar los próximos pasos de arquitectura.', guestName: guest.name, guestEmail: guest.email, start: '2026-10-28T10:30:00-04:00', end: '2026-10-28T11:00:00-04:00', participantToken: 'mock-invitacion-arquitectura', meetUrl: 'https://meet.google.com/abc-defg-hij' }],
-    changes: [{ id: 'change-elena', meetingId: 'meeting-review', start: '2026-10-29T15:00:00-04:00', end: '2026-10-29T15:30:00-04:00', originalStart: '2026-10-28T10:30:00-04:00', originalEnd: '2026-10-28T11:00:00-04:00', message: '¿Podemos mover la revisión al jueves por la tarde? Mantendríamos la misma duración y los mismos temas.', status: 'pending' }],
   };
 }
 
@@ -54,8 +52,6 @@ export type FlowAction =
   | { type: 'sign-out' }
   | { type: 'request-booking'; request: BookingRequest }
   | { type: 'decide-booking'; id: string; decision: 'accepted' | 'rejected'; meetingId: string; participantToken: string }
-  | { type: 'propose-change'; change: ScheduleChange }
-  | { type: 'decide-change'; id: string; decision: 'accepted' | 'rejected' };
 
 export function overlaps(a: TimeRange, b: TimeRange): boolean {
   return Date.parse(a.start) < Date.parse(b.end) && Date.parse(b.start) < Date.parse(a.end);
@@ -134,7 +130,7 @@ export function transitionFlow(state: FlowState, action: FlowAction): FlowState 
     }
     case 'account': {
       const account = transitionAccount(state.account, action.action);
-      return account.deleted ? { ...state, account, profileCompleted: false, demoSignedIn: false, requests: [], meetings: [], changes: [], calendarEvents: [] } : { ...state, account };
+      return account.deleted ? { ...state, account, profileCompleted: false, demoSignedIn: false, requests: [], meetings: [], calendarEvents: [] } : { ...state, account };
     }
     case 'sign-out': return { ...state, demoSignedIn: false };
     case 'request-booking': {
@@ -154,23 +150,6 @@ export function transitionFlow(state: FlowState, action: FlowAction): FlowState 
       if (action.decision === 'accepted' && !isRangeFree(state, request)) throw new Error('El horario ya no está libre. Conserva la solicitud o recházala.');
       const meetings = action.decision === 'accepted' ? [...state.meetings, { id: action.meetingId, calendarId: request.calendarId, title: request.title, description: request.message, guestName: request.guestName, guestEmail: request.guestEmail, start: request.start, end: request.end, participantToken: action.participantToken, meetUrl: 'https://meet.google.com/abc-defg-hij' }] : state.meetings;
       return { ...state, meetings, requests: state.requests.map(item => item.id === action.id ? { ...item, status: action.decision, meetingId: action.decision === 'accepted' ? action.meetingId : undefined } : item) };
-    }
-    case 'propose-change': {
-      const meeting = state.meetings.find(item => item.id === action.change.meetingId);
-      if (!meeting) throw new Error('La reunión no está disponible.');
-      validateRange(action.change);
-      if (action.change.start === meeting.start && action.change.end === meeting.end) throw new Error('Propón un horario diferente al actual.');
-      if (state.changes.some(item => item.meetingId === meeting.id && item.status === 'pending')) throw new Error('Ya hay una propuesta pendiente para esta reunión.');
-      if (!isRangeFree(state, action.change, meeting.id, meeting.calendarId)) throw new Error('Ese horario no está disponible.');
-      return { ...state, changes: [...state.changes, { ...action.change, originalStart: meeting.start, originalEnd: meeting.end, status: 'pending' }] };
-    }
-    case 'decide-change': {
-      const change = state.changes.find(item => item.id === action.id);
-      const meeting = state.meetings.find(item => item.id === change?.meetingId);
-      if (!change || !meeting || change.status !== 'pending') throw new Error('Esta propuesta ya no está pendiente.');
-      if (action.decision === 'accepted') assertCalendarWrite(state, meeting.calendarId);
-      if (action.decision === 'accepted' && !isRangeFree(state, change, meeting.id, meeting.calendarId)) throw new Error('El nuevo horario ya no está disponible.');
-      return { ...state, meetings: action.decision === 'accepted' ? state.meetings.map(item => item.id === meeting.id ? { ...item, start: change.start, end: change.end } : item) : state.meetings, changes: state.changes.map(item => item.id === change.id ? { ...item, status: action.decision } : item) };
     }
   }
 }

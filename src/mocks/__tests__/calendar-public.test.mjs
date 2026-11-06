@@ -24,7 +24,6 @@ test('crear, mover y eliminar un evento actualiza los bloques públicos sin alte
   assert.equal(isRangeFree(deleted, movedEvent), true);
   assert.deepEqual(deleted.meetings, state.meetings);
   assert.deepEqual(deleted.requests, state.requests);
-  assert.deepEqual(deleted.changes, state.changes);
   assert.deepEqual(state.calendarEvents, createInitialFlow().calendarEvents);
 });
 

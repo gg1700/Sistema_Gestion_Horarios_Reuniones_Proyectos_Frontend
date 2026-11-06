@@ -8,13 +8,11 @@ function loadMock(): FlowState {
     const stored: unknown = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null');
     if (stored && typeof stored === 'object' && 'version' in stored && stored.version === 1 &&
       'profile' in stored && stored.profile && typeof stored.profile === 'object' && 'name' in stored.profile &&
-      'meetings' in stored && Array.isArray(stored.meetings) && 'requests' in stored && Array.isArray(stored.requests) && 'changes' in stored && Array.isArray(stored.changes)) {
-      const initial = createInitialFlow();
-      const account = 'account' in stored && stored.account && typeof stored.account === 'object' ? stored.account : {};
-      return { ...stored, meetings: stored.meetings.map(meeting => ({ ...meeting, calendarId: meeting.calendarId ?? 'personal' })), requests: stored.requests.map(request => ({ ...request, calendarId: request.calendarId ?? 'personal' })), account: { ...createInitialAccount(), ...account }, calendarEvents: 'calendarEvents' in stored && Array.isArray(stored.calendarEvents) ? stored.calendarEvents : initial.calendarEvents } as FlowState;
-    }
+      'meetings' in stored && Array.isArray(stored.meetings) && 'requests' in stored && Array.isArray(stored.requests)      const initial = createInitialFlow();
+    const account = 'account' in stored && stored.account && typeof stored.account === 'object' ? stored.account : {};
+    return { ...stored, meetings: stored.meetings.map(meeting => ({ ...meeting, calendarId: meeting.calendarId ?? 'personal' })), requests: stored.requests.map(request => ({ ...request, calendarId: request.calendarId ?? 'personal' })), account: { ...createInitialAccount(), ...account }, calendarEvents: 'calendarEvents' in stored && Array.isArray(stored.calendarEvents) ? stored.calendarEvents : initial.calendarEvents } as FlowState;
   } catch { }
-  return createInitialFlow();
+return createInitialFlow();
 }
 
 const MockFlowContext = createContext<{ state: FlowState; dispatch: (action: FlowAction) => void } | null>(null);

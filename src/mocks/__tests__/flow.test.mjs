@@ -28,40 +28,17 @@ test('aceptar crea una sola reunión y rechazar no añade eventos', () => {
   assert.deepEqual(rejected.meetings, state.meetings);
 });
 
-test('aceptar un cambio reemplaza el horario, libera el anterior y conserva Meet', () => {
+test('las colisiones se revalidan al aceptar una solicitud', () => {
   const state = createInitialFlow();
-  const next = transitionFlow(state, { type: 'decide-change', id: 'change-elena', decision: 'accepted' });
-  assert.equal(next.meetings.length, 1);
-  assert.equal(next.meetings[0].start, state.changes[0].start);
-  assert.equal(next.meetings[0].meetUrl, state.meetings[0].meetUrl);
-  assert.equal(isRangeFree(next, state.meetings[0]), true);
-  assert.equal(isRangeFree(next, state.changes[0]), false);
-  assert.equal(state.meetings[0].start, '2026-10-28T10:30:00-04:00');
-});
-
-test('rechazar un cambio conserva íntegra la reunión original', () => {
-  const state = createInitialFlow();
-  const next = transitionFlow(state, { type: 'decide-change', id: 'change-elena', decision: 'rejected' });
-  assert.deepEqual(next.meetings, state.meetings);
-  assert.equal(next.changes[0].status, 'rejected');
-});
-
-test('las colisiones se revalidan al aceptar la solicitud y el cambio', () => {
-  const state = createInitialFlow();
-  const conflict = { ...state, requests: [{ ...state.requests[0], start: state.meetings[0].start, end: state.meetings[0].end }] };
-  assert.throws(() => transitionFlow(conflict, { type: 'decide-booking', id: 'request-elena', decision: 'accepted', meetingId: 'duplicate', participantToken: 'mock-token' }), /ya no está libre/);
-  const busy = { ...state, meetings: [...state.meetings, { ...state.meetings[0], id: 'other', start: state.changes[0].start, end: state.changes[0].end }] };
-  assert.throws(() => transitionFlow(busy, { type: 'decide-change', id: 'change-elena', decision: 'accepted' }), /no está disponible/);
-});
-
-test('proponer no mueve el evento y no permite dos propuestas pendientes', () => {
-  const state = transitionFlow(createInitialFlow(), { type: 'decide-change', id: 'change-elena', decision: 'rejected' });
-  const change = { ...state.changes[0], id: 'new-change', status: 'pending' };
-  const next = transitionFlow(state, { type: 'propose-change', change });
-  assert.deepEqual(next.meetings, state.meetings);
-  assert.equal(next.changes[1].status, 'pending');
-  assert.throws(() => transitionFlow(next, { type: 'propose-change', change: { ...change, id: 'another' } }), /Ya hay una propuesta/);
-  assert.throws(() => transitionFlow(state, { type: 'propose-change', change: { ...change, end: change.start } }), /posterior/);
+  const conflict = {
+    ...state,
+    requests: [{
+      ...state.requests[0],
+      start: state.meetings[0].start,
+      end: state.meetings[0].end
+    }]
+  };
+  assert.throws(() => transitionFlow(conflict, { type: 'decide-booking', id: 'request-elena', decision: 'accepted', meetingId: 'duplicate', participantToken: 'mock-token'}), /ya no está libre/);
 });
 
 test('cerrar la sesión visual conserva la agenda y las decisiones', () => {
