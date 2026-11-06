@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { NavLink } from 'react-router';
 import { FiRefreshCw } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { Person, StatusDot, TextLink } from '../components/features/flows/FlowPrimitives';
@@ -325,16 +324,6 @@ export default function MeetingRequestsPage() {
                     </TextLink>
                 }
             />
-
-            <nav className="requests-tabs" aria-label="Secciones de solicitudes">
-                <NavLink to={paths.requests} end>
-                    Agendado
-                </NavLink>
-
-                <NavLink to={paths.changes}>
-                    Cambios de horario
-                </NavLink>
-            </nav>
 
             <div className="meeting-requests-toolbar">
                 {decisionError && (

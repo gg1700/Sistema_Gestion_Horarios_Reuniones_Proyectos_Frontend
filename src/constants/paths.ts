@@ -30,7 +30,4 @@ export function publicProfilePath(handle: string): string {
 export const flowPaths = {
   availability: (handle: string) => `${publicProfilePath(handle)}/disponibilidad`,
   participant: (token: string) => `/reuniones/${encodeURIComponent(token)}`,
-  reviewRequest: (id: string) => `/solicitudes/${encodeURIComponent(id)}/revisar`,
-  reviewChange: (id: string) => `/solicitudes/cambios/${encodeURIComponent(id)}/revisar`,
-  changeResult: (id: string) => `/solicitudes/cambios/${encodeURIComponent(id)}/resultado`,
 };

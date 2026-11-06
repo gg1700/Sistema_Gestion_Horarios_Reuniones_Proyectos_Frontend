@@ -12,8 +12,6 @@ import WelcomePage from '../pages/WelcomePage';
 import DashboardPage from '../pages/DashboardPage';
 import AgendaPage from '../pages/AgendaPage';
 import AvailabilityPage from '../pages/AvailabilityPage';
-import RequestsPage from '../pages/RequestsPage';
-import ChangeResultPage from '../pages/ChangeResultPage';
 import ParticipantPage from '../pages/ParticipantPage';
 import ProfilePage from '../pages/ProfilePage';
 import ProfileSetupPage from '../pages/ProfileSetupPage';
@@ -67,11 +65,10 @@ function RouterPage() {
       <Route path={paths.agenda} element={<AgendaPage />} />
 
       <Route path={paths.requests} element={<MeetingRequestsPage />} />
-      <Route path={paths.requestReview} element={<RequestsPage />} />
-      <Route path={paths.changes} element={<RequestsPage />} />
-      <Route path={paths.changeReview} element={<RequestsPage />} />
-
-      <Route path={paths.changeResult} element={<ChangeResultPage />} />
+      <Route path={paths.requestReview} element={<Navigate to={paths.requests} replace />} />
+      <Route path={paths.changes} element={<Navigate to={paths.requests} replace />} />
+      <Route path={paths.changeReview} element={<Navigate to={paths.requests} replace />} />
+      <Route path={paths.changeResult} element={<Navigate to={paths.requests} replace />} />
 
       <Route path={paths.profile} element={<ProfilePage />} />
       <Route path={paths.profileSetup} element={<ProfileSetupPage />} />
