@@ -19,7 +19,10 @@ import type {
     MeetingRequestItem,
     MeetingRequestStatus,
 } from '../types/meetingRequests';
-import { decideMeetingRequest } from '../api/meetingRequestsApi';
+import { decideMeetingRequest, updateMeetingRequest } from '../api/meetingRequestsApi';
+import { Dialog } from '../components/modals';
+import { Input, Textarea } from '../components/ui';
+import type { UpdateMeetingRequestPayload } from '../types/meetingRequests';
 
 const PAGE_LIMIT = 20;
 
@@ -99,6 +102,15 @@ export default function MeetingRequestsPage() {
     const [decisionError, setDecisionError] = useState('');
     const [decisionMessage, setDecisionMessage] = useState('');
 
+    const [editingRequest, setEditingRequest] =
+        useState<MeetingRequestItem | null>(null);
+
+    const [editTitle, setEditTitle] = useState('');
+    const [editMessage, setEditMessage] = useState('');
+
+    const [savingEdit, setSavingEdit] = useState(false);
+    const [editError, setEditError] = useState('');
+
     const {
         requests,
         loading,
@@ -153,6 +165,78 @@ export default function MeetingRequestsPage() {
             );
         } finally {
             setDecidingId(null);
+        }
+    }
+
+    function openEditDialog(request: MeetingRequestItem) {
+        setEditingRequest(request);
+        setEditTitle(request.title);
+        setEditMessage(request.message ?? '');
+        setEditError('');
+    }
+
+    function closeEditDialog() {
+        if (savingEdit) return;
+
+        setEditingRequest(null);
+        setEditError('');
+    }
+
+    async function saveRequestChanges(
+        event: React.FormEvent<HTMLFormElement>,
+    ) {
+        event.preventDefault();
+
+        if (!editingRequest || savingEdit) return;
+
+        const title = editTitle.trim();
+        const message = editMessage.trim();
+
+        if (!title) {
+            setEditError('El título de la reunión es obligatorio.');
+            return;
+        }
+
+        if (message.length > 0 && message.length < 10) {
+            setEditError(
+                'El mensaje debe tener al menos 10 caracteres o quedar vacío.',
+            );
+            return;
+        }
+
+        const payload: UpdateMeetingRequestPayload = {};
+
+        if (title !== editingRequest.title) {
+            payload.title = title;
+        }
+
+        if (message !== (editingRequest.message ?? '')) {
+            payload.message = message;
+        }
+
+        if (Object.keys(payload).length === 0) {
+            closeEditDialog();
+            return;
+        }
+
+        try {
+            setSavingEdit(true);
+            setEditError('');
+
+            await updateMeetingRequest(editingRequest.id, payload);
+
+            setDecisionMessage('La solicitud se actualizó correctamente.');
+            setEditingRequest(null);
+
+            refresh();
+        } catch (failure) {
+            setEditError(
+                failure instanceof Error
+                    ? failure.message
+                    : 'No se pudo actualizar la solicitud.',
+            );
+        } finally {
+            setSavingEdit(false);
         }
     }
 
@@ -348,11 +432,22 @@ export default function MeetingRequestsPage() {
                                 id: 'actions',
                                 heading: 'ACCIONES',
                                 cell: request => {
-                                    if (
-                                        action !== 'received' ||
-                                        request.status !== 'pending'
-                                    ) {
+                                    if (request.status !== 'pending') {
                                         return <span>—</span>;
+                                    }
+
+                                    if (action === 'sent') {
+                                        return (
+                                            <div className="meeting-request-actions">
+                                                <Button
+                                                    size="small"
+                                                    variant="secondary"
+                                                    onClick={() => openEditDialog(request)}
+                                                >
+                                                    Editar
+                                                </Button>
+                                            </div>
+                                        );
                                     }
 
                                     return (
@@ -415,6 +510,79 @@ export default function MeetingRequestsPage() {
                     description={emptyDescription}
                 />
             )}
+
+            <Dialog
+                open={editingRequest !== null}
+                onOpenChange={open => {
+                    if (!open) closeEditDialog();
+                }}
+                title="Editar solicitud."
+                eyebrow="SOLICITUD DE REUNIÓN"
+                description="Modifica los detalles de tu solicitud pendiente."
+                size="medium"
+                footer={
+                    <>
+                        <Button
+                            variant="ghost"
+                            disabled={savingEdit}
+                            onClick={closeEditDialog}
+                        >
+                            Cancelar
+                        </Button>
+
+                        <Button
+                            type="submit"
+                            form="edit-meeting-request-form"
+                            loading={savingEdit}
+                        >
+                            Guardar cambios
+                        </Button>
+                    </>
+                }
+            >
+                {editingRequest && (
+                    <form
+                        id="edit-meeting-request-form"
+                        className="flow-form"
+                        onSubmit={saveRequestChanges}
+                    >
+                        {editError && (
+                            <Alert tone="danger">
+                                {editError}
+                            </Alert>
+                        )}
+
+                        <div className="requests-table-time">
+                            **Horario actual**
+
+                            <small>
+                                {formatRequestSchedule(editingRequest).date}
+                                <br />
+                                {formatRequestSchedule(editingRequest).range}
+                                <br />
+                                {editingRequest.timeZone}
+                            </small>
+                        </div>
+
+                        <Input
+                            label="Título de la reunión"
+                            value={editTitle}
+                            onChange={event => setEditTitle(event.target.value)}
+                            required
+                            maxLength={150}
+                        />
+
+                        <Textarea
+                            label="Mensaje adicional"
+                            value={editMessage}
+                            onChange={event => setEditMessage(event.target.value)}
+                            placeholder="Escribe un mensaje para el destinatario..."
+                            rows={4}
+                            maxLength={2000}
+                        />
+                    </form>
+                )}
+            </Dialog>
         </MemberShell>
     );
 }
