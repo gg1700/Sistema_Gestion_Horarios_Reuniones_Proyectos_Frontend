@@ -212,10 +212,6 @@ export default function AvailabilityPage({
 
   const today = dateKeyInTimeZone(new Date(), timeZone);
 
-  /*
-   * Carga únicamente el mes visible.
-   * La fecha final es exclusiva: primer día del siguiente mes.
-   */
   useEffect(() => {
     let active = true;
 
@@ -276,10 +272,16 @@ export default function AvailabilityPage({
     };
   }, [publicHandle, month, availabilityRevision]);
 
-  /*
-   * Si el visitante no seleccionó una fecha en la URL,
-   * ajustamos la fecha inicial a la zona horaria del propietario.
-   */
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setAvailabilityRevision(current => current + 1);
+    }, 30000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   useEffect(() => {
     if (!availability || query.has('fecha')) {
       return;
@@ -326,9 +328,30 @@ export default function AvailabilityPage({
         Date.parse(second.startsAt),
     );
 
-  const selectedSlot =
-    selectedSlots.find(slot => slot.startsAt === chosenStart) ??
-    selectedSlots[0];
+  const selectedSlot = chosenStart
+    ? selectedSlots.find(slot => slot.startsAt === chosenStart)
+    : selectedSlots[0];
+
+  useEffect(() => {
+    if (!chosenStart || !availability) {
+      return;
+    }
+
+    const stillAvailable = availability.slots.some(
+      slot => slot.startsAt === chosenStart
+    );
+
+    if (!stillAvailable) {
+      setChosenStart('');
+      setError(
+        'El horario que seleccionaste acaba de ser ocupado. Elige otro horario.'
+      );
+
+      setQuery({
+        fecha: selectedDate,
+      });
+    }
+  }, [availability, chosenStart, selectedDate, setQuery]);
 
   const ownerName = availability
     ? `${availability.name} ${availability.firstSurname}`.trim()
@@ -396,6 +419,8 @@ export default function AvailabilityPage({
 
       setCreatedRequest(result);
 
+      setAvailabilityRevision(current => current + 1);
+
       setQuery({
         fecha: selectedDate,
       });
@@ -406,10 +431,6 @@ export default function AvailabilityPage({
           : 'No se pudo enviar la solicitud.',
       );
 
-      /*
-       * El horario pudo ocuparse mientras el visitante completaba
-       * el formulario. Volvemos a consultar el mes.
-       */
       if (
         failure instanceof ApiError &&
         failure.statusCode === 409
