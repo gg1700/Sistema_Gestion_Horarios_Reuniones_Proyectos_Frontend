@@ -38,8 +38,6 @@ export function Dialog({ open, onOpenChange, title, description, eyebrow, header
   useEffect(() => {
     const dialog = dialogRef.current;
     return () => {
-      // close() encola un evento incluso cuando el cierre es solo limpieza de React.
-      // StrictMode puede volver a abrir este mismo nodo antes de entregar ese evento.
       if (dialog?.open) {
         internalCloseEvents.current += 1;
         dialog.close();
@@ -57,7 +55,6 @@ export function Dialog({ open, onOpenChange, title, description, eyebrow, header
     aria-describedby={description ? descriptionId : undefined}
     className={classNames('ui-dialog', `ui-dialog--${size}`, className)}
     onCancel={event => {
-      // Los eventos de un portal hijo también recorren el árbol de React.
       if (event.target !== event.currentTarget) return;
       event.preventDefault();
       event.stopPropagation();

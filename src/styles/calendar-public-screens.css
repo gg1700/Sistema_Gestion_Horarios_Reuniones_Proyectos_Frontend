@@ -1,4 +1,3 @@
-/* Enlace público, procedencia y gestión de eventos. Misma escala y paleta compartidas. */
 .profile-tabs { overflow-x: auto; white-space: nowrap; min-width: 0; }
 .profile-tabs a { flex-shrink: 0; }
 .connection-actions { flex-wrap: wrap; }

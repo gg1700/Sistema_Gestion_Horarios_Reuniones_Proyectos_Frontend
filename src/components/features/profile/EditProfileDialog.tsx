@@ -35,10 +35,7 @@ export function EditProfileDialog({
     setSaving(true);
 
     try {
-      // Primera petición: información personal en JSON.
       const result = await updateOwnProfile(value.personalInfo);
-
-      // Segunda petición opcional: foto de perfil en multipart/form-data.
       let pictureError: unknown = null;
 
       if (value.profilePicture) {
@@ -49,9 +46,7 @@ export function EditProfileDialog({
         }
       }
 
-      // Volvemos a consultar GET /api/v1/profile.
       member?.retry();
-
       onClose();
 
       if (pictureError) {

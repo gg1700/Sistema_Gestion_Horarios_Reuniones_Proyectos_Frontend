@@ -5,7 +5,6 @@ import { AppHeader, type AppHeaderProps } from './AppHeader';
 import { Navigation } from './Navigation';
 import { AppFooter } from './AppFooter';
 
-// Contenedor visual: no simula roles ni concede permisos.
 export function AdminLayout({ children, navigation, sidebarFooter, ...header }: PropsWithChildren<
   Omit<AppHeaderProps, 'navigation'> & { navigation: NavigationItem[]; sidebarFooter?: ReactNode }
 >) {

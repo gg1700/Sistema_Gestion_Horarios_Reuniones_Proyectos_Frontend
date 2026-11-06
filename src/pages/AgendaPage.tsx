@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
-
 import {
   FiArrowRight,
   FiCheck,
@@ -9,21 +8,17 @@ import {
   FiChevronRight,
   FiShield,
 } from 'react-icons/fi';
-
 import { MemberShell } from '../components/features/flows/FlowShell';
 import {
   TextLink,
   StatusDot,
 } from '../components/features/flows/FlowPrimitives';
-
 import {
   CalendarEventDetails,
   CalendarEventEditor,
   DeleteCalendarEvent,
 } from '../components/features/calendar/CalendarEventDialogs';
-
 import { Dialog } from '../components/modals';
-
 import {
   Alert,
   Button,
@@ -31,21 +26,16 @@ import {
   SectionHeading,
   Spinner,
 } from '../components/ui';
-
 import { paths } from '../constants/paths';
-
 import {
   getCalendarEvents,
 } from '../api/calendarEventsApi';
-
 import type {
   CalendarEventItem,
 } from '../types/calendarEvents';
-
 import {
   useGoogleCalendar,
 } from '../hooks/useGoogleCalendar';
-
 import {
   calendarDaySegments,
   dateKey,

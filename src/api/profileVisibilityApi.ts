@@ -1,4 +1,3 @@
-
 import { defaultProfileVisibility } from "../constants/profileVisibility";
 import type {
   ProfileVisibility,

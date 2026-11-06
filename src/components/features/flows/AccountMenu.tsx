@@ -7,14 +7,6 @@ import { TextLink } from './FlowPrimitives';
 import { useMemberIdentity } from '../../../features/github/MemberIdentityContext';
 import { useUI } from '../../../contexts/UIContext';
 
-/*
-CONTRATO BACKEND PROPUESTO — CERRAR SESIÓN
-Nombre y correo del menú: GET /api/v1/profile, JSON en ProfilePage.tsx.
-POST /api/v1/auth/logout — cookie de sesión actual; sin body.
-Respuesta 204: sin cuerpo. Invalidar sesión y cookie en servidor; después limpiar
-el estado privado del cliente y volver a /. Cerrar sesión no elimina el perfil ni
-desvincula proveedores. Si no había sesión activa, también responder 204.
-*/
 export function AccountMenu({ onClose }: { onClose: () => void }) {
   const { state, dispatch } = useMockFlow();
   const member = useMemberIdentity();

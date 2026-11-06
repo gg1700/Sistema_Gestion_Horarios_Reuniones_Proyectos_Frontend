@@ -1,11 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router';
 import { paths } from '../constants/paths';
 import { routePaths } from '../constants/routes';
-
 import ProfilePreview from '../pages/ProfilePreview';
 import PublicProfilePage from '../pages/PublicProfilePage';
 import PublicLinkPage from '../pages/PublicLinkPage';
-
 import LandingPage from '../pages/LandingPage';
 import AccessPage from '../pages/AccessPage';
 import WelcomePage from '../pages/WelcomePage';
@@ -26,22 +24,6 @@ import RegisterPage from '../pages/RegisterPage';
 import CompleteProfilePage from '../pages/CompleteProfilePage';
 import MeetingRequestsPage from '../pages/MeetingRequestsPage';
 import CalendarAvailabilitySettingsPage from '../pages/CalendarAvailabilitySettingsPage';
-
-/*
-INTEGRACIÓN DE PROTECCIÓN DE RUTAS — COMENTARIO, NO AUTENTICACIÓN IMPLEMENTADA
-Antes del grupo privado consultar GET /api/v1/session, sin body, con cookie de sesión.
-Respuesta JSON 200:
-{ "data": { "authenticated": true, "profileCompleted": true, "provider": "google", "profile": { "name": "Mateo", "firstSurname": "Silva", "handle": "mateo-silva", "email": "mateo.silva@correo.com" } } }
-Sin sesión:
-{ "data": { "authenticated": false, "profileCompleted": false, "provider": null, "profile": null } }
-Proteger bienvenida, panel, agenda, solicitudes, perfil y todas sus rutas hijas.
-authenticated false -> /acceso con retorno interno permitido; true con profileCompleted
-false -> modal de completar cuenta en /acceso. Sesión completa -> permitir la ruta.
-Cada endpoint privado valida también sesión/propiedad; el guard visual no lo sustituye.
-Landing/acceso/perfil público/disponibilidad admiten visitantes. /reuniones/:token se
-protege por la invitación concreta (ParticipantPage.tsx), sin exigir la sesión del dueño.
-Estos guards se conectarán al integrar backend; las rutas mock siguen abiertas para revisión.
-*/
 
 function RouterPage() {
   return (

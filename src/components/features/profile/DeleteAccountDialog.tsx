@@ -6,17 +6,6 @@ import { Alert, Button, Input } from '../../ui';
 import { useMockFlow } from '../../../contexts/MockFlowContext';
 import { paths } from '../../../constants/paths';
 
-/*
-CONTRATO BACKEND PROPUESTO — ELIMINAR CUENTA
-DELETE /api/v1/profile — sesión del titular.
-Request JSON:
-{ "confirmation": "ELIMINAR" }
-Respuesta 204: sin cuerpo. Cerrar sesión local y navegar a /acceso.
-Eliminar datos de Orbitia, desactivar el enlace público, desvincular proveedores e
-invalidar sesiones en servidor. No borrar repositorios ni calendarios del proveedor.
-Errores: 401 sin sesión; 422 confirmación distinta de ELIMINAR. Si falla, mantener
-abierto este modal y conservar los datos del usuario.
-*/
 export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
   const { state, dispatch } = useMockFlow();
   const navigate = useNavigate();

@@ -300,7 +300,6 @@ export default function ConnectionsPage() {
   return <ConnectionsContent />;
 }
 
-// Compatibilidad con las pruebas y pantallas de demostración existentes.
 export function DemoConnectionsPage() {
   return <ConnectionsContent legacy />;
 }

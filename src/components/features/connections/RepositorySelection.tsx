@@ -5,26 +5,8 @@ import { Alert, Button, Checkbox, Input, ProviderIcon } from '../../ui';
 import { useMockFlow } from '../../../contexts/MockFlowContext';
 import { repositories } from '../../../mocks/account';
 
-/*
-CONTRATO BACKEND PROPUESTO — SELECCIÓN Y ORDEN DE REPOSITORIOS
-GET /api/v1/connections/github/repositories — sesión e integración GitHub; sin body.
-Respuesta JSON 200:
-{ "data": { "repositories": [{ "id": "repo-1", "name": "orbitia-web", "description": "Interfaz para coordinar reuniones.", "language": "TypeScript", "stars": 24, "forks": 4, "url": "https://github.com/mateosilva/orbitia-web", "visibility": "public" }, { "id": "repo-2", "name": "telematics-api", "description": "Integración de herramientas.", "language": "TypeScript", "stars": 18, "forks": 3, "url": "https://github.com/mateosilva/telematics-api", "visibility": "public" }], "selectedIds": ["repo-1", "repo-2"] } }
-Llenado: repositories -> búsqueda y checks; selectedIds -> checks iniciales y orden
-del panel derecho. Buscar, marcar y mover usa un borrador local; Cancelar lo descarta.
-PUT /api/v1/connections/github/repositories/selection
-Request JSON (el orden del array es el orden del perfil):
-{ "repositoryIds": ["repo-2", "repo-1"] }
-Respuesta JSON 200:
-{ "data": { "repositoryIds": ["repo-2", "repo-1"] } }
-De 0 a 5 ids distintos de la cuenta vinculada; servidor valida pertenencia y selección
-permitida. [] limpia la selección. Esto no publica: publicación depende de Visibilidad.
-Errores: 401 sin sesión; 409 GITHUB_NOT_CONNECTED -> autorizar; 422 id ajeno, repetido
-o más de cinco. Mantener selección y mostrar error. Guardar solo tras confirmar respuesta.
-*/
 export { RemoteRepositorySelection as RepositorySelection } from '../../../features/github/RepositoryPicker';
 
-// Maqueta original conservada como referencia visual del equipo.
 export function DemoRepositorySelection({ onClose }: { onClose: () => void }) {
   const { state, dispatch } = useMockFlow();
   const [selected, setSelected] = useState([...state.account.github.selectedRepositories]);

@@ -46,7 +46,6 @@ export function isPublicProfilePreview(value: unknown): value is PublicProfilePr
 }
 
 export function toPublicProfileView(profile: PublicProfilePreview): PublicProfileViewData {
-  // Adaptar solo la respuesta pública; nunca completar campos con el perfil privado.
   return {
     name: profile.name,
     firstSurname: profile.firstSurname,

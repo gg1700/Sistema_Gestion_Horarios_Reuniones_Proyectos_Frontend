@@ -1,4 +1,3 @@
-/** Datos y transiciones de interfaz. Ningún permiso o token real se guarda aquí. */
 export type Provider = 'google' | 'github';
 export interface ContactEmail { id: string; value: string }
 export interface ContactPhone { id: string; code: string; number: string }
@@ -135,7 +134,6 @@ export function transitionAccount(state: AccountState, action: AccountAction): A
   }
 }
 
-/** Filtrar antes de mostrar: el correo de acceso nunca se incluye en el perfil público. */
 export function publicProfileSnapshot(identity: { name: string; firstSurname: string; handle: string }, account: AccountState) {
   if (account.deleted) return null;
   const { details, visibility } = account;

@@ -21,9 +21,7 @@ interface OwnProfile {
   workExperiences: Owned<{title: string; description: string | null; companyName: string | null; startDate: string; endDate: string | null}>[];
   links: Owned<{text: string; url: string}>[];
 }
-// GET /profile devuelve registros con id/visible. PATCH /profile/visibility acepta
-// {changes:[{type:'repository',id:'UUID de selección',visible:true}]} y responde success:true.
-// El UUID es el de PostgreSQL, no el ID numérico de GitHub. No enviar email de acceso.
+
 export default function ProfileVisibilityPage() {
   const [own, setOwn] = useState<OwnProfile | null>(null);
   const [catalogue, setCatalogue] = useState<RepositoryCatalogue | null>(null);

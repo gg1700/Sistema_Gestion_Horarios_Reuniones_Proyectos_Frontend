@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import {
   FiArrowRight,
@@ -6,7 +5,6 @@ import {
   FiClock,
   FiLink,
 } from 'react-icons/fi';
-
 import { MemberShell } from '../components/features/flows/FlowShell';
 import {
   TextLink,
@@ -19,24 +17,19 @@ import {
   ProviderIcon,
   SectionHeading,
 } from '../components/ui';
-
 import { useUI } from '../contexts/UIContext';
 import { useMemberIdentity } from '../features/github/MemberIdentityContext';
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
-
 import { getCalendarEvents } from '../api/calendarEventsApi';
 import { getMeetingRequests } from '../api/meetingRequestsApi';
-
 import type { CalendarEventItem } from '../types/calendarEvents';
 import type { MeetingRequestItem } from '../types/meetingRequests';
-
 import {
   dateKey,
   dateLabel,
   rangeLabel,
   shiftDate,
 } from '../utils/calendar';
-
 import {
   paths,
   flowPaths,

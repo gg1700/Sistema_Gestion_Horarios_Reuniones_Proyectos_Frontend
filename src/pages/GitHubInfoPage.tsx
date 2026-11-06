@@ -10,27 +10,8 @@ import { useUI } from '../contexts/UIContext';
 import { githubActivity, repositories } from '../mocks/account';
 import { paths } from '../constants/paths';
 
-/*
-CONTRATO BACKEND PROPUESTO — INFORMACIÓN INTEGRADA DE GITHUB
-Pantalla privada. Cuenta/usuario y selección inicial: GET /api/v1/connections.
-Repositorios: GET /api/v1/connections/github/repositories, JSON en RepositorySelection.tsx.
-Mostrar solo selectedIds, en ese orden, con nombre, descripción, lenguaje, estrellas y forks.
-GET /api/v1/connections/github/activity — sin body.
-Respuesta JSON 200:
-{ "data": [{ "id": "activity-1", "date": "2026-10-26T10:42:00-04:00", "title": "Actualizó orbitia-web", "detail": "Push · 3 commits en main" }] }
-Llenado: ordenar por date descendente; frontend formatea "Hoy/Ayer/fecha · hora".
-No sustituir fechas originales por la fecha de sincronización. [] -> sin actividad.
-POST /api/v1/connections/github/refresh — sin body.
-Respuesta JSON 200:
-{ "data": { "updatedAt": "2026-10-27T15:30:00-04:00" } }
-Después recargar repositorios y actividad; updatedAt llena el estado del botón.
-Errores: 401 sin sesión; 409 GITHUB_NOT_CONNECTED -> mostrar la vista desconectada y
-botón Conectar; 502 proveedor no disponible -> conservar últimos datos y permitir reintento.
-Estos datos siguen siendo privados hasta que el usuario active su visibilidad.
-*/
 export { default } from '../features/github/GithubRepositoriesPage';
 
-// Pantalla de demostración conservada; la ruta real usa el servicio de repositorios.
 export function DemoGitHubInfoPage() {
   const { state, dispatch } = useMockFlow();
   const { notify } = useUI();

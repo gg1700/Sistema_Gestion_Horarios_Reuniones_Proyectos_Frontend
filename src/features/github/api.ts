@@ -11,11 +11,6 @@ export interface RepositoryCatalogue {
   repositories: RepositoryItem[]; selectedIds: number[]; maxSelected: number; username: string; warnings: string[];
 }
 
-// Sesión HttpOnly; no guardar tokens ni selección en localStorage.
-// GET /api/v1/integrations/github/repositories -> success/data RepositoryCatalogue.
-// PUT /api/v1/integrations/github/repositories/selected JSON {repositoryIds:[123,456]}.
-// El array indica el orden. 0..maxSelected IDs propios públicos sin repetidos.
-// 401 iniciar sesión; 409 conectar/reautorizar; 422 selección; 429 cuota; 502 reintentar.
 export async function githubApi<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBase}/api/v1${path}`, { ...init, credentials: 'include' });
   const result = await response.json();

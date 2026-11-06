@@ -2,8 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialFlow as initialFlow, transitionFlow, isRangeFree } from '../flow.ts';
 
-// Los casos de escritura parten de un calendario autorizado. La desconexión se
-// comprueba por separado para no confundir una validación de permisos con colisiones.
 const createInitialFlow = () => transitionFlow(initialFlow(), { type: 'account', action: { type: 'authorize-provider', provider: 'google' } });
 
 test('una solicitud enviada queda pendiente y no crea una reunión ni reserva el bloque', () => {

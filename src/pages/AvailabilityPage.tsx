@@ -4,9 +4,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react';
-
 import { useParams, useSearchParams } from 'react-router';
-
 import {
   FiArrowRight,
   FiCalendar,
@@ -17,16 +15,13 @@ import {
   FiExternalLink,
   FiShield,
 } from 'react-icons/fi';
-
 import { VisitorShell } from '../components/features/flows/FlowShell';
 import {
   Person,
   StatusDot,
   TextLink,
 } from '../components/features/flows/FlowPrimitives';
-
 import { Dialog } from '../components/modals';
-
 import {
   Alert,
   Button,
@@ -34,24 +29,18 @@ import {
   SectionHeading,
   Textarea,
 } from '../components/ui';
-
 import { PublicProfileUnavailable } from '../components/features/profile/PublicProfileUnavailable';
-
 import { getPublicAvailability } from '../api/calendarAvailabilityApi';
 import { createMeetingRequest } from '../api/meetingRequestsApi';
-
 import { useMemberIdentity } from '../features/github/MemberIdentityContext';
-
 import type {
   CreateMeetingRequestPayload,
   CreatedMeetingRequest,
 } from '../types/meetingRequests';
-
 import type {
   PublicAvailabilityData,
   PublicAvailabilitySlot,
 } from '../types/calendarAvailability';
-
 import { ApiError } from '../types/api';
 import { isDateKey, shiftDate } from '../utils/calendar';
 

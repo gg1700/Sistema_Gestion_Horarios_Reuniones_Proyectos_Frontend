@@ -12,23 +12,6 @@ import { useUI } from '../contexts/UIContext';
 import { validateHandle } from '../mocks/flow';
 import { paths, publicProfilePath } from '../constants/paths';
 
-/*
-CONTRATO BACKEND PROPUESTO — CAMBIAR IDENTIFICADOR
-GET /api/v1/profile/handle-availability?handle=mateo-silva-dev — sesión, sin body.
-Respuesta JSON 200:
-{ "data": { "handle": "mateo-silva-dev", "available": true } }
-Consultar al cambiar el texto; esta consulta no reserva el identificador.
-
-PATCH /api/v1/profile/public-link — sesión del titular.
-Request JSON:
-{ "handle": "mateo-silva-dev" }
-Respuesta JSON 200:
-{ "data": { "handle": "mateo-silva-dev", "enabled": true, "url": "https://orbitia.app/mateo-silva-dev" } }
-Actualizar handle y URL en el perfil y en todos los enlaces de esta sesión.
-Validación: entre 3 y 50 letras a-z, números o guiones; no rutas reservadas.
-Comprobar unicidad al guardar: 409 si ya se ocupó, conservar el formulario y mostrar
-error en el identificador. La dirección anterior responde 404, sin redirección.
-*/
 function ChangeHandleDialog({ onClose }: { onClose: () => void }) {
   const { state, dispatch } = useMockFlow();
   const { notify } = useUI();
@@ -51,23 +34,6 @@ function ChangeHandleDialog({ onClose }: { onClose: () => void }) {
   </Dialog>;
 }
 
-/*
-CONTRATO BACKEND PROPUESTO — ENLACE PÚBLICO
-GET /api/v1/profile/public-link — sesión del titular; sin body.
-Respuesta JSON 200:
-{ "data": { "handle": "mateo-silva", "enabled": true, "url": "https://orbitia.app/mateo-silva" } }
-Llenado: enabled -> switch y botón de copiar; url -> dirección y portapapeles;
-handle -> identificador. Usar la URL devuelta; no fijar el dominio del despliegue.
-
-PATCH /api/v1/profile/public-link
-Request JSON del switch:
-{ "enabled": false }
-Respuesta JSON 200:
-{ "data": { "handle": "mateo-silva", "enabled": false, "url": "https://orbitia.app/mateo-silva" } }
-Aplicar el switch al confirmar la respuesta; si falla, conservar el valor anterior.
-Desactivar no borra perfil ni visibilidad. Perfil público y disponibilidad responden
-404 mientras esté inactivo. Errores: 401 sin sesión; 422 enabled no booleano.
-*/
 export { default } from '../features/github/ProfilePublicLinkPage';
 
 export function DemoProfileLinkPage() {

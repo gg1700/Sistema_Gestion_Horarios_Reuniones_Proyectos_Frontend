@@ -1,4 +1,3 @@
-
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { FiArrowRight, FiLink, FiShield } from 'react-icons/fi';

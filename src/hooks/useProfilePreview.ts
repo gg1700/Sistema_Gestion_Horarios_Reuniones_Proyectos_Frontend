@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { getProfilePreview } from "../api/profilePreviewApi";
 import type { PublicProfile } from "../types/profilePreview";

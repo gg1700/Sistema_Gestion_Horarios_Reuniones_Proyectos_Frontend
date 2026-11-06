@@ -14,8 +14,7 @@ before(async () => {
     Object.defineProperty(globalThis, key, { configurable: true, value: key === 'window' ? dom : dom[key] });
   }
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  // El close nativo encola un evento. Mantener esa cola explícita permite probar
-  // cleanup -> reapertura -> close atrasado, sin depender de tiempos arbitrarios.
+  
   dom.HTMLDialogElement.prototype.close = function () {
     if (!this.open) return;
     this.removeAttribute('open');

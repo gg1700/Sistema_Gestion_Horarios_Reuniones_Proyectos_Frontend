@@ -11,23 +11,6 @@ import { useMockFlow } from '../contexts/MockFlowContext';
 import { useUI } from '../contexts/UIContext';
 import { publicProfileSnapshot, type VisibilitySettings } from '../mocks/account';
 
-/*
-CONTRATO BACKEND PROPUESTO — VISIBILIDAD
-Pantalla privada; sesión del titular. Datos a mostrar vienen de GET /api/v1/profile.
-GET /api/v1/profile/visibility — sin body.
-Respuesta JSON 200:
-{ "data": { "secondSurname": false, "country": true, "address": false, "contactEmail": false, "phone": false, "experience": true, "links": true, "repositories": false, "githubActivity": false } }
-Llenado: cada booleano controla el switch del mismo nombre; true = Público.
-
-PATCH /api/v1/profile/visibility
-Request JSON (puede contener solo los switches modificados):
-{ "country": true, "address": false, "repositories": true }
-Respuesta 204: sin cuerpo. Recargar GET /api/v1/profile/visibility.
-Los omitidos se conservan. Nombre, primer apellido, usuario y foto siempre son públicos
-en un enlace activo y no se aceptan como switches. Vista previa usa el borrador local;
-el perfil del visitante usa valores guardados y filtrados por el servidor.
-Errores: 401 sin sesión; 422 si un campo no es booleano o no está permitido.
-*/
 export default function VisibilityPreviewPage() {
   const { state, dispatch } = useMockFlow();
   const { notify } = useUI();

@@ -102,8 +102,6 @@ export function ExperienceEditor({
       return;
     }
 
-    // El backend actual no permite borrar estos textos
-    // enviando una cadena vacía.
     if (experience.companyName && !cleanCompany) {
       setError(
         'El backend actual no permite eliminar el nombre de la empresa. Conserva el valor o solicita ese cambio en el backend.'
@@ -124,7 +122,6 @@ export function ExperienceEditor({
       endDate: current ? null : endDate || null,
     };
 
-    // Los campos opcionales solo se envían si tienen contenido.
     if (cleanCompany) {
       payload.companyName = cleanCompany;
     }

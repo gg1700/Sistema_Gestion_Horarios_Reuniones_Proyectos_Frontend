@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { FiCalendar, FiCheck, FiCopy, FiPlus, FiTrash2 } from 'react-icons/fi';
-
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { ProfileTabs } from '../components/features/profile/ProfileParts';
 import { Alert, Button, SectionHeading } from '../components/ui';
-
 import { useUI } from '../contexts/UIContext';
 
 import {

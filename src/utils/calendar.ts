@@ -21,7 +21,6 @@ export function weekStart(value: string) {
   return shiftDate(value, -((day + 6) % 7));
 }
 
-/** Recorta eventos a un día y separa los que se solapan para que sigan siendo accesibles. */
 export function calendarDaySegments<T extends TimeRange>(events: T[], day: string) {
   const from = Date.parse(`${day}T00:00:00-04:00`);
   const to = from + 86_400_000;

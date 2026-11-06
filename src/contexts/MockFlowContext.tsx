@@ -9,12 +9,11 @@ function loadMock(): FlowState {
     if (stored && typeof stored === 'object' && 'version' in stored && stored.version === 1 &&
       'profile' in stored && stored.profile && typeof stored.profile === 'object' && 'name' in stored.profile &&
       'meetings' in stored && Array.isArray(stored.meetings) && 'requests' in stored && Array.isArray(stored.requests) && 'changes' in stored && Array.isArray(stored.changes)) {
-      // Migración de la tanda anterior: conservar agenda y decisiones ya revisadas.
       const initial = createInitialFlow();
       const account = 'account' in stored && stored.account && typeof stored.account === 'object' ? stored.account : {};
       return { ...stored, meetings: stored.meetings.map(meeting => ({ ...meeting, calendarId: meeting.calendarId ?? 'personal' })), requests: stored.requests.map(request => ({ ...request, calendarId: request.calendarId ?? 'personal' })), account: { ...createInitialAccount(), ...account }, calendarEvents: 'calendarEvents' in stored && Array.isArray(stored.calendarEvents) ? stored.calendarEvents : initial.calendarEvents } as FlowState;
     }
-  } catch { /* Almacenamiento bloqueado o datos de una demostración antigua. */ }
+  } catch { }
   return createInitialFlow();
 }
 
@@ -29,7 +28,7 @@ export function MockFlowProvider({ children }: PropsWithChildren) {
     setState(next);
   }, []);
   useEffect(() => {
-    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* El flujo también funciona en memoria. */ }
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { }
   }, [state]);
   return <MockFlowContext.Provider value={{ state, dispatch }}>{children}</MockFlowContext.Provider>;
 }

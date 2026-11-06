@@ -10,16 +10,6 @@ import { paths } from '../constants/paths';
 import type { AccountState } from '../mocks/account';
 import { useMemberIdentity } from '../features/github/MemberIdentityContext';
 
-/*
-CONTRATO BACKEND — PROCEDENCIA
-Usa GET /api/v1/profile (JSON completo en ProfilePage.tsx); no requiere otro endpoint.
-Ejemplo JSON de los campos utilizados de esa respuesta:
-{ "profile": { "name": "Mateo Ignacio" }, "fieldOrigins": { "name": { "provider": "github", "originalValue": "Mateo" } } }
-Si hay origen y value coincide con originalValue: mostrar "Desde GitHub/Google".
-Si difiere: mostrar "Personalizado", proveedor original y valor recibido.
-Si no hay origen para el campo: "Añadido por ti". Editar usa el mismo PATCH comentado
-en EditProfileDialog.tsx. Nunca cambiar fieldOrigins desde el navegador.
-*/
 export default function ProfileOriginsPage() {
   const { state } = useMockFlow();
   const [query, setQuery] = useSearchParams();

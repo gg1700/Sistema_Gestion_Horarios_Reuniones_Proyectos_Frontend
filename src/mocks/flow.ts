@@ -1,9 +1,3 @@
-/**
- * Estado exclusivo de la maqueta navegable. No representa una sesión autenticada.
- * Al integrar, sustituir estas transiciones por las respuestas del servidor.
- * Los contratos con método, JSON y validaciones están comentados en cada pantalla.
- * sessionStorage y los ids de la URL no conceden permisos sobre datos reales.
- */
 import { createInitialAccount, transitionAccount, type AccountAction, type AccountState, type ProfileDetails } from './account.ts';
 
 export interface DemoProfile { name: string; firstSurname: string; handle: string; email: string }
@@ -44,7 +38,6 @@ export const personalEvents: CalendarEvent[] = [
 export function createInitialFlow(): FlowState {
   return {
     version: 1, profile: { ...initialProfile }, profileCompleted: false, demoSignedIn: false, account: createInitialAccount(), calendarEvents: personalEvents.map(event => ({ ...event })),
-    // La solicitud pendiente usa otro bloque: no duplica la reunión ya confirmada.
     requests: [{ id: 'request-elena', calendarId: 'personal', title: 'Revisión de arquitectura', message: 'Me gustaría revisar la propuesta de integración de servicios y resolver algunas dudas sobre la arquitectura.', guestName: guest.name, guestEmail: guest.email, start: '2026-10-28T14:00:00-04:00', end: '2026-10-28T14:30:00-04:00', status: 'pending' }],
     meetings: [{ id: 'meeting-review', calendarId: 'personal', title: 'Revisión de arquitectura', description: 'Revisar la propuesta de integración de servicios y acordar los próximos pasos de arquitectura.', guestName: guest.name, guestEmail: guest.email, start: '2026-10-28T10:30:00-04:00', end: '2026-10-28T11:00:00-04:00', participantToken: 'mock-invitacion-arquitectura', meetUrl: 'https://meet.google.com/abc-defg-hij' }],
     changes: [{ id: 'change-elena', meetingId: 'meeting-review', start: '2026-10-29T15:00:00-04:00', end: '2026-10-29T15:30:00-04:00', originalStart: '2026-10-28T10:30:00-04:00', originalEnd: '2026-10-28T11:00:00-04:00', message: '¿Podemos mover la revisión al jueves por la tarde? Mantendríamos la misma duración y los mismos temas.', status: 'pending' }],

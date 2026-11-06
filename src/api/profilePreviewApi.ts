@@ -1,4 +1,3 @@
-
 import { getProfileVisibility } from "./profileVisibilityApi";
 import type { PublicProfile } from "../types/profilePreview";
 

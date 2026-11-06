@@ -1,4 +1,3 @@
-
 export type PublicProfile = {
   handleName: string;
   name: string;

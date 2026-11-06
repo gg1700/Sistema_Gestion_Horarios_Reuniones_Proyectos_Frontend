@@ -6,13 +6,6 @@ import { SectionHeading } from '../components/ui';
 import { useMockFlow } from '../contexts/MockFlowContext';
 import { paths, flowPaths } from '../constants/paths';
 
-/*
-DATOS PARA BIENVENIDA
-Pantalla privada tras completar cuenta. Reutilizar name del GET /api/v1/profile,
-documentado con su JSON en ProfilePage.tsx. No requiere un endpoint propio.
-Completar perfil / Conectar servicios / Gestionar enlace solo navegan; no autorizan
-ni publican datos por sí mismos. Los pasos opcionales pueden completarse después.
-*/
 export default function WelcomePage() {
   const { state } = useMockFlow();
   return <MemberShell><SectionHeading title="Tu espacio ya está listo" eyebrow="BIENVENIDO A ORBITIA" accentPeriod description={`Hola, ${state.profile.name}. Empieza por lo que más te interese y completa tu espacio a tu ritmo.`} />
