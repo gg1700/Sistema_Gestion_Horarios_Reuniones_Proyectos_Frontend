@@ -19,7 +19,11 @@ import type {
     MeetingRequestItem,
     MeetingRequestStatus,
 } from '../types/meetingRequests';
-import { decideMeetingRequest, updateMeetingRequest } from '../api/meetingRequestsApi';
+import {
+    cancelMeetingRequest,
+    decideMeetingRequest,
+    updateMeetingRequest,
+} from '../api/meetingRequestsApi';
 import { Dialog } from '../components/modals';
 import { Input, Textarea } from '../components/ui';
 import type { UpdateMeetingRequestPayload } from '../types/meetingRequests';
@@ -110,6 +114,12 @@ export default function MeetingRequestsPage() {
 
     const [savingEdit, setSavingEdit] = useState(false);
     const [editError, setEditError] = useState('');
+
+    const [cancellingRequest, setCancellingRequest] =
+        useState<MeetingRequestItem | null>(null);
+
+    const [cancelling, setCancelling] = useState(false);
+    const [cancelError, setCancelError] = useState('');
 
     const {
         requests,
@@ -237,6 +247,42 @@ export default function MeetingRequestsPage() {
             );
         } finally {
             setSavingEdit(false);
+        }
+    }
+
+    function openCancelDialog(request: MeetingRequestItem) {
+        setCancellingRequest(request);
+        setCancelError('');
+    }
+
+    function closeCancelDialog() {
+        if (cancelling) return;
+
+        setCancellingRequest(null);
+        setCancelError('');
+    }
+
+    async function confirmCancelRequest() {
+        if (!cancellingRequest || cancelling) return;
+
+        try {
+            setCancelling(true);
+            setCancelError('');
+
+            await cancelMeetingRequest(cancellingRequest.id);
+
+            setDecisionMessage('La solicitud se canceló correctamente.');
+            setCancellingRequest(null);
+
+            refresh();
+        } catch (failure) {
+            setCancelError(
+                failure instanceof Error
+                    ? failure.message
+                    : 'No se pudo cancelar la solicitud.',
+            );
+        } finally {
+            setCancelling(false);
         }
     }
 
@@ -446,6 +492,14 @@ export default function MeetingRequestsPage() {
                                                 >
                                                     Editar
                                                 </Button>
+
+                                                <Button
+                                                    size="small"
+                                                    variant="danger"
+                                                    onClick={() => openCancelDialog(request)}
+                                                >
+                                                    Cancelar
+                                                </Button>
                                             </div>
                                         );
                                     }
@@ -581,6 +635,64 @@ export default function MeetingRequestsPage() {
                             maxLength={2000}
                         />
                     </form>
+                )}
+            </Dialog>
+
+            <Dialog
+                open={cancellingRequest !== null}
+                onOpenChange={open => {
+                    if (!open) closeCancelDialog();
+                }}
+                title="Cancelar solicitud"
+                eyebrow="SOLICITUD DE REUNIÓN"
+                description="¿Estás seguro de que deseas cancelar esta solicitud? Esta acción no se puede deshacer."
+                size="medium"
+                footer={
+                    <>
+                        <Button
+                            variant="ghost"
+                            disabled={cancelling}
+                            onClick={closeCancelDialog}
+                        >
+                            Volver
+                        </Button>
+
+                        <Button
+                            variant="danger"
+                            loading={cancelling}
+                            onClick={() => void confirmCancelRequest()}
+                        >
+                            Sí, cancelar solicitud
+                        </Button>
+                    </>
+                }
+            >
+                {cancellingRequest && (
+                    <div className="flow-form">
+                        {cancelError && (
+                            <Alert tone="danger">
+                                {cancelError}
+                            </Alert>
+                        )}
+
+                        <div className="requests-table-title">
+                            <strong>{cancellingRequest.title}</strong>
+
+                            <small>
+                                {getCounterpartName(cancellingRequest)}
+                            </small>
+                        </div>
+
+                        <div className="requests-table-time">
+                            {formatRequestSchedule(cancellingRequest).date}
+
+                            <small>
+                                {formatRequestSchedule(cancellingRequest).range}
+                                <br />
+                                {cancellingRequest.timeZone}
+                            </small>
+                        </div>
+                    </div>
                 )}
             </Dialog>
         </MemberShell>

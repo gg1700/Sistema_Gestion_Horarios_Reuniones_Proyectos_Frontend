@@ -123,3 +123,24 @@ export async function updateMeetingRequest(
 
   return response.data;
 }
+
+interface CancelMeetingRequestApiResponse {
+  success: boolean;
+  message: string;
+  data?: CreatedMeetingRequest;
+}
+
+export async function cancelMeetingRequest(
+  requestId: string): Promise<CreatedMeetingRequest> {
+  const response = await sendRequest<CancelMeetingRequestApiResponse>(
+    `/api/v1/meeting-requests/${encodeURIComponent(requestId)}`,
+    {
+      method: 'DELETE',
+    },
+  );
+
+  if (!response.success || !response.data)
+    throw new Error(response.message || 'No se pudo cancelar la solicitud.');
+
+  return response.data;
+}
