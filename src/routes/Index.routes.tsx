@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router';
 import { paths } from '../constants/paths';
 import { routePaths } from '../constants/routes';
-import ProfilePreview from '../pages/ProfilePreview';
 import PublicProfilePage from '../pages/PublicProfilePage';
 import LandingPage from '../pages/LandingPage';
 import AccessPage from '../pages/AccessPage';
@@ -12,13 +11,11 @@ import AvailabilityPage from '../pages/AvailabilityPage';
 import ProfilePage from '../pages/ProfilePage';
 import ProfileSetupPage from '../pages/ProfileSetupPage';
 import VisibilityPage from '../pages/VisibilityPage';
-import VisibilityPreviewPage from '../pages/VisibilityPreviewPage';
 import ConnectionsPage from '../pages/ConnectionsPage';
 import GitHubInfoPage from '../pages/GitHubInfoPage';
 import AccessIssuePage from '../pages/AccessIssuePage';
 import ProfilePublicPage from '../pages/ProfilePublicPage';
 import ProfileLinkPage from '../pages/ProfileLinkPage';
-import ProfileOriginsPage from '../pages/ProfileOriginsPage';
 import RegisterPage from '../pages/RegisterPage';
 import CompleteProfilePage from '../pages/CompleteProfilePage';
 import MeetingRequestsPage from '../pages/MeetingRequestsPage';
@@ -46,7 +43,7 @@ function RouterPage() {
 
       <Route path={paths.profile} element={<ProfilePage />} />
       <Route path={paths.profileSetup} element={<ProfileSetupPage />} />
-      <Route path={paths.profileOrigins} element={<ProfileOriginsPage />} />
+      <Route path={paths.profileOrigins} element={<Navigate to={paths.profile} replace />} />
       <Route path={paths.profileLink} element={<ProfileLinkPage />} />
       <Route path={paths.visibility} element={<VisibilityPage />} />
       <Route path={paths.connections} element={<ConnectionsPage />} />
@@ -54,10 +51,10 @@ function RouterPage() {
       <Route path={paths.availability} element={<AvailabilityPage />} />
 
       <Route path={paths.publicProfile} element={<ProfilePublicPage />} />
-      <Route path="/visibility-flow-preview" element={<VisibilityPreviewPage />} />
+      <Route path="/visibility-flow-preview" element={<Navigate to={paths.visibility} replace />} />
 
       <Route path="/profile-visibility" element={<Navigate to={paths.visibility} replace />} />
-      <Route path="/profile-preview" element={<ProfilePreview />} />
+      <Route path="/profile-preview" element={<Navigate to={paths.visibility} replace />} />
 
       <Route path="/legacy-public-profile/:publicHandle" element={<PublicProfilePage />} />
       <Route path="/perfil/enlace-publico" element={<Navigate to={paths.profileLink} replace />} />
