@@ -1,14 +1,116 @@
+
 @import "tailwindcss";
+@import "./styles/tokens.css";
+@import "./styles/fonts.css";
+@import "./styles/shared.css";
+@import "./styles/screens.css";
+@import "./styles/profile-screens.css";
+@import "./styles/calendar-public-screens.css";
+
 @theme {
-  --color-primary: #1E40AF;
-  --color-secondary: #E6E6E6;
-  --color-background: #FFFFFF;
-  --color-modals: #F1F5F9;
-  --color-text: #333333;
-  --color-fields: #666666;
-  --color-sidebar: #1E3A8A;
-  --color-good: #27AE60;
-  --color-danger: #E74C3C;
-  --font-first: 'Inter', sans-serif;
-  --font-second: 'Encode Sans Semi Condensed', sans-serif;
+  --color-primary: var(--ui-mint);
+  --color-secondary: var(--ui-surface-raised);
+  --color-background: var(--ui-bg);
+  --color-modals: var(--ui-surface);
+  --color-text: var(--ui-text);
+  --color-fields: var(--ui-field);
+  --color-sidebar: var(--ui-surface);
+  --color-good: var(--ui-mint);
+  --color-danger: var(--ui-danger);
+  --font-first: var(--ui-font-body);
+  --font-second: var(--ui-font-heading);
+
+  --color-orbita-primary: var(--ui-mint);
+  --color-orbita-accent: var(--ui-mint-strong);
+  --color-orbita-background: var(--ui-bg);
+  --color-orbita-card: var(--ui-surface);
+  --color-orbita-surface: var(--ui-surface-raised);
+  --color-orbita-outline: var(--ui-border);
+  --color-orbita-text: var(--ui-text);
+  --color-orbita-muted: var(--ui-muted);
+
+  --color-ui-background: #0A1115;
+  --color-ui-surface: #111D22;
+  --color-ui-raised: #17292A;
+  --color-ui-dialog: #122328;
+  --color-ui-dialog-border: #3B5550;
+  --color-ui-field: #111C21;
+  --color-ui-field-border: #2B3D42;
+  --color-ui-border: #263A3D;
+  --color-ui-divider: #2A4235;
+  --color-ui-panel: #142720;
+  --color-ui-panel-border: #385348;
+  --color-ui-mint: #A3F5CE;
+  --color-ui-mint-strong: #88F0C3;
+  --color-ui-ink: #0B3023;
+  --color-ui-text: #EDF4F0;
+  --color-ui-sage: #C9E1D1;
+  --color-ui-muted: #9AAFA9;
+  --color-ui-leaf: #86AA92;
+  --color-ui-moss: #739B81;
+  --color-ui-soft: #6F8881;
+  --color-ui-danger: #E9AA97;
+  --color-ui-danger-tint: #2B1D1A;
+  --color-ui-hover: #1E3533;
+  --color-ui-stepper: #132820;
+  --color-ui-stepper-border: #2C4535;
+  --color-ui-step-done: #1B3C2C;
+
+  --radius-control: 0.75rem;
+  --radius-dialog: 1.5rem;
+
+  --font-heading: var(--ui-font-heading);
+  --font-body: var(--ui-font-body);
+  --font-code: 'JetBrains Mono', monospace;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-ui-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-ui-field) inset;
+  caret-color: var(--color-ui-text);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.orbita-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4A554E #252A27;
+}
+
+.orbita-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.orbita-scrollbar::-webkit-scrollbar-track {
+  background: #252A27;
+  border-radius: 8px;
+}
+
+.orbita-scrollbar::-webkit-scrollbar-thumb {
+  background: #4A554E;
+  border-radius: 8px;
+  border: 2px solid #252A27;
+}
+
+.orbita-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #10B981;
+}
+
+.ui-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #2B3D42 transparent;
+}
+
+.ui-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ui-scrollbar::-webkit-scrollbar-thumb {
+  background: #2B3D42;
+  border-radius: 8px;
+}
+
+.ui-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6F8881;
 }

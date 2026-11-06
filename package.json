@@ -4,9 +4,13 @@
   "description": "Frontend del Sistema de Gestión de Horarios, Reuniones y Proyectos",
   "type": "module",
   "scripts": {
+    "test:github": "node --experimental-strip-types --test src/features/github/__tests__/*.test.mjs",
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --experimental-strip-types --test src/components/modals/__tests__/*.test.mjs src/features/github/__tests__/*.test.mjs tests/*.test.mjs",
+    "test:ui": "node --experimental-strip-types --test src/components/modals/__tests__/*.test.mjs",
+    "test:visibility": "node --experimental-strip-types --test tests/visibility.test.mjs"
   },
   "repository": {
     "type": "git",
@@ -18,6 +22,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.2.0",
     "@tailwindcss/vite": "^4.3.3",
+    "axios": "^1.20.0",
     "flowbite-react": "^0.12.17",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -30,6 +35,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "happy-dom": "^21.0.4",
     "typescript": "^7.0.2",
     "vite": "^8.1.5"
   }
