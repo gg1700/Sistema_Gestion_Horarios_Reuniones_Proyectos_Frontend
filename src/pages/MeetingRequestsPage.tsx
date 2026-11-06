@@ -82,8 +82,11 @@ function formatRequestSchedule(request: MeetingRequestItem) {
 }
 
 function getCounterpartName(request: MeetingRequestItem) {
-  return `${request.name} ${request.firstSurname}`.trim()
-    || request.handleName;
+  return (
+    `${request.name} ${request.firstSurname}`.trim()
+    || request.handleName
+    || 'Invitado'
+  );
 }
 
 export default function MeetingRequestsPage() {

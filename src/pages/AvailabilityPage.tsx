@@ -4,12 +4,11 @@ import { FiArrowRight, FiCalendar, FiCheck, FiChevronLeft, FiChevronRight, FiClo
 import { VisitorShell } from '../components/features/flows/FlowShell';
 import { Person, StatusDot, TextLink } from '../components/features/flows/FlowPrimitives';
 import { Dialog } from '../components/modals';
-import { Alert, Button, ButtonLink, EmptyState, Input, SectionHeading, Textarea } from '../components/ui';
+import { Alert, Button, Input, SectionHeading, Textarea } from '../components/ui';
 import { useMockFlow } from '../contexts/MockFlowContext';
-import { OWNER_TIME_ZONE, DEMO_TODAY, isRangeFree, publicProfileAvailable, calendarReady } from '../mocks/flow';
+import { OWNER_TIME_ZONE, isRangeFree, publicProfileAvailable, calendarReady } from '../mocks/flow';
 import { PublicProfileUnavailable } from '../components/features/profile/PublicProfileUnavailable';
-import { paths, flowPaths } from '../constants/paths';
-import { dateLabel, isDateKey, rangeLabel, shiftDate } from '../utils/calendar';
+import { dateLabel, dateKey, isDateKey, rangeLabel, shiftDate } from '../utils/calendar';
 import { createMeetingRequest } from '../api/meetingRequestsApi';
 import { useMemberIdentity } from '../features/github/MemberIdentityContext';
 import type { CreateMeetingRequestPayload, CreatedMeetingRequest } from '../types/meetingRequests';
@@ -48,7 +47,12 @@ export default function AvailabilityPage({ overlay }: { overlay?: ReactNode }) {
   const member = useMemberIdentity();
   const { publicHandle } = useParams();
   const [query, setQuery] = useSearchParams();
-  const [selectedDate, setSelectedDate] = useState(isDateKey(query.get('fecha')) ? query.get('fecha')! : '2026-10-28');
+  const today = dateKey(new Date().toISOString());
+  const [selectedDate, setSelectedDate] = useState(
+    isDateKey(query.get('fecha')) && query.get('fecha')! >= today
+      ? query.get('fecha')!
+      : today
+  );
   const [month, setMonth] = useState(`${selectedDate.slice(0, 7)}-01`);
   const [chosenTime, setChosenTime] = useState('10:30');
   const [name, setName] = useState('');
@@ -66,7 +70,7 @@ export default function AvailabilityPage({ overlay }: { overlay?: ReactNode }) {
   const isWeekday = (date: string) => ![0, 6].includes(new Date(`${date}T12:00:00Z`).getUTCDay());
   const slots = slotTimes.map(([start, end]) => ({ start: `${selectedDate}T${start}:00-04:00`, end: `${selectedDate}T${end}:00-04:00` }));
   const availabilityEnabled = calendarReady(state);
-  const availableSlots = availabilityEnabled && isWeekday(selectedDate) && selectedDate >= DEMO_TODAY ? slots.filter(slot => isRangeFree(state, slot)) : [];
+  const availableSlots = availabilityEnabled && isWeekday(selectedDate) && selectedDate >= today ? slots.filter(slot => isRangeFree(state, slot)) : [];
   const selected = availableSlots.find(slot => slot.start.includes(`T${chosenTime}:`)) ?? availableSlots[0];
   const ownerName = `${state.profile.name} ${state.profile.firstSurname}`;
   const isGuest = member?.error === 'Sesion no proporcionada';
@@ -119,16 +123,16 @@ export default function AvailabilityPage({ overlay }: { overlay?: ReactNode }) {
       <div className="availability-calendar" aria-label="Elegir fecha"><div className="availability-weekdays">{['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'].map(day => <span key={day}>{day}</span>)}</div><div className="availability-days">
         {gridDays.map(day => {
           const currentMonth = day.slice(0, 7) === month.slice(0, 7);
-          const selectable = currentMonth && day >= DEMO_TODAY;
+          const selectable = currentMonth && day >= today;
           const hasAvailability = availabilityEnabled && selectable && isWeekday(day) && slotTimes.some(([start, end]) => isRangeFree(state, { start: `${day}T${start}:00-04:00`, end: `${day}T${end}:00-04:00` }));
-          return <button type="button" key={day} className={`${selectedDate === day ? 'is-selected' : ''} ${day === DEMO_TODAY ? 'is-today' : ''}`} disabled={!selectable}
+          return <button type="button" key={day} className={`${selectedDate === day ? 'is-selected' : ''} ${day === today ? 'is-today' : ''}`} disabled={!selectable}
             aria-pressed={selectedDate === day} aria-label={dateLabel(day)} onClick={() => { setSelectedDate(day); setQuery({ fecha: day }); setError(''); }}>
             {Number(day.slice(-2))}{hasAvailability && <i aria-hidden="true" />}
           </button>;
         })}</div></div><div className="availability-calendar-legend"><span>• &nbsp; Día con horarios disponibles</span><span>La Paz · UTC−4</span></div>
       <p className="flow-note"><FiClock /><span>Los horarios se muestran en la zona de {state.profile.name}.<br />America/La_Paz · UTC−4</span></p>
     </section><aside className="availability-slots"><p className="ui-eyebrow">ELIGE UN HORARIO</p><h2>{dateLabel(selectedDate, { year: undefined })}.</h2><p>Consulta los espacios de este día.</p>
-        <div className="availability-slot-list">{availabilityEnabled && isWeekday(selectedDate) && selectedDate >= DEMO_TODAY ? slots.map(slot => {
+        <div className="availability-slot-list">{availabilityEnabled && isWeekday(selectedDate) && selectedDate >= today ? slots.map(slot => {
           const free = isRangeFree(state, slot);
           const isSelected = selected?.start === slot.start;
           return <button type="button" key={slot.start} disabled={!free} aria-pressed={isSelected} className={isSelected ? 'is-selected' : ''} onClick={() => { setChosenTime(slot.start.slice(11, 16)); setError(''); }}>
@@ -138,19 +142,57 @@ export default function AvailabilityPage({ overlay }: { overlay?: ReactNode }) {
         <Button disabled={!selected} onClick={() => setQuery(current => { const next = new URLSearchParams(current); next.set('solicitar', '1'); return next; })} trailingIcon={<FiArrowRight />}>Solicitar este horario</Button>
         <p className="flow-note"><FiShield />Solo se muestra disponibilidad. Los títulos y detalles de la agenda de {state.profile.name} son privados.</p>
       </aside></div>
-    {query.has('solicitar') && selected && <Dialog open onOpenChange={open => { if (!open) closeDialog(); }} title="Da el primer paso." eyebrow="SOLICITUD DE REUNIÓN" size="large" className="booking-dialog"
-      footer={<><Button variant="ghost" onClick={closeDialog}>Volver a horarios</Button>
-        <Button
-          type="submit"
-          form="booking-form"
-          loading={sending}
-          disabled={!identityReady}
-          trailingIcon={<FiArrowRight />}
+    {query.has('solicitar') && selected && (
+      <Dialog
+        open
+        onOpenChange={open => {
+          if (!open) closeDialog();
+        }}
+        title="Da el primer paso."
+        eyebrow="SOLICITUD DE REUNIÓN"
+        size="large"
+        className="booking-dialog"
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeDialog}>
+              Volver a horarios
+            </Button>
+
+            <Button
+              type="submit"
+              form="booking-form"
+              loading={sending}
+              disabled={!identityReady}
+              trailingIcon={<FiArrowRight />}
+            >
+              Enviar solicitud
+            </Button>
+          </>
+        }
+      >
+        <Person
+          name={ownerName}
+          detail={`Reunión con ${ownerName} · @${state.profile.handle}`}
+        />
+
+        <div className="booking-slot-summary">
+          <p>
+            <FiCalendar />
+            {dateLabel(selected.start)}
+          </p>
+
+          <p>
+            <FiClock />
+            {rangeLabel(selected)}
+            <small>La Paz · UTC−4</small>
+          </p>
+        </div>
+
+        <form
+          id="booking-form"
+          className="flow-form"
+          onSubmit={sendRequest}
         >
-          Enviar solicitud
-        </Button>
-        <Person name={ownerName} detail={`Reunión con ${ownerName} · @${state.profile.handle}`} /><div className="booking-slot-summary"><p><FiCalendar />{dateLabel(selected.start)}</p><p><FiClock />{rangeLabel(selected)}<small>La Paz · UTC−4</small></p></div>
-        <form id="booking-form" className="flow-form" onSubmit={sendRequest}>
           {error && <Alert tone="danger">{error}</Alert>}
 
           {member?.loading ? (
@@ -167,28 +209,26 @@ export default function AvailabilityPage({ overlay }: { overlay?: ReactNode }) {
               />
             </>
           ) : isGuest ? (
-            <>
-              <div className="flow-fields">
-                <Input
-                  label="Nombre y apellido"
-                  required
-                  maxLength={100}
-                  autoComplete="name"
-                  value={name}
-                  onChange={event => setName(event.target.value)}
-                />
+            <div className="flow-fields">
+              <Input
+                label="Nombre y apellido"
+                required
+                maxLength={100}
+                autoComplete="name"
+                value={name}
+                onChange={event => setName(event.target.value)}
+              />
 
-                <Input
-                  label="Correo electrónico"
-                  type="email"
-                  required
-                  maxLength={200}
-                  autoComplete="email"
-                  value={email}
-                  onChange={event => setEmail(event.target.value)}
-                />
-              </div>
-            </>
+              <Input
+                label="Correo electrónico"
+                type="email"
+                required
+                maxLength={200}
+                autoComplete="email"
+                value={email}
+                onChange={event => setEmail(event.target.value)}
+              />
+            </div>
           ) : (
             <Alert tone="warning">
               No se pudo comprobar tu sesión. Reintenta antes de enviar la solicitud.
@@ -220,59 +260,64 @@ export default function AvailabilityPage({ overlay }: { overlay?: ReactNode }) {
             onChange={event => setMessage(event.target.value)}
           />
         </form>
-        <p className="flow-note"><FiClock />La reunión quedará pendiente hasta que {state.profile.name} acepte tu solicitud.</p>
-      </Dialog>}
-      {createdRequest && (
-        <Dialog
-          open
-          onOpenChange={open => {
-            if (!open) closeDialog();
-          }}
-          title="Solicitud enviada."
-          eyebrow="REUNIÓN / SOLICITUD RECIBIDA"
-          className="booking-receipt-dialog"
-          footer={
-            <Button
-              variant="secondary"
-              onClick={closeDialog}
-            >
-              Volver a disponibilidad
-            </Button>
-          }
-        >
-          <span className="flow-outcome-icon">
-            <FiCheck />
-          </span>
 
-          <h3>Tu solicitud ha sido registrada.</h3>
+        <p className="flow-note">
+          <FiClock />
+          La reunión quedará pendiente hasta que {state.profile.name} acepte tu solicitud.
+        </p>
+      </Dialog>
+    )}
+    {createdRequest && (
+      <Dialog
+        open
+        onOpenChange={open => {
+          if (!open) closeDialog();
+        }}
+        title="Solicitud enviada."
+        eyebrow="REUNIÓN / SOLICITUD RECIBIDA"
+        className="booking-receipt-dialog"
+        footer={
+          <Button
+            variant="secondary"
+            onClick={closeDialog}
+          >
+            Volver a disponibilidad
+          </Button>
+        }
+      >
+        <span className="flow-outcome-icon">
+          <FiCheck />
+        </span>
 
-          <p className="flow-copy">
-            El propietario del calendario podrá revisar tu solicitud.
-            El horario todavía no está confirmado.
+        <h3>Tu solicitud ha sido registrada.</h3>
+
+        <p className="flow-copy">
+          El propietario del calendario podrá revisar tu solicitud.
+          El horario todavía no está confirmado.
+        </p>
+
+        <div className="booking-receipt-summary">
+          <StatusDot tone="warning">
+            Pendiente de respuesta
+          </StatusDot>
+
+          <h3>{createdRequest.title}</h3>
+
+          <p>
+            <FiCalendar />
+            {dateLabel(createdRequest.startsAt)}
           </p>
 
-          <div className="booking-receipt-summary">
-            <StatusDot tone="warning">
-              Pendiente de respuesta
-            </StatusDot>
-
-            <h3>{createdRequest.title}</h3>
-
-            <p>
-              <FiCalendar />
-              {dateLabel(createdRequest.startsAt)}
-            </p>
-
-            <p>
-              <FiClock />
-              {rangeLabel({
-                start: createdRequest.startsAt,
-                end: createdRequest.endsAt,
-              })}
-            </p>
-          </div>
-        </Dialog>
-      )}
-      {overlay}
-    </VisitorShell>;
+          <p>
+            <FiClock />
+            {rangeLabel({
+              start: createdRequest.startsAt,
+              end: createdRequest.endsAt,
+            })}
+          </p>
+        </div>
+      </Dialog>
+    )}
+    {overlay}
+  </VisitorShell>;
 }
