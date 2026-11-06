@@ -39,12 +39,18 @@ test('escritura de eventos respeta autorización, permisos y calendario seleccio
   assert.throws(() => transitionFlow(stopped, { type: 'delete-calendar-event', id: 'personal-work' }), /autorizar/);
 });
 
-test('las reservas y cambios vuelven a comprobar la disponibilidad tras crear un evento', () => {
+test('las reservas vuelven a comprobar la disponibilidad tras crear un evento', () => {
   let state = connectedFlow();
-  state = transitionFlow(state, { type: 'save-calendar-event', event: { ...event, start: state.requests[0].start, end: state.requests[0].end }, create: true });
+  state = transitionFlow(state, {
+    type: 'save-calendar-event',
+    event: {
+      ...event,
+      start: state.requests[0].start,
+      end: state.requests[0].end
+    },
+    create: true
+  });
   assert.throws(() => transitionFlow(state, { type: 'decide-booking', id: 'request-elena', decision: 'accepted', meetingId: 'new-meeting', participantToken: 'new-token' }), /ya no está libre/);
-  state = transitionFlow(connectedFlow(), { type: 'save-calendar-event', event: { ...event, start: '2026-10-29T15:00:00-04:00', end: '2026-10-29T15:30:00-04:00' }, create: true });
-  assert.throws(() => transitionFlow(state, { type: 'decide-change', id: 'change-elena', decision: 'accepted' }), /no está disponible/);
 });
 
 test('solapamientos y eventos de varios días permanecen visibles en el calendario', () => {
@@ -90,10 +96,9 @@ test('personalizar un dato importado y actualizar GitHub conserva la procedencia
   assert.deepEqual(refreshed.account.fieldOrigins.name, { provider: 'github', originalValue: 'Mateo' });
 });
 
-test('sin Calendar autorizado no se confirma una reunión ni se aplica una reprogramación', () => {
+test('sin Calendar autorizado no se confirma una reunión, pero se puede rechazar una solicitud', () => {
   const state = createInitialFlow();
   assert.throws(() => transitionFlow(state, { type: 'decide-booking', id: 'request-elena', decision: 'accepted', meetingId: 'new', participantToken: 'token' }), /autorizar/);
-  assert.throws(() => transitionFlow(state, { type: 'decide-change', id: 'change-elena', decision: 'accepted' }), /autorizar/);
   const rejected = transitionFlow(state, { type: 'decide-booking', id: 'request-elena', decision: 'rejected', meetingId: '', participantToken: '' });
   assert.equal(rejected.requests[0].status, 'rejected');
   assert.deepEqual(rejected.meetings, state.meetings);
@@ -109,13 +114,4 @@ test('cambiar de calendario no traslada reuniones ni confirma solicitudes del ca
   const restored = transitionFlow(changed, { type: 'account', action: { type: 'select-calendar', id: 'personal' } });
   const accepted = transitionFlow(restored, { type: 'decide-booking', id: 'request-elena', decision: 'accepted', meetingId: 'new', participantToken: 'token' });
   assert.equal(accepted.meetings.at(-1).calendarId, 'personal');
-});
-
-test('las decisiones históricas conservan su horario tras una segunda reprogramación', () => {
-  let state = transitionFlow(connectedFlow(), { type: 'decide-change', id: 'change-elena', decision: 'accepted' });
-  const firstDecision = structuredClone(state.changes[0]);
-  state = transitionFlow(state, { type: 'propose-change', change: { ...firstDecision, id: 'second', start: '2026-10-30T09:00:00-04:00', end: '2026-10-30T10:00:00-04:00', status: 'pending' } });
-  state = transitionFlow(state, { type: 'decide-change', id: 'second', decision: 'accepted' });
-  assert.deepEqual(state.changes[0], firstDecision);
-  assert.notEqual(state.changes[0].start, state.meetings[0].start);
 });

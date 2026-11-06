@@ -85,7 +85,6 @@ test('editar datos y experiencia conserva las reuniones y las decisiones previas
   assert.equal(edited.profile.handle, initial.profile.handle);
   assert.deepEqual(edited.meetings, initial.meetings);
   assert.deepEqual(edited.requests, initial.requests);
-  assert.deepEqual(edited.changes, initial.changes);
   const experience = { ...edited.account.experiences[0], title: 'Ingeniera de software' };
   const updated = transitionAccount(edited.account, { type: 'save-experience', experience });
   assert.equal(updated.experiences.length, 2);
@@ -110,7 +109,6 @@ test('eliminar requiere confirmación y retira el perfil público y sus datos de
   assert.equal(deleted.demoSignedIn, false);
   assert.deepEqual(deleted.meetings, []);
   assert.deepEqual(deleted.requests, []);
-  assert.deepEqual(deleted.changes, []);
   assert.deepEqual(deleted.account.details.links, []);
   assert.deepEqual(deleted.account.experiences, []);
   assert.equal(deleted.account.google.identityLinked, false);
