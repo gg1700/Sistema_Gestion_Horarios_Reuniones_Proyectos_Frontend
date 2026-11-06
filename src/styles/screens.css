@@ -328,7 +328,7 @@ button.agenda-event:hover { background: #254b3a; }
 .ui-dialog .ui-dialog__footer .ui-button { font-size: 11px; }
 .ui-dialog .ui-dialog__footer > .ui-button--ghost { margin-right: auto; padding-left: 0; }
 .account-completion-dialog { width: min(704px, calc(100vw - 2rem)); }
-.booking-dialog, .propose-change-dialog { width: min(744px, calc(100vw - 2rem)); }
+.booking-dialog { width: min(744px, calc(100vw - 2rem)); }
 .booking-receipt-dialog { width: min(672px, calc(100vw - 2rem)); }
 .meeting-dialog { width: min(760px, calc(100vw - 2rem)); }
 .review-request-dialog { width: min(704px, calc(100vw - 2rem)); }

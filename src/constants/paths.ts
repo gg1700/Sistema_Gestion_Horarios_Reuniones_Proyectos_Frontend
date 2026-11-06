@@ -10,7 +10,6 @@ export const paths = {
   changeReview: '/solicitudes/cambios/:changeId/revisar',
   changeResult: '/solicitudes/cambios/:changeId/resultado',
   availability: '/:publicHandle/disponibilidad',
-  participant: '/reuniones/:token',
   profile: '/perfil',
   profileSetup: '/perfil/completar',
   profileOrigins: '/perfil/procedencia',
@@ -29,5 +28,4 @@ export function publicProfilePath(handle: string): string {
 
 export const flowPaths = {
   availability: (handle: string) => `${publicProfilePath(handle)}/disponibilidad`,
-  participant: (token: string) => `/reuniones/${encodeURIComponent(token)}`,
 };

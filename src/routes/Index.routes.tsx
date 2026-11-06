@@ -12,7 +12,6 @@ import WelcomePage from '../pages/WelcomePage';
 import DashboardPage from '../pages/DashboardPage';
 import AgendaPage from '../pages/AgendaPage';
 import AvailabilityPage from '../pages/AvailabilityPage';
-import ParticipantPage from '../pages/ParticipantPage';
 import ProfilePage from '../pages/ProfilePage';
 import ProfileSetupPage from '../pages/ProfileSetupPage';
 import VisibilityPage from '../pages/VisibilityPage';
@@ -51,14 +50,8 @@ function RouterPage() {
       <Route path={paths.access} element={<AccessPage />} />
       <Route path={paths.accessIssue} element={<AccessIssuePage />} />
       <Route path={routePaths.register} element={<RegisterPage />} />
-      <Route
-        path={routePaths.completeProfile}
-        element={<CompleteProfilePage />}
-      />
-      <Route
-        path={paths.availabilitySettings}
-        element={<CalendarAvailabilitySettingsPage />}
-      />
+      <Route path={routePaths.completeProfile} element={<CompleteProfilePage />} />
+      <Route path={paths.availabilitySettings} element={<CalendarAvailabilitySettingsPage />} />
 
       <Route path={paths.welcome} element={<WelcomePage />} />
       <Route path={paths.dashboard} element={<DashboardPage />} />
@@ -79,32 +72,14 @@ function RouterPage() {
       <Route path={paths.githubInfo} element={<GitHubInfoPage />} />
       <Route path={paths.availability} element={<AvailabilityPage />} />
 
-      {/* El acceso de participante se protege por invitación, no por sesión del dueño. */}
-      <Route path={paths.participant} element={<ParticipantPage />} />
       <Route path={paths.publicProfile} element={<ProfilePublicPage />} />
+      <Route path="/visibility-flow-preview" element={<VisibilityPreviewPage />} />
 
-      <Route
-        path="/visibility-flow-preview"
-        element={<VisibilityPreviewPage />}
-      />
-
-      {/* Compatibilidad con los enlaces de la vista previa conservada. */}
-      <Route
-        path="/profile-visibility"
-        element={<Navigate to={paths.visibility} replace />}
-      />
-
+      <Route path="/profile-visibility" element={<Navigate to={paths.visibility} replace />} />
       <Route path="/profile-preview" element={<ProfilePreview />} />
 
-      <Route
-        path="/legacy-public-profile/:publicHandle"
-        element={<PublicProfilePage />}
-      />
-
-      <Route
-        path="/perfil/enlace-publico"
-        element={<PublicLinkPage />}
-      />
+      <Route path="/legacy-public-profile/:publicHandle" element={<PublicProfilePage />} />
+      <Route path="/perfil/enlace-publico" element={<PublicLinkPage />} />
 
       <Route path="*" element={<Navigate to={paths.home} replace />} />
     </Routes>
