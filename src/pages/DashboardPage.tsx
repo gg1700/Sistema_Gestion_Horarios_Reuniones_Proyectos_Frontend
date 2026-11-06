@@ -253,11 +253,11 @@ export default function DashboardPage() {
           <strong>
             {nextEvent
               ? dateLabel(nextEvent.startsAt, {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'short',
-                  year: undefined,
-                })
+                weekday: 'long',
+                day: 'numeric',
+                month: 'short',
+                year: undefined,
+              })
               : loadingEvents
                 ? 'Consultando…'
                 : 'Sin eventos próximos'}
@@ -432,10 +432,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
 
-                  <TextLink
-                    className="ui-button ui-button--primary"
-                    to={flowPaths.reviewRequest(request.id)}
-                  >
+                  <TextLink to={paths.requests}>
                     Revisar solicitud
                   </TextLink>
                 </article>
