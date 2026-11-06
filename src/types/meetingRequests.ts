@@ -69,3 +69,11 @@ export interface MeetingRequestDecisionPayload {
   decision: MeetingRequestDecision;
   responseMessage?: string;
 }
+
+export interface UpdateMeetingRequestPayload {
+  title?: string;
+  message?: string;
+  startsAt?: string;
+  endsAt?: string;
+  timeZone?: string;
+}

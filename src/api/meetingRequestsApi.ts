@@ -8,6 +8,7 @@ import type {
   CreateMeetingRequestPayload,
   CreatedMeetingRequest,
   MeetingRequestDecisionPayload,
+  UpdateMeetingRequestPayload,
 } from '../types/meetingRequests';
 
 export async function getMeetingRequests(
@@ -96,6 +97,29 @@ export async function decideMeetingRequest(
       response.message || 'No se pudo resolver la solicitud.',
     );
   }
+
+  return response.data;
+}
+
+interface UpdateMeetingRequestApiResponse {
+  success: boolean;
+  message: string;
+  data?: CreatedMeetingRequest;
+}
+
+export async function updateMeetingRequest(
+  requestId: string,
+  payload: UpdateMeetingRequestPayload): Promise<CreatedMeetingRequest> {
+  const response = await sendRequest<UpdateMeetingRequestApiResponse>(
+      `/api/v1/meeting-requests/${encodeURIComponent(requestId)}`,
+      {
+        method: 'PATCH',
+        body: payload,
+      },
+    );
+
+  if (!response.success || !response.data)
+    throw new Error(response.message || 'No se pudo actualizar la solicitud.');
 
   return response.data;
 }
