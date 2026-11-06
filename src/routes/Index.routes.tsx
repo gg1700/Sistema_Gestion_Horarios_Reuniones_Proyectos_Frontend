@@ -3,7 +3,6 @@ import { paths } from '../constants/paths';
 import { routePaths } from '../constants/routes';
 import ProfilePreview from '../pages/ProfilePreview';
 import PublicProfilePage from '../pages/PublicProfilePage';
-import PublicLinkPage from '../pages/PublicLinkPage';
 import LandingPage from '../pages/LandingPage';
 import AccessPage from '../pages/AccessPage';
 import WelcomePage from '../pages/WelcomePage';
@@ -61,7 +60,7 @@ function RouterPage() {
       <Route path="/profile-preview" element={<ProfilePreview />} />
 
       <Route path="/legacy-public-profile/:publicHandle" element={<PublicProfilePage />} />
-      <Route path="/perfil/enlace-publico" element={<PublicLinkPage />} />
+      <Route path="/perfil/enlace-publico" element={<Navigate to={paths.profileLink} replace />} />
 
       <Route path="*" element={<Navigate to={paths.home} replace />} />
     </Routes>

@@ -1,83 +1,81 @@
-
 import { useEffect, useState } from 'react';
 import { FiArrowRight, FiCalendar, FiCheck, FiExternalLink, FiRefreshCw, FiSearch, FiShield } from 'react-icons/fi';
 import { Dialog } from '../../modals';
 import { Alert, Button, ProviderIcon } from '../../ui';
-import { useMockFlow } from '../../../contexts/MockFlowContext';
 import { useUI } from '../../../contexts/UIContext';
-import type { Provider } from '../../../mocks/account';
-import { RepositorySelection } from './RepositorySelection';
 import { useGoogleCalendar } from '../../../hooks/useGoogleCalendar';
 import { CalendarApiError } from '../../../api/googleCalendar';
 
 type CalendarController = ReturnType<typeof useGoogleCalendar>;
 
-function ProviderIdentity({ provider, description }: { provider: Provider; description: string }) {
-  const { state } = useMockFlow();
-
+function ProviderIdentity({ description }: { description: string }) {
   return (
     <div className="connection-dialog-identity">
-      <ProviderIcon provider={provider} />
+      <ProviderIcon provider="google" />
       <div>
-        <strong>{provider === 'google' ? state.profile.email : '@mateosilva'}</strong>
+        <strong>Google Calendar</strong>
         <span>{description}</span>
       </div>
     </div>
   );
 }
 
-function AuthorizeProvider({ provider, reconnect, onClose, onNext, calendar }: { provider: Provider; reconnect: boolean; onClose: () => void; onNext: (modal: string) => void; calendar: CalendarController }) {
-  const { dispatch } = useMockFlow();
-  const google = provider === 'google';
-
-  const permissions = google ? [
-    ['Consultar calendarios y eventos', 'Consultar tus compromisos y disponibilidad.'],
-    ['Crear y seleccionar calendarios', 'Utilizar uno existente o crear un calendario nuevo para Orbitia.'],
-    ['Crear, modificar y eliminar eventos', 'Gestionar eventos en el calendario seleccionado.'],
-    ['Generar enlaces de Google Meet', 'Añadir videollamadas a las reuniones que programes.']
-  ] : [
-    ['Consultar tu perfil de GitHub', 'Para identificar la cuenta que estás vinculando.'],
-    ['Consultar tus repositorios', 'Para elegir cuáles se mostrarán en tu perfil.'],
-    ['Leer tu actividad reciente', 'Para integrar tus contribuciones y eventos en Orbitia.']
+function AuthorizeProvider({
+  reconnect,
+  onClose,
+  calendar }: {
+    reconnect: boolean;
+    onClose: () => void;
+    calendar: CalendarController
+  }) {
+  const permissions = [
+    [
+      'Consultar calendarios y eventos',
+      'Consultar tus compromisos y disponibilidad.'
+    ],
+    [
+      'Crear y seleccionar calendarios',
+      'Utilizar uno existente o crear un calendario nuevo para Orbitia.'
+    ],
+    [
+      'Crear, modificar y eliminar eventos',
+      'Gestionar eventos en el calendario seleccionado.'
+    ],
+    [
+      'Generar enlaces de Google Meet',
+      'Añadir videollamadas a las reuniones que programes.'
+    ]
   ];
-
-  function authorize() {
-    if (google) {
-      calendar.connect();
-      return;
-    }
-
-    dispatch({ type: 'account', action: { type: 'authorize-provider', provider } });
-    onNext('repositorios');
-  }
 
   return (
     <Dialog
       open
-      onOpenChange={value => { if (!value) onClose(); }}
-      title={google ? 'Conecta tu calendario.' : 'Trae tus proyectos a tu órbita.'}
-      eyebrow={google ? 'GOOGLE CALENDAR · PERMISOS' : 'CONECTAR GITHUB'}
-      className={google ? 'authorize-google-dialog' : 'authorize-github-dialog'}
+      onOpenChange={value => {
+        if (!value) onClose();
+      }}
+      title="Conecta tu calendario."
+      eyebrow="GOOGLE CALENDAR · PERMISOS"
+      className="authorize-google-dialog"
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
-            {google ? 'Volver' : 'Cancelar'}
+            Volver
           </Button>
-          <Button onClick={authorize} trailingIcon={<FiArrowRight />}>
-            {google ? 'Autorizar en Google' : 'Continuar con GitHub'}
+
+          <Button
+            onClick={calendar.connect}
+            trailingIcon={<FiArrowRight />}
+          >
+            Autorizar en Google
           </Button>
         </>
       }
     >
-      <ProviderIdentity
-        provider={provider}
-        description={google ? 'Google Calendar · Autorización de acceso' : 'Datos básicos de tu cuenta de GitHub'}
-      />
+      <ProviderIdentity description="Autorización de acceso a Google Calendar" />
 
       <p className="flow-copy">
-        {google
-          ? 'Autoriza Google Calendar para seleccionar o crear un calendario y gestionar tus eventos.'
-          : 'Autoriza a Orbitia desde tu cuenta de GitHub. Este acceso permite:'}
+        Autoriza Google Calendar para seleccionar o crear un calendario
+        y gestionar tus eventos.
       </p>
 
       <ul className="connection-permissions">
@@ -94,9 +92,9 @@ function AuthorizeProvider({ provider, reconnect, onClose, onNext, calendar }: {
 
       <p className="flow-note">
         <FiExternalLink />
-        {google && reconnect
+        {reconnect
           ? 'Volverás a autorizar Google Calendar. Si la selección anterior fue liberada al desvincular el servicio, podrás elegir o crear otro calendario.'
-          : `Continuarás en ${google ? 'Google' : 'GitHub'} para elegir tu cuenta y autorizar.`}
+          : 'Continuarás en Google para elegir tu cuenta y autorizar.'}
       </p>
     </Dialog>
   );
@@ -305,8 +303,10 @@ function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void;
       }
     >
       <ProviderIdentity
-        provider="google"
-        description={locked ? 'Calendario asociado a Orbitia' : 'Configura tu calendario de Google'}
+        description={locked
+          ? 'Calendario asociado a Orbitia'
+          : 'Configura tu calendario de Google'
+        }
       />
 
       {error && <Alert tone="danger">{error}</Alert>}
@@ -478,178 +478,117 @@ function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void;
   );
 }
 
-function DisconnectProvider({ provider, integrationOnly, onClose, onNext, calendar }: { provider: Provider; integrationOnly: boolean; onClose: () => void; onNext: (modal: string) => void; calendar: CalendarController }) {
-  const { state, dispatch } = useMockFlow();
+
+function DisconnectCalendar({
+  onClose,
+  calendar
+}: {
+  onClose: () => void;
+  calendar: CalendarController}) {
   const { notify } = useUI();
   const [error, setError] = useState('');
-  const google = provider === 'google';
-  const otherLinked = google ? state.account.github.identityLinked : state.account.google.identityLinked;
-  const blocked = !integrationOnly && !otherLinked;
 
   async function disconnect() {
     setError('');
 
     try {
-      if (google && integrationOnly) {
-        await calendar.disconnect();
-        notify('Google Calendar desvinculado correctamente.', 'success');
-        onClose();
-        return;
-      }
-
-      dispatch({
-        type: 'account',
-        action: integrationOnly
-          ? { type: 'stop-github-data' }
-          : { type: 'unlink-provider', provider }
-      });
+      await calendar.disconnect();
 
       notify(
-        integrationOnly ? 'Sincronización detenida. Tu acceso se conserva.' : 'Cuenta desvinculada.',
+        'Google Calendar desvinculado correctamente.',
         'success'
       );
 
       onClose();
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : 'No se pudo desvincular.');
+      setError(
+        failure instanceof Error
+          ? failure.message
+          : 'No se pudo desvincular Google Calendar.'
+      );
     }
   }
 
   return (
     <Dialog
       open
-      onOpenChange={value => { if (!value) onClose(); }}
-      title={integrationOnly
-        ? `¿Desconectar ${google ? 'Google Calendar' : 'los datos de GitHub'}?`
-        : `¿Desvincular ${google ? 'Google' : 'GitHub'}?`}
-      eyebrow={integrationOnly ? 'DESVINCULAR SERVICIO' : 'CUENTAS VINCULADAS'}
+      onOpenChange={value => {
+        if (!value) onClose();
+      }}
+      title="¿Desconectar Google Calendar?"
+      eyebrow="DESVINCULAR SERVICIO"
       className="disconnect-provider-dialog"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>
+          <Button
+            variant="secondary"
+            disabled={calendar.saving}
+            onClick={onClose}
+          >
             Conservar conexión
           </Button>
 
           <Button
             variant="danger"
-            disabled={blocked || (google && integrationOnly && calendar.saving)}
+            disabled={calendar.saving}
+            loading={calendar.saving}
             onClick={() => void disconnect()}
             trailingIcon={<FiArrowRight />}
           >
-            Desvincular
+            Desconectar Calendar
           </Button>
         </>
       }
     >
-      <ProviderIdentity
-        provider={provider}
-        description={google
-          ? integrationOnly ? 'Google Calendar' : 'Google · identidad y Calendar'
-          : 'GitHub'}
-      />
+      <ProviderIdentity description="Integración de Google Calendar" />
 
       {error && <Alert tone="danger">{error}</Alert>}
 
       <p className="flow-copy">
-        {google
-          ? integrationOnly
-            ? 'Se detendrá la sincronización con Orbitia. Tus calendarios y eventos permanecerán en Google.'
-            : 'Se quitará Google como cuenta de acceso y se detendrá la sincronización. Tus eventos permanecerán en Google.'
-          : integrationOnly
-            ? 'Se dejarán de consultar y mostrar tus repositorios y actividad. GitHub continuará disponible como cuenta de acceso.'
-            : 'Orbitia dejará de consultar esta cuenta y de mostrar sus repositorios y actividad en tu perfil público.'}
+        Se detendrá la sincronización con Orbitia. Tus calendarios
+        y eventos permanecerán en tu cuenta de Google.
       </p>
 
       <div className="disconnect-provider-details">
         <div>
-          <span>{google && integrationOnly ? 'Tu cuenta de Orbitia' : 'Para seguir entrando'}</span>
+          <span>Tu cuenta de Orbitia</span>
           <strong>
-            {google && integrationOnly
-              ? 'Tu sesión y métodos de acceso se conservan'
-              : integrationOnly
-                ? 'GitHub · cuenta vinculada'
-                : google
-                  ? 'GitHub · @mateosilva'
-                  : `Google · ${state.profile.email}`}
+            Tu sesión y métodos de acceso se conservan
           </strong>
         </div>
 
         <div>
-          <span>{google ? 'Calendario en Orbitia' : 'Información personalizada'}</span>
+          <span>Calendario en Orbitia</span>
           <strong>
-            {google ? 'Sin sincronización hasta volver a conectar' : 'Se conserva en tu perfil'}
+            Sin sincronización hasta volver a conectar
           </strong>
         </div>
       </div>
 
-      {blocked && (
-        <Alert tone="warning">
-          Es tu única cuenta de acceso. Vincula {google ? 'GitHub' : 'Google'} antes de desvincularla.
-          <Button
-            variant="ghost"
-            size="small"
-            onClick={() => onNext(google ? 'conectar-github' : 'conectar-google')}
-          >
-            Vincular otra cuenta
-          </Button>
-        </Alert>
-      )}
-
       <p className="flow-note">
         <FiShield />
-        {integrationOnly
-          ? 'Tu cuenta de Orbitia seguirá disponible. Puedes conectar este servicio de nuevo cuando lo necesites.'
-          : 'Desvincular la cuenta es distinto de detener solo la sincronización.'}
+        Desconectar Calendar no elimina tu cuenta de acceso a Orbitia
+        ni borra tus eventos de Google.
       </p>
-
-      {!integrationOnly && (
-        <button
-          type="button"
-          className="flow-link disconnect-provider-alternative"
-          onClick={() => onNext(google ? 'desconectar-calendar' : 'desconectar-datos-github')}
-        >
-          {google ? 'Solo detener Calendar' : 'Solo detener los datos de GitHub'}
-          <FiArrowRight />
-        </button>
-      )}
-
-      {integrationOnly && !google && (
-        <button
-          type="button"
-          className="flow-link disconnect-provider-alternative"
-          onClick={() => onNext('desvincular-github')}
-        >
-          Quitar también la cuenta de acceso
-          <FiArrowRight />
-        </button>
-      )}
     </Dialog>
   );
 }
 
-export function ConnectionDialogs({ modal, onClose, onNext }: { modal: string | null; onClose: () => void; onNext: (modal: string) => void }) {
-  const { state } = useMockFlow();
+export function ConnectionDialogs({
+  modal,
+  onClose,
+  onNext
+}: {
+  modal: string | null;
+  onClose: () => void;
+  onNext: (modal: string) => void}) {
   const calendar = useGoogleCalendar();
 
   if (modal === 'conectar-google' || modal === 'reconectar-google') {
     return (
       <AuthorizeProvider
-        provider="google"
         reconnect={modal === 'reconectar-google'}
         onClose={onClose}
-        onNext={onNext}
-        calendar={calendar}
-      />
-    );
-  }
-
-  if (modal === 'conectar-github') {
-    return (
-      <AuthorizeProvider
-        provider="github"
-        reconnect={false}
-        onClose={onClose}
-        onNext={onNext}
         calendar={calendar}
       />
     );
@@ -665,43 +604,10 @@ export function ConnectionDialogs({ modal, onClose, onNext }: { modal: string | 
     );
   }
 
-  if (modal === 'repositorios' && state.account.github.dataConnected) {
-    return <RepositorySelection onClose={onClose} />;
-  }
-
-  if (modal === 'repositorios') {
+  if (modal === 'desconectar-calendar') {
     return (
-      <AuthorizeProvider
-        provider="github"
-        reconnect={false}
+      <DisconnectCalendar
         onClose={onClose}
-        onNext={onNext}
-        calendar={calendar}
-      />
-    );
-  }
-
-  if (modal === 'desvincular-google' || modal === 'desvincular-github') {
-    return (
-      <DisconnectProvider
-        key={modal}
-        provider={modal === 'desvincular-google' ? 'google' : 'github'}
-        integrationOnly={false}
-        onClose={onClose}
-        onNext={onNext}
-        calendar={calendar}
-      />
-    );
-  }
-
-  if (modal === 'desconectar-calendar' || modal === 'desconectar-datos-github') {
-    return (
-      <DisconnectProvider
-        key={modal}
-        provider={modal === 'desconectar-calendar' ? 'google' : 'github'}
-        integrationOnly
-        onClose={onClose}
-        onNext={onNext}
         calendar={calendar}
       />
     );
