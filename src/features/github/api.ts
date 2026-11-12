@@ -1,4 +1,6 @@
-export const apiBase = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+export const apiBase = import.meta.env.PROD
+  ? ''
+  : (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 export class RepositoryApiError extends Error {
   constructor(message: string, public status: number, public code?: string) { super(message); }
 }

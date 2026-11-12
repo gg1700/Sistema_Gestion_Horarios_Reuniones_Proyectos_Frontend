@@ -4,9 +4,9 @@ import {
   type VisibilityRecord,
 } from '../types/visibility';
 
-const apiUrl = (
-  import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
-).replace(/\/+$/, '');
+const apiUrl = import.meta.env.PROD
+  ? ''
+  : (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 
 async function request(path: string, options: RequestInit = {}) {
   let response: Response;

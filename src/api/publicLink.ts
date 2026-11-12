@@ -20,7 +20,9 @@ type ApiResponse<T> = {
   message?: string;
 };
 
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const apiUrl = import.meta.env.PROD
+  ? ''
+  : (import.meta.env.VITE_API_URL ?? 'http://localhost:3000');
 
 async function request<T>(
   path: string,
