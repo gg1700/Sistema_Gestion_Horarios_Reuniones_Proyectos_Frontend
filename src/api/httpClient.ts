@@ -2,7 +2,9 @@ import axios from 'axios';
 import { ApiError } from '../types/api';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
+  baseURL: import.meta.env.PROD
+    ? '/'
+    : import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
   timeout: 15000,
   withCredentials: true,
 });

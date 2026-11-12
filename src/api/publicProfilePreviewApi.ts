@@ -1,9 +1,9 @@
 import type { PublicProfilePreview } from '../types/publicProfile';
 import { isPublicProfilePreview } from '../utils/publicProfile';
 
-const apiUrl = (
-  import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
-).replace(/\/+$/, '');
+const apiUrl = import.meta.env.PROD
+  ? ''
+  : (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 
 export async function getPublicProfilePreview(signal?: AbortSignal): Promise<PublicProfilePreview> {
   let response: Response;

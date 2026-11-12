@@ -4,7 +4,11 @@ import type { OAuthProvider, RegisterFormValues, RegistrationResponse } from '..
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 export function getProviderAuthorizationUrl(provider: OAuthProvider) {
-  return new URL(`/api/v1/auth/${provider}`, apiUrl).toString();
+  const path = `/api/v1/auth/${provider}`;
+
+  return import.meta.env.PROD
+    ? path
+    : new URL(path, apiUrl).toString();
 }
 
 export async function getRegistrationStatus() {
@@ -46,7 +50,11 @@ export async function getLinkedAccounts(): Promise<LinkedAccount[]> {
 }
 
 export function getProviderLinkUrl(provider: OAuthProvider): string {
-  const url = new URL(getProviderAuthorizationUrl(provider));
+  const url = new URL(
+    getProviderAuthorizationUrl(provider),
+    window.location.origin
+  );
+
   url.searchParams.set('intent', 'link');
   return url.toString();
 }

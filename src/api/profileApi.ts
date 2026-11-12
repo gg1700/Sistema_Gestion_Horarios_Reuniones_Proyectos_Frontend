@@ -5,7 +5,10 @@ import { ApiError } from '../types/api';
 import type { UpdateProfilePayload, UpdateProfileResponse } from '../types/profile';
 
 export async function getOwnProfile(signal?: AbortSignal): Promise<Profile> {
-  const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+  const baseUrl = import.meta.env.PROD
+    ? ''
+    : (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+
   let response: Response;
   try {
     response = await fetch(`${baseUrl}/api/v1/profile`, {
