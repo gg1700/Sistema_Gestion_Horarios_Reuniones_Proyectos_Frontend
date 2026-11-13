@@ -30,7 +30,7 @@ export async function getMeetingRequests(
   }
 
   const queryString = params.toString();
-  const endpoint = `/api/v1/meeting-requests${action}${
+  const endpoint = `/api/v1/meeting-requests/${action}${
     queryString ? `?${queryString}` : ''
   }`;
 
