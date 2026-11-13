@@ -30,7 +30,7 @@ export async function getMeetingRequests(
   }
 
   const queryString = params.toString();
-  const endpoint = `/api/v1/meeting-requests/${action}${
+  const endpoint = `/api/v1/meeting-requests${action}${
     queryString ? `?${queryString}` : ''
   }`;
 
@@ -57,7 +57,7 @@ interface CreateMeetingRequestApiResponse {
 export async function createMeetingRequest(
   payload: CreateMeetingRequestPayload): Promise<CreatedMeetingRequest> {
   const response = await sendRequest<CreateMeetingRequestApiResponse>(
-    '/api/v1/meeting-requests/',
+    '/api/v1/meeting-requests',
     {
       method: 'POST',
       body: payload,
@@ -111,7 +111,7 @@ export async function updateMeetingRequest(
   requestId: string,
   payload: UpdateMeetingRequestPayload): Promise<CreatedMeetingRequest> {
   const response = await sendRequest<UpdateMeetingRequestApiResponse>(
-      `/api/v1/meeting-requests/${encodeURIComponent(requestId)}`,
+      `/api/v1/meeting-requests${encodeURIComponent(requestId)}`,
       {
         method: 'PATCH',
         body: payload,
@@ -133,7 +133,7 @@ interface CancelMeetingRequestApiResponse {
 export async function cancelMeetingRequest(
   requestId: string): Promise<CreatedMeetingRequest> {
   const response = await sendRequest<CancelMeetingRequestApiResponse>(
-    `/api/v1/meeting-requests/${encodeURIComponent(requestId)}`,
+    `/api/v1/meeting-requests${encodeURIComponent(requestId)}`,
     {
       method: 'DELETE',
     },
