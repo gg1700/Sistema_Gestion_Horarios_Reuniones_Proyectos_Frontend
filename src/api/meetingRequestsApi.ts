@@ -111,7 +111,7 @@ export async function updateMeetingRequest(
   requestId: string,
   payload: UpdateMeetingRequestPayload): Promise<CreatedMeetingRequest> {
   const response = await sendRequest<UpdateMeetingRequestApiResponse>(
-      `/api/v1/meeting-requests${encodeURIComponent(requestId)}`,
+      `/api/v1/meeting-requests/${encodeURIComponent(requestId)}`,
       {
         method: 'PATCH',
         body: payload,
@@ -133,7 +133,7 @@ interface CancelMeetingRequestApiResponse {
 export async function cancelMeetingRequest(
   requestId: string): Promise<CreatedMeetingRequest> {
   const response = await sendRequest<CancelMeetingRequestApiResponse>(
-    `/api/v1/meeting-requests${encodeURIComponent(requestId)}`,
+    `/api/v1/meeting-requests/${encodeURIComponent(requestId)}`,
     {
       method: 'DELETE',
     },
