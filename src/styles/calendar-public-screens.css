@@ -492,3 +492,7 @@
   min-width: 155px;
 }
 
+
+.public-activity-pagination .ui-pagination__controls {
+  margin-left: 0;
+}

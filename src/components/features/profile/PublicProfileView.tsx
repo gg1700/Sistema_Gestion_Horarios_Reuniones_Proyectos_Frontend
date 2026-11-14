@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { FiArrowRight, FiExternalLink, FiMapPin, FiServer, FiStar } from 'react-icons/fi';
-import { Avatar, OrbitalGraphic } from '../../ui';
+import { Avatar, OrbitalGraphic, Pagination, usePagination } from '../../ui';
 import { WorkTimeline } from './ProfileParts';
 import type { PublicSnapshot } from '../../../types/publicSnapshot';
 export type { PublicSnapshot } from '../../../types/publicSnapshot';
@@ -17,7 +17,30 @@ export function PublicProfileView({ profile, visitor = false, actions }: { profi
       {((profile.contactEmails?.length ?? 0) > 0 || (profile.phones?.length ?? 0) > 0) && <section className="public-contact-block"><h3>Contacto</h3>{profile.contactEmails?.map(email => <p key={email}>{email}</p>)}{profile.phones?.map(phone => <p key={phone}>{phone}</p>)}</section>}
       {visitor ? personalLinks : projects}
     </section>{hasAside && <aside>{visitor ? projects : personalLinks}
-      {profile.activity && profile.activity.length > 0 && <section className="public-contact-block"><h3>Actividad reciente</h3>{profile.activity.map(event => <article key={event.id}><time dateTime={event.date}>{event.when}</time><h4>{event.title}</h4><p>{event.detail}</p></article>)}</section>}
+      {profile.activity && profile.activity.length > 0 && <PublicActivity activity={profile.activity} />}
     </aside>}</div>
   </div>;
+}
+const PUBLIC_ACTIVITY_PAGE_SIZE = 5;
+
+function PublicActivity({ activity }: { activity: NonNullable<PublicSnapshot['activity']> }) {
+  const pagination = usePagination(activity, PUBLIC_ACTIVITY_PAGE_SIZE);
+  return (
+    <section className="public-contact-block">
+      <h3>Actividad reciente</h3>
+      {pagination.pageItems.map(event => (
+        <article key={event.id}>
+          <time dateTime={event.date}>{event.when}</time>
+          <h4>{event.title}</h4>
+          <p>{event.detail}</p>
+        </article>
+      ))}
+      <Pagination
+        className="public-activity-pagination"
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        onChange={pagination.setPage}
+      />
+    </section>
+  );
 }
