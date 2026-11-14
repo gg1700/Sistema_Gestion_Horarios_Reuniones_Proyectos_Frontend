@@ -79,33 +79,38 @@ export interface UpdateProfileSurname {
 }
 
 export interface UpdateProfilePhone {
-  id: string;
+  /** Sin id: el elemento se agrega al perfil. */
+  id?: string;
   phoneNumber: string;
   countryCode: string;
   visibility: boolean;
 }
 
 export interface UpdateProfileContactEmail {
-  id: string;
+  /** Sin id: el elemento se agrega al perfil. */
+  id?: string;
   email: string;
   visibility: boolean;
 }
 
 export interface UpdateProfileAddress {
-  id: string;
+  /** Sin id: el elemento se agrega al perfil. */
+  id?: string;
   address: string;
   visibility: boolean;
 }
 
 export interface UpdateProfileLink {
-  id: string;
+  /** Sin id: el elemento se agrega al perfil. */
+  id?: string;
   text: string;
   url: string;
   visibility: boolean;
 }
 
 export interface UpdateProfileCountry {
-  id: string;
+  /** Sin id: el elemento se agrega al perfil. */
+  id?: string;
   countryName: string;
   visibility: boolean;
 }

@@ -1,15 +1,24 @@
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { FiMapPin } from 'react-icons/fi';
 
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-
-import { Alert, Avatar, Button, Input } from '../../ui';
+import { Alert, Avatar, Button } from '../../ui';
+import TextField from '../../ui/TextField';
+import SelectField from '../../ui/SelectField';
+import PhonesEditor from './PhonesEditor';
+import ContactEmailsEditor from './ContactEmailsEditor';
+import LinksEditor from './LinksEditor';
+import { countries as countryCatalog } from '../../../constants/countries';
+import { maximumContactEmails, maximumLinks, maximumPhones } from '../../../constants/profile';
+import { properNounPattern } from '../../../constants/validation';
+import { normalizeUrl, validateAdditionalInfo } from '../../../utils/profileValidations';
 import type { Profile } from '../../../types/profile-response.types';
-import type { UpdateProfilePayload } from '../../../types/profile';
-
-type EditablePhone = NonNullable<UpdateProfilePayload['phones']>[number];
-type EditableEmail = NonNullable<UpdateProfilePayload['contactEmails']>[number];
-type EditableAddress = NonNullable<UpdateProfilePayload['addresses']>[number];
-type EditableLink = NonNullable<UpdateProfilePayload['links']>[number];
-type EditableCountry = NonNullable<UpdateProfilePayload['countries']>[number];
+import type {
+  AdditionalInfoErrors,
+  ContactEmailFormItem,
+  LinkFormItem,
+  PhoneFormItem,
+  UpdateProfilePayload,
+} from '../../../types/profile';
 
 export interface ProfileFormValue {
   personalInfo: UpdateProfilePayload;
@@ -23,64 +32,62 @@ interface ProfileFormProps {
   onSave: (value: ProfileFormValue) => Promise<void>;
 }
 
-export function ProfileForm({
-  id,
-  profile,
-  saving,
-  onSave, }: ProfileFormProps) {
+const NEW_PREFIX = 'nuevo-';
+const defaultCountryCode = '591';
+const countryOptions = countryCatalog.map(country => ({ value: country.name, label: country.name }));
+
+function newId() {
+  return `${NEW_PREFIX}${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+/** Los elementos creados en este formulario no tienen id real: se envían sin id para que se agreguen. */
+function persistedId(id: string) {
+  return id.startsWith(NEW_PREFIX) ? {} : { id };
+}
+
+function validateName(value: string, label: string) {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return `${label} es obligatorio.`;
+  if (trimmed.length > 100 || !properNounPattern.test(trimmed)) {
+    return 'Solo letras, espacios, apóstrofes o guiones.';
+  }
+  return undefined;
+}
+
+/**
+ * Editar información usa los mismos campos y reglas que el registro: códigos de país
+ * en lista con los dígitos de cada país, país de residencia del catálogo y listas en
+ * las que se pueden agregar o quitar teléfonos, correos y enlaces.
+ */
+export function ProfileForm({ id, profile, saving, onSave }: ProfileFormProps) {
   const [name, setName] = useState(profile.name);
   const [firstSurname, setFirstSurname] = useState(profile.firstSurname);
   const [surname, setSurname] = useState(profile.surname?.surname ?? '');
 
-  const [phones, setPhones] = useState<EditablePhone[]>(() =>
-    profile.phones.map(phone => ({
-      id: phone.id,
-      phoneNumber: phone.phoneNumber,
-      countryCode: phone.countryCode,
-      visibility: phone.visible,
-    }))
+  const [phones, setPhones] = useState<PhoneFormItem[]>(() =>
+    profile.phones.map(phone => ({ id: phone.id, countryCode: phone.countryCode, number: phone.phoneNumber })),
   );
+  const [contactEmails, setContactEmails] = useState<ContactEmailFormItem[]>(() =>
+    profile.contactEmails.map(email => ({ id: email.id, email: email.email })),
+  );
+  const [links, setLinks] = useState<LinkFormItem[]>(() =>
+    profile.links.map(link => ({ id: link.id, text: link.text, url: link.url, visibility: link.visible })),
+  );
+  const [countryName, setCountryName] = useState(profile.countries[0]?.countryName ?? '');
+  const [address, setAddress] = useState(profile.addresses[0]?.address ?? '');
 
-  const [contactEmails, setContactEmails] = useState<EditableEmail[]>(() =>
-    profile.contactEmails.map(email => ({
-      id: email.id,
-      email: email.email,
-      visibility: email.visible,
-    }))
-  );
-
-  const [addresses, setAddresses] = useState<EditableAddress[]>(() =>
-    profile.addresses.map(address => ({
-      id: address.id,
-      address: address.address,
-      visibility: address.visible,
-    }))
-  );
-
-  const [countries, setCountries] = useState<EditableCountry[]>(() =>
-    profile.countries.map(country => ({
-      id: country.id,
-      countryName: country.countryName,
-      visibility: country.visible,
-    }))
-  );
-
-  const [links, setLinks] = useState<EditableLink[]>(() =>
-    profile.links.map(link => ({
-      id: link.id,
-      text: link.text,
-      url: link.url,
-      visibility: link.visible,
-    }))
-  );
+  const visibilityById = useMemo(() => {
+    const map = new Map<string, boolean>();
+    for (const item of [...profile.phones, ...profile.contactEmails, ...profile.addresses, ...profile.countries]) {
+      map.set(item.id, item.visible);
+    }
+    return map;
+  }, [profile]);
 
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(
-    profile.profilePicture
-  );
-
+  const [photoPreview, setPhotoPreview] = useState<string | null>(profile.profilePicture);
   const [error, setError] = useState('');
-
+  const [triedToSave, setTriedToSave] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -88,161 +95,123 @@ export function ProfileForm({
       setPhotoPreview(profile.profilePicture);
       return;
     }
-
     const objectUrl = URL.createObjectURL(profilePicture);
     setPhotoPreview(objectUrl);
-
     return () => URL.revokeObjectURL(objectUrl);
   }, [profilePicture, profile.profilePicture]);
 
-  function updatePhone(
-    id: string,
-    field: 'phoneNumber' | 'countryCode',
-    value: string
-  ) {
-    setPhones(current =>
-      current.map(phone =>
-        phone.id === id ? { ...phone, [field]: value } : phone
-      )
-    );
-  }
-
-  function updateEmail(id: string, value: string) {
-    setContactEmails(current =>
-      current.map(email =>
-        email.id === id ? { ...email, email: value } : email
-      )
-    );
-  }
-
-  function updateAddress(id: string, value: string) {
-    setAddresses(current =>
-      current.map(address =>
-        address.id === id ? { ...address, address: value } : address
-      )
-    );
-  }
-
-  function updateCountry(id: string, value: string) {
-    setCountries(current =>
-      current.map(country =>
-        country.id === id ? { ...country, countryName: value } : country
-      )
-    );
-  }
-
-  function updateLink(
-    id: string,
-    field: 'text' | 'url',
-    value: string
-  ) {
-    setLinks(current =>
-      current.map(link =>
-        link.id === id ? { ...link, [field]: value } : link
-      )
-    );
-  }
+  const listErrors: AdditionalInfoErrors = validateAdditionalInfo({
+    surname,
+    phones,
+    contactEmails,
+    address,
+    countryName,
+    links,
+    photo: null,
+  });
+  const nameError = validateName(name, 'El nombre');
+  const firstSurnameError = validateName(firstSurname, 'El primer apellido');
+  const hasErrors = Boolean(nameError || firstSurnameError || Object.keys(listErrors).length > 0);
+  const errors = triedToSave ? listErrors : {};
 
   function selectProfilePicture(file?: File) {
     if (!file) return;
-
-    if (
-      !['image/jpeg', 'image/png'].includes(file.type) ||
-      file.size > 2 * 1024 * 1024
-    ) {
+    if (!['image/jpeg', 'image/png'].includes(file.type) || file.size > 2 * 1024 * 1024) {
       setError('Selecciona una imagen JPG o PNG de hasta 2 MB.');
-
-      if (fileRef.current) {
-        fileRef.current.value = '';
-      }
-
+      if (fileRef.current) fileRef.current.value = '';
       return;
     }
-
     setProfilePicture(file);
     setError('');
   }
 
+  function buildPayload(): UpdateProfilePayload {
+    const payload: UpdateProfilePayload = {
+      name: name.trim(),
+      firstSurname: firstSurname.trim(),
+    };
+
+    if (surname.trim()) {
+      payload.surname = { surname: surname.trim(), visibility: profile.surname?.visible ?? true };
+    }
+
+    // Las listas se envían completas: lo que se quitó aquí también se elimina del perfil.
+    payload.phones = phones
+      .filter(phone => phone.number.trim().length > 0)
+      .map(phone => ({
+        ...persistedId(phone.id),
+        countryCode: phone.countryCode,
+        phoneNumber: phone.number.trim(),
+        visibility: visibilityById.get(phone.id) ?? true,
+      }));
+
+    payload.contactEmails = contactEmails
+      .filter(email => email.email.trim().length > 0)
+      .map(email => ({
+        ...persistedId(email.id),
+        email: email.email.trim(),
+        visibility: visibilityById.get(email.id) ?? true,
+      }));
+
+    payload.links = links.map(link => ({
+      ...persistedId(link.id),
+      text: link.text.trim(),
+      url: normalizeUrl(link.url),
+      visibility: link.visibility,
+    }));
+
+    const [currentAddress, ...otherAddresses] = profile.addresses;
+    payload.addresses = [
+      ...(address.trim()
+        ? [{
+          ...(currentAddress ? { id: currentAddress.id } : {}),
+          address: address.trim(),
+          visibility: currentAddress?.visible ?? true,
+        }]
+        : []),
+      ...otherAddresses.map(item => ({ id: item.id, address: item.address, visibility: item.visible })),
+    ];
+
+    const [currentCountry, ...otherCountries] = profile.countries;
+    payload.countries = [
+      ...(countryName
+        ? [{
+          ...(currentCountry ? { id: currentCountry.id } : {}),
+          countryName,
+          visibility: currentCountry?.visible ?? true,
+        }]
+        : []),
+      ...otherCountries.map(item => ({ id: item.id, countryName: item.countryName, visibility: item.visible })),
+    ];
+
+    return payload;
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     if (saving) return;
 
+    setTriedToSave(true);
     setError('');
 
+    if (hasErrors) {
+      setError('Revisa los campos marcados antes de guardar.');
+      return;
+    }
+
     try {
-      const payload: UpdateProfilePayload = {
-        name: name.trim(),
-        firstSurname: firstSurname.trim(),
-      };
-
-      if (surname.trim()) {
-        payload.surname = {
-          surname: surname.trim(),
-          visibility: profile.surname?.visible ?? true,
-        };
-      }
-
-      if (phones.length > 0) {
-        payload.phones = phones.map(phone => ({
-          ...phone,
-          phoneNumber: phone.phoneNumber.trim(),
-          countryCode: phone.countryCode.trim(),
-        }));
-      }
-
-      if (contactEmails.length > 0) {
-        payload.contactEmails = contactEmails.map(email => ({
-          ...email,
-          email: email.email.trim(),
-        }));
-      }
-
-      if (addresses.length > 0) {
-        payload.addresses = addresses.map(address => ({
-          ...address,
-          address: address.address.trim(),
-        }));
-      }
-
-      if (countries.length > 0) {
-        payload.countries = countries.map(country => ({
-          ...country,
-          countryName: country.countryName.trim(),
-        }));
-      }
-
-      if (links.length > 0) {
-        payload.links = links.map(link => ({
-          ...link,
-          text: link.text.trim(),
-          url: link.url.trim(),
-        }));
-      }
-
-      await onSave({
-        personalInfo: payload,
-        profilePicture,
-      });
+      await onSave({ personalInfo: buildPayload(), profilePicture });
     } catch (failure) {
-      setError(
-        failure instanceof Error
-          ? failure.message
-          : 'No se pudo actualizar la información.'
-      );
+      setError(failure instanceof Error ? failure.message : 'No se pudo actualizar la información.');
     }
   }
 
   return (
-    <form id={id} className="flow-form profile-form" onSubmit={submit}>
+    <form id={id} className="flow-form profile-form" onSubmit={submit} noValidate>
       {error && <Alert tone="danger">{error}</Alert>}
 
       <div className="profile-photo-editor">
-        <Avatar
-          name={`${name} ${firstSurname}`}
-          src={photoPreview}
-          size="large"
-        />
+        <Avatar name={`${name} ${firstSurname}`} src={photoPreview} size="large" />
 
         <div>
           <h3>Foto de perfil</h3>
@@ -256,9 +225,7 @@ export function ProfileForm({
           aria-label="Seleccionar imagen de perfil"
           accept="image/png,image/jpeg"
           disabled={saving}
-          onChange={event =>
-            selectProfilePicture(event.target.files?.[0])
-          }
+          onChange={event => selectProfilePicture(event.target.files?.[0])}
         />
 
         <Button
@@ -272,180 +239,97 @@ export function ProfileForm({
         </Button>
       </div>
 
-      <div className="flow-fields flow-fields--three">
-        <Input
-          label="Nombre"
-          required
-          maxLength={100}
-          value={name}
-          disabled={saving}
-          onChange={event => setName(event.target.value)}
-        />
-
-        <Input
-          label="Primer apellido"
-          required
-          maxLength={100}
-          value={firstSurname}
-          disabled={saving}
-          onChange={event => setFirstSurname(event.target.value)}
-        />
-
-        <Input
-          label="Segundo apellido"
-          maxLength={100}
-          value={surname}
-          disabled={saving}
-          hint={
-            profile.surname
-              ? 'Dejarlo vacío conserva el valor actual.'
-              : 'Puedes agregar tu segundo apellido ahora.'
-          }
-          onChange={event => setSurname(event.target.value)}
-        />
-      </div>
-
-      <section className="profile-contact-section">
-        <h3>Países de residencia</h3>
-
-        {countries.length > 0 ? (
-          countries.map((country, index) => (
-            <Input
-              key={country.id}
-              label={`País ${index + 1}`}
-              required
-              maxLength={100}
-              value={country.countryName}
-              disabled={saving}
-              hint="Debe corresponder a un país existente en el catálogo."
-              onChange={event =>
-                updateCountry(country.id, event.target.value)
-              }
-            />
-          ))
-        ) : (
-          <p className="flow-note">No tienes países registrados.</p>
-        )}
-      </section>
-
-      <section className="profile-contact-section">
-        <h3>Direcciones</h3>
-
-        {addresses.length > 0 ? (
-          addresses.map((address, index) => (
-            <Input
-              key={address.id}
-              label={`Dirección ${index + 1}`}
-              required
-              maxLength={300}
-              value={address.address}
-              disabled={saving}
-              onChange={event =>
-                updateAddress(address.id, event.target.value)
-              }
-            />
-          ))
-        ) : (
-          <p className="flow-note">No tienes direcciones registradas.</p>
-        )}
-      </section>
-
-      <section className="profile-contact-section">
-        <h3>Correos de contacto</h3>
-
-        {contactEmails.length > 0 ? (
-          contactEmails.map((email, index) => (
-            <Input
-              key={email.id}
-              label={`Correo de contacto ${index + 1}`}
-              type="email"
-              required
-              maxLength={200}
-              value={email.email}
-              disabled={saving}
-              onChange={event =>
-                updateEmail(email.id, event.target.value)
-              }
-            />
-          ))
-        ) : (
-          <p className="flow-note">No tienes correos de contacto registrados.</p>
-        )}
-      </section>
-
-      <section className="profile-contact-section">
-        <h3>Teléfonos</h3>
-
-        {phones.length > 0 ? (
-          phones.map((phone, index) => (
-            <div className="flow-fields" key={phone.id}>
-              <Input
-                label={`Código de país ${index + 1} (sin +)`}
-                required
-                maxLength={3}
-                pattern="[1-9][0-9]{0,2}"
-                value={phone.countryCode}
-                disabled={saving}
-                onChange={event =>
-                  updatePhone(phone.id, 'countryCode', event.target.value)
-                }
-              />
-
-              <Input
-                label={`Número de teléfono ${index + 1}`}
-                type="tel"
-                required
-                maxLength={15}
-                pattern="[0-9]{6,15}"
-                value={phone.phoneNumber}
-                disabled={saving}
-                onChange={event =>
-                  updatePhone(phone.id, 'phoneNumber', event.target.value)
-                }
-              />
-            </div>
-          ))
-        ) : (
-          <p className="flow-note">No tienes teléfonos registrados.</p>
-        )}
-      </section>
-
-      <section className="profile-links-editor">
-        <div className="profile-repeat-heading">
-          <h3>Enlaces personales</h3>
+      <fieldset className="profile-form-grid" disabled={saving}>
+        <div className="grid gap-x-[18px] gap-y-5 sm:grid-cols-3">
+          <TextField
+            label="Nombre"
+            name="name"
+            value={name}
+            onChange={event => setName(event.target.value)}
+            maxLength={100}
+            isRequired
+            error={triedToSave ? nameError : undefined}
+          />
+          <TextField
+            label="Primer apellido"
+            name="firstSurname"
+            value={firstSurname}
+            onChange={event => setFirstSurname(event.target.value)}
+            maxLength={100}
+            isRequired
+            error={triedToSave ? firstSurnameError : undefined}
+          />
+          <TextField
+            label="Segundo apellido"
+            name="surname"
+            value={surname}
+            onChange={event => setSurname(event.target.value)}
+            placeholder="Gutiérrez"
+            maxLength={100}
+            error={errors.surname}
+            helperText={profile.surname ? 'Dejarlo vacío conserva el valor actual.' : undefined}
+          />
         </div>
 
-        {links.length > 0 ? (
-          links.map((link, index) => (
-            <div className="profile-link-editor" key={link.id}>
-              <Input
-                label={`Nombre del enlace ${index + 1}`}
-                required
-                maxLength={150}
-                value={link.text}
-                disabled={saving}
-                onChange={event =>
-                  updateLink(link.id, 'text', event.target.value)
-                }
-              />
+        <div className="grid gap-x-[18px] gap-y-5 sm:grid-cols-2">
+          <SelectField
+            label="País de residencia"
+            name="countryName"
+            value={countryName}
+            options={countryOptions}
+            onChange={setCountryName}
+            placeholder="Selecciona un país"
+          />
 
-              <Input
-                label="URL"
-                type="text"
-                required
-                maxLength={2048}
-                value={link.url}
-                disabled={saving}
-                onChange={event =>
-                  updateLink(link.id, 'url', event.target.value)
-                }
-              />
-            </div>
-          ))
-        ) : (
-          <p className="flow-note">No tienes enlaces personales registrados.</p>
-        )}
-      </section>
+          <TextField
+            label="Dirección"
+            name="address"
+            value={address}
+            onChange={event => setAddress(event.target.value)}
+            placeholder="Av. 6 de Agosto, La Paz"
+            maxLength={300}
+            leftIcon={<FiMapPin />}
+            error={errors.address}
+          />
+
+          <ContactEmailsEditor
+            contactEmails={contactEmails}
+            errors={errors.contactEmails}
+            canAddContactEmail={contactEmails.length < maximumContactEmails}
+            onAdd={() => setContactEmails(current =>
+              current.length < maximumContactEmails ? [...current, { id: newId(), email: '' }] : current)}
+            onUpdate={(itemId, email) => setContactEmails(current =>
+              current.map(item => (item.id === itemId ? { ...item, email } : item)))}
+            onRemove={itemId => setContactEmails(current => current.filter(item => item.id !== itemId))}
+          />
+
+          <PhonesEditor
+            phones={phones}
+            errors={errors.phones}
+            canAddPhone={phones.length < maximumPhones}
+            onAdd={() => setPhones(current =>
+              current.length < maximumPhones
+                ? [...current, { id: newId(), countryCode: defaultCountryCode, number: '' }]
+                : current)}
+            onUpdate={(itemId, changes) => setPhones(current =>
+              current.map(item => (item.id === itemId ? { ...item, ...changes } : item)))}
+            onRemove={itemId => setPhones(current => current.filter(item => item.id !== itemId))}
+          />
+        </div>
+
+        <LinksEditor
+          links={links}
+          errors={errors.links}
+          canAddLink={links.length < maximumLinks}
+          onAdd={() => setLinks(current =>
+            current.length < maximumLinks
+              ? [...current, { id: newId(), text: '', url: '', visibility: true }]
+              : current)}
+          onUpdate={(itemId, changes) => setLinks(current =>
+            current.map(item => (item.id === itemId ? { ...item, ...changes } : item)))}
+          onRemove={itemId => setLinks(current => current.filter(item => item.id !== itemId))}
+        />
+      </fieldset>
     </form>
   );
 }

@@ -511,3 +511,11 @@
   height: 10px;
   border-radius: 2px;
 }
+.profile-form-grid {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
