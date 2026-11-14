@@ -297,7 +297,7 @@ export function ProfileForm({
           maxLength={100}
           value={surname}
           disabled={saving}
-          hint="Dejarlo vacío conserva el valor actual."
+          hint="Completa este campo para agregar tu segundo apellido. Si lo dejas vacío, no se modificará."
           onChange={event => setSurname(event.target.value)}
         />
       </div>

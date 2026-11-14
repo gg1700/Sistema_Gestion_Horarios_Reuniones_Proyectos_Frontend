@@ -189,7 +189,7 @@ export default function ProfilePage() {
         error instanceof Error
           ? error.message
           : 'No se pudo eliminar la experiencia laboral.',
-        'error'
+        'danger'
       );
     }
   }
