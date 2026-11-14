@@ -79,6 +79,15 @@ export interface UpdateWorkExperiencePayload {
   visibility?: boolean;
 }
 
+export interface CreateWorkExperiencePayload {
+  title: string;
+  companyName: string;
+  description: string;
+  startDate: string;
+  endDate: string | null;
+  visibility?: boolean;
+}
+
 export async function updateWorkExperience(id: string, payload: UpdateWorkExperiencePayload):
   Promise<{ success: boolean; message: string }> {
   const result = await sendRequest<{ success: boolean; message: string; }>(
@@ -89,6 +98,50 @@ export async function updateWorkExperience(id: string, payload: UpdateWorkExperi
   );
   if (!result?.success) {
     throw new ApiError(result?.message ?? 'No se pudo actualizar la experiencia laboral.', 500);
+  }
+
+  return result;
+}
+
+export async function createWorkExperience(
+  payload: CreateWorkExperiencePayload
+): Promise<{ success: boolean; message: string; data?: { id: string } }> {
+  const result = await sendRequest<{
+    success: boolean;
+    message: string;
+    data?: { id: string };
+  }>('/api/v1/profile/work-experience', {
+    method: 'POST',
+    body: payload
+  });
+
+  if (!result?.success) {
+    throw new ApiError(
+      result?.message ?? 'No se pudo registrar la experiencia laboral.',
+      500
+    );
+  }
+
+  return result;
+}
+
+export async function deleteWorkExperience(
+  id: string
+): Promise<{ success: boolean; message: string }> {
+  const result = await sendRequest<{
+    success: boolean;
+    message: string;
+  }>(
+    `/api/v1/profile/work-experience/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    }
+  );
+
+  if (!result?.success) {
+    throw new ApiError(
+      result?.message ?? 'No se pudo eliminar la experiencia laboral.',
+      500
+    );
   }
 
   return result;

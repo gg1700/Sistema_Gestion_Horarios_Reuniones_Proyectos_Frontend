@@ -7,7 +7,7 @@ import type { ProfileWorkExperience } from '../../../types/profile-response.type
 import type { UpdateWorkExperiencePayload } from '../../../api/profileApi';
 
 interface ExperienceEditorProps {
-  experience: ProfileWorkExperience;
+  experience?: ProfileWorkExperience;
   saving: boolean;
   onClose: () => void;
   onSave: (payload: UpdateWorkExperiencePayload) => Promise<void>;
@@ -28,20 +28,12 @@ export function ExperienceEditor({
   onClose,
   onSave,
 }: ExperienceEditorProps) {
-  const [title, setTitle] = useState(experience.title);
-  const [companyName, setCompanyName] = useState(
-    experience.companyName ?? ''
-  );
-  const [startDate, setStartDate] = useState(experience.startDate);
-  const [endDate, setEndDate] = useState(experience.endDate ?? '');
-  const [description, setDescription] = useState(
-    experience.description ?? ''
-  );
-
-  const [current, setCurrent] = useState(
-    experience.endDate === null
-  );
-
+  const [title, setTitle] = useState(experience?.title ?? '');
+  const [companyName, setCompanyName] = useState(experience?.companyName ?? '');
+  const [startDate, setStartDate] = useState(experience?.startDate ?? '');
+  const [endDate, setEndDate] = useState(experience?.endDate ?? '');
+  const [description, setDescription] = useState(experience?.description ?? '');
+  const [current, setCurrent] = useState(experience ? experience.endDate === null : false);
   const [error, setError] = useState('');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -102,17 +94,13 @@ export function ExperienceEditor({
       return;
     }
 
-    if (experience.companyName && !cleanCompany) {
-      setError(
-        'El backend actual no permite eliminar el nombre de la empresa. Conserva el valor o solicita ese cambio en el backend.'
-      );
+    if (experience?.companyName && !cleanCompany) {
+      setError('Conserva el nombre de la empresa o introduce otro.');
       return;
     }
 
-    if (experience.description && !cleanDescription) {
-      setError(
-        'El backend actual no permite eliminar la descripción. Conserva el valor o solicita ese cambio en el backend.'
-      );
+    if (experience?.description && !cleanDescription) {
+      setError('Conserva la descripción o introduce otra.');
       return;
     }
 
@@ -121,6 +109,14 @@ export function ExperienceEditor({
       startDate,
       endDate: current ? null : endDate || null,
     };
+
+    if (!experience) {
+      payload.companyName = cleanCompany;
+      payload.description = cleanDescription;
+    } else {
+      if (cleanCompany) payload.companyName = cleanCompany;
+      if (cleanDescription) payload.description = cleanDescription;
+    }
 
     if (cleanCompany) {
       payload.companyName = cleanCompany;
@@ -147,7 +143,7 @@ export function ExperienceEditor({
       onOpenChange={open => {
         if (!open && !saving) onClose();
       }}
-      title="Editar experiencia."
+      title={experience ? 'Editar experiencia.' : 'Agregar experiencia.'}
       eyebrow="MI PERFIL / EXPERIENCIA"
       description="Actualiza los datos de este puesto. · * Campos obligatorios"
       className="experience-editor-dialog"
@@ -169,7 +165,7 @@ export function ExperienceEditor({
             leadingIcon={<FiCheck />}
             loading={saving}
           >
-            Guardar cambios
+            {experience ? 'Guardar cambios' : 'Agregar experiencia'}
           </Button>
         </>
       }

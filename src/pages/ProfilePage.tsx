@@ -12,7 +12,7 @@ import { paths } from '../constants/paths';
 import { useState } from 'react';
 import { EditProfileDialog } from '../components/features/profile/EditProfileDialog';
 import { ExperienceEditor } from '../components/features/profile/ExperienceEditor';
-import { updateWorkExperience } from '../api/profileApi';
+import { updateWorkExperience, createWorkExperience, deleteWorkExperience } from '../api/profileApi';
 import { useUI } from '../contexts/UIContext';
 
 export default function ProfilePage() {
@@ -21,6 +21,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [editingExperienceId, setEditingExperienceId] = useState<string | null>(null);
   const [savingExperience, setSavingExperience] = useState(false);
+  const [creatingExperience, setCreatingExperience] = useState(false);
 
   const { notify } = useUI();
 
@@ -34,8 +35,6 @@ export default function ProfilePage() {
       company: item.companyName ?? '',
       description: item.description ?? '',
     }));
-  const editingUnavailable = 'La edición del perfil aún no está conectada.';
-
   return <MemberShell>
     <SectionHeading title="Mi perfil" eyebrow="MI CUENTA" accentPeriod actions={<>
       <span className="profile-private-indicator"><FiLock />Vista privada</span>
@@ -72,13 +71,21 @@ export default function ProfilePage() {
           <WorkTimeline
             experiences={experiences}
             onEdit={setEditingExperienceId}
+            onRemove={handleDeleteExperience}
           />
         ) : (
           <p className="flow-note">
             Aún no agregaste experiencia laboral.
           </p>
         )}
-        <button type="button" className="flow-link profile-add-experience" disabled title={editingUnavailable}><FiPlus />Agregar experiencia</button>
+        <Button
+          variant="secondary"
+          size="small"
+          onClick={() => setCreatingExperience(true)}
+        >
+          <FiPlus />
+          Agregar experiencia
+        </Button>
       </aside>
     </div>
     <div className="profile-connections-entry"><ProviderIcon provider="google" /><ProviderIcon provider="github" /><div><h3>Conecta tus herramientas a tu perfil.</h3><p>Gestiona Google Calendar y GitHub desde Conexiones.</p></div><TextLink to={paths.connections}>Ir a conexiones</TextLink></div>
@@ -104,6 +111,14 @@ export default function ProfilePage() {
         />
       );
     })()}
+
+    {creatingExperience && (
+      <ExperienceEditor
+        saving={savingExperience}
+        onClose={() => setCreatingExperience(false)}
+        onSave={handleCreateExperience}
+      />
+    )}
   </MemberShell>;
 
   async function handleSaveExperience(
@@ -125,6 +140,57 @@ export default function ProfilePage() {
       );
     } finally {
       setSavingExperience(false);
+    }
+  }
+
+  async function handleCreateExperience(
+    payload: Parameters<typeof updateWorkExperience>[1]
+  ) {
+    setSavingExperience(true);
+
+    try {
+      await createWorkExperience({
+        title: payload.title ?? '',
+        companyName: payload.companyName ?? '',
+        description: payload.description ?? '',
+        startDate: payload.startDate ?? '',
+        endDate: payload.endDate ?? null
+      });
+
+      setCreatingExperience(false);
+      member!.retry();
+
+      notify('Experiencia laboral agregada correctamente.', 'success');
+    } finally {
+      setSavingExperience(false);
+    }
+  }
+
+  async function handleDeleteExperience(id: string) {
+    const experience = profile!.workExperiences.find(
+      item => item.id === id
+    );
+
+    if (!experience) return;
+
+    const confirmed = window.confirm(
+      `¿Seguro que deseas eliminar la experiencia "${experience.title}"?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteWorkExperience(id);
+      member!.retry();
+
+      notify('Experiencia laboral eliminada correctamente.', 'success');
+    } catch (error) {
+      notify(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo eliminar la experiencia laboral.',
+        'error'
+      );
     }
   }
 }
