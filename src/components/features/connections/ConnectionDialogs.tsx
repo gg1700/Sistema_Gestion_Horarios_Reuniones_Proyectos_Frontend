@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { FiArrowRight, FiCalendar, FiCheck, FiExternalLink, FiRefreshCw, FiSearch, FiShield } from 'react-icons/fi';
 import { Dialog } from '../../modals';
-import { Alert, Button, ProviderIcon } from '../../ui';
+import { Alert, Button, Input, ProviderIcon, Select } from '../../ui';
+import { timeZoneOptions } from '../../../constants/timeZones';
+import { resolveViewerTimeZone } from '../../../types/calendar';
 import { useUI } from '../../../contexts/UIContext';
 import { useGoogleCalendar } from '../../../hooks/useGoogleCalendar';
 import { CalendarApiError } from '../../../api/googleCalendar';
@@ -103,7 +105,7 @@ function AuthorizeProvider({
 function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void; onNext: (modal: string) => void; calendar: CalendarController }) {
   const [chosen, setChosen] = useState('');
   const [name, setName] = useState('');
-  const [timeZone, setTimeZone] = useState('America/La_Paz');
+  const [timeZone, setTimeZone] = useState(resolveViewerTimeZone());
   const [mode, setMode] = useState<'select' | 'create'>('select');
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
@@ -343,42 +345,27 @@ function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void;
 
           {mode === 'create' ? (
             <div className="mt-4 flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="new-calendar-name" className="text-sm font-medium">
-                  Nombre del calendario
-                </label>
+              <Input
+                id="new-calendar-name"
+                label="Nombre del calendario"
+                maxLength={150}
+                value={name}
+                disabled={needsReconnect || calendar.saving}
+                onChange={event => setName(event.target.value)}
+                placeholder="Ej. Calendario Orbitia"
+              />
 
-                <input
-                  id="new-calendar-name"
-                  type="text"
-                  maxLength={150}
-                  value={name}
-                  disabled={needsReconnect || calendar.saving}
-                  onChange={event => setName(event.target.value)}
-                  placeholder="Ej. Calendario Orbitia"
-                  className="w-full rounded-lg border border-orbita-outline bg-orbita-surface px-4 py-3 text-orbita-text"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="new-calendar-timezone" className="text-sm font-medium">
-                  Zona horaria
-                </label>
-
-                <select
-                  id="new-calendar-timezone"
-                  value={timeZone}
-                  disabled={needsReconnect || calendar.saving}
-                  onChange={event => setTimeZone(event.target.value)}
-                  className="w-full rounded-lg border border-orbita-outline bg-orbita-surface px-4 py-3 text-orbita-text"
-                >
-                  <option value="America/La_Paz">Bolivia (America/La_Paz)</option>
-                  <option value="America/Lima">Perú (America/Lima)</option>
-                  <option value="America/Santiago">Chile (America/Santiago)</option>
-                  <option value="America/Argentina/Buenos_Aires">Argentina (Buenos Aires)</option>
-                  <option value="UTC">UTC</option>
-                </select>
-              </div>
+              <Select
+                id="new-calendar-timezone"
+                label="Zona horaria"
+                value={timeZone}
+                disabled={needsReconnect || calendar.saving}
+                onChange={event => setTimeZone(event.target.value)}
+              >
+                {timeZoneOptions(timeZone).map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </Select>
 
               <Alert tone="warning">
                 Se creará un calendario nuevo en tu cuenta de Google y quedará seleccionado en Orbitia.

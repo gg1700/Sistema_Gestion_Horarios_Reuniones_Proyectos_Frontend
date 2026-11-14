@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { FiCalendar, FiCheck, FiCopy, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { ProfileTabs } from '../components/features/profile/ProfileParts';
-import { Alert, Button, SectionHeading } from '../components/ui';
+import { Alert, Button, SectionHeading, Select } from '../components/ui';
+import { timeZoneOptions } from '../constants/timeZones';
 import { useUI } from '../contexts/UIContext';
 
 import {
@@ -282,25 +283,22 @@ export default function CalendarAvailabilitySettingsPage() {
                         </header>
 
                         <div className="calendar-settings-timezone">
-                            <label htmlFor="availability-timezone">
-                                Zona horaria del calendario
-                            </label>
-
-                            <input
+                            <Select
                                 id="availability-timezone"
-                                type="text"
+                                label="Zona horaria del calendario"
                                 value={timeZone}
-                                placeholder="America/La_Paz"
+                                hint="Los horarios disponibles se publican en esta zona horaria; cada visitante también los verá en su hora local."
                                 onChange={event => {
                                     setTimeZone(event.target.value);
                                     setDirty(true);
                                 }}
-                            />
-
-                            <small>
-                                Usa un identificador IANA, por ejemplo
-                                {' '}America/La_Paz o Europe/Madrid.
-                            </small>
+                            >
+                                {timeZoneOptions(timeZone).map(option => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </Select>
                         </div>
 
                         <div className="calendar-settings-days">
