@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { FiRefreshCw } from 'react-icons/fi';
+import { FiExternalLink, FiRefreshCw, FiVideo } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { Person, StatusDot, TextLink } from '../components/features/flows/FlowPrimitives';
 import {
@@ -28,6 +28,19 @@ import { Input, Textarea } from '../components/ui';
 import type { UpdateMeetingRequestPayload } from '../types/meetingRequests';
 
 const PAGE_LIMIT = 20;
+const MIN_REASON_LENGTH = 5;
+
+function viewerTimeZone() {
+    try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    } catch {
+        return 'UTC';
+    }
+}
+
+function formatTimeZoneName(timeZone: string) {
+    return timeZone.replace(/_/g, ' ');
+}
 
 function getStatusLabel(status: MeetingRequestStatus) {
     switch (status) {
@@ -57,9 +70,7 @@ function getStatusTone(
     }
 }
 
-function formatRequestSchedule(request: MeetingRequestItem) {
-    const timeZone = request.timeZone || 'America/La_Paz';
-
+function formatScheduleIn(request: MeetingRequestItem, timeZone: string) {
     const start = new Date(request.startsAt);
     const end = new Date(request.endsAt);
 
@@ -85,6 +96,33 @@ function formatRequestSchedule(request: MeetingRequestItem) {
     };
 }
 
+/**
+ * Las horas se muestran siempre en la zona horaria de quien está viendo la
+ * solicitud. Si la solicitud se registró en otra zona, también se indica la
+ * hora original para evitar confusiones entre países.
+ */
+function formatRequestSchedule(request: MeetingRequestItem) {
+    const local = formatScheduleIn(request, viewerTimeZone());
+    const originalZone = request.timeZone || local.timeZone;
+    const original = originalZone !== local.timeZone
+        ? formatScheduleIn(request, originalZone)
+        : null;
+    const differs = original !== null
+        && (original.range !== local.range || original.date !== local.date);
+
+    return {
+        ...local,
+        zoneLabel: `Tu hora local (${formatTimeZoneName(local.timeZone)})`,
+        original: differs && original
+            ? `${original.date}, ${original.range} en ${formatTimeZoneName(original.timeZone)}`
+            : null,
+    };
+}
+
+function getRejectionReason(request: MeetingRequestItem) {
+    return request.status === 'rejected' ? request.ownerResponseMessage : null;
+}
+
 function formatRequestCreatedAt(createdAt: string) {
     return new Intl.DateTimeFormat('es-BO', {
         day: 'numeric',
@@ -92,7 +130,8 @@ function formatRequestCreatedAt(createdAt: string) {
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        timeZone: 'America/La_Paz',
+        hourCycle: 'h23',
+        timeZone: viewerTimeZone(),
     }).format(new Date(createdAt));
 }
 
@@ -133,6 +172,12 @@ export default function MeetingRequestsPage() {
 
     const [cancelling, setCancelling] = useState(false);
     const [cancelError, setCancelError] = useState('');
+    const [cancelReason, setCancelReason] = useState('');
+
+    const [rejectingRequest, setRejectingRequest] =
+        useState<MeetingRequestItem | null>(null);
+    const [rejectReason, setRejectReason] = useState('');
+    const [rejectError, setRejectError] = useState('');
 
     const {
         requests,
@@ -159,6 +204,7 @@ export default function MeetingRequestsPage() {
     async function resolveRequest(
         request: MeetingRequestItem,
         decision: 'accepted' | 'rejected',
+        responseMessage?: string,
     ) {
         if (decidingId) {
             return;
@@ -169,27 +215,54 @@ export default function MeetingRequestsPage() {
             setDecisionError('');
             setDecisionMessage('');
 
-            await decideMeetingRequest(request.id, {
+            const resolved = await decideMeetingRequest(request.id, {
                 decision,
+                ...(responseMessage ? { responseMessage } : {}),
             });
 
             setDecisionMessage(
                 decision === 'accepted'
-                    ? 'Solicitud aceptada. La reunión se ha confirmado.'
-                    : 'Solicitud rechazada.',
+                    ? resolved.meetUrl
+                        ? 'Solicitud aceptada. La reunión y su enlace de Google Meet ya están en la agenda.'
+                        : 'Solicitud aceptada. La reunión se ha confirmado.'
+                    : 'Solicitud rechazada. Se notificó el motivo al solicitante.',
             );
 
             setViewingRequest(null);
+            setRejectingRequest(null);
             refresh();
         } catch (failure) {
-            setDecisionError(
-                failure instanceof Error
-                    ? failure.message
-                    : 'No se pudo resolver la solicitud.',
-            );
+            const message = failure instanceof Error
+                ? failure.message
+                : 'No se pudo resolver la solicitud.';
+            if (decision === 'rejected') setRejectError(message);
+            else setDecisionError(message);
         } finally {
             setDecidingId(null);
         }
+    }
+
+    function openRejectDialog(request: MeetingRequestItem) {
+        setViewingRequest(null);
+        setRejectingRequest(request);
+        setRejectReason('');
+        setRejectError('');
+    }
+
+    function closeRejectDialog() {
+        if (decidingId) return;
+        setRejectingRequest(null);
+        setRejectError('');
+    }
+
+    function confirmReject() {
+        if (!rejectingRequest) return;
+        const reason = rejectReason.trim().replace(/\s+/g, ' ');
+        if (reason.length < MIN_REASON_LENGTH) {
+            setRejectError(`Indica el motivo del rechazo (mínimo ${MIN_REASON_LENGTH} caracteres).`);
+            return;
+        }
+        void resolveRequest(rejectingRequest, 'rejected', reason);
     }
 
     function openEditDialog(request: MeetingRequestItem) {
@@ -266,6 +339,7 @@ export default function MeetingRequestsPage() {
 
     function openCancelDialog(request: MeetingRequestItem) {
         setCancellingRequest(request);
+        setCancelReason('');
         setCancelError('');
     }
 
@@ -279,11 +353,17 @@ export default function MeetingRequestsPage() {
     async function confirmCancelRequest() {
         if (!cancellingRequest || cancelling) return;
 
+        const reason = cancelReason.trim().replace(/\s+/g, ' ');
+        if (reason.length < MIN_REASON_LENGTH) {
+            setCancelError(`Indica el motivo de la cancelación (mínimo ${MIN_REASON_LENGTH} caracteres).`);
+            return;
+        }
+
         try {
             setCancelling(true);
             setCancelError('');
 
-            await cancelMeetingRequest(cancellingRequest.id);
+            await cancelMeetingRequest(cancellingRequest.id, reason);
 
             setDecisionMessage('La solicitud se canceló correctamente.');
             setCancellingRequest(null);
@@ -342,23 +422,23 @@ export default function MeetingRequestsPage() {
                     role="group"
                     aria-label="Dirección de las solicitudes"
                 >
-                    <button
-                        type="button"
-                        className={action === 'received' ? 'is-active' : ''}
+                    <Button
+                        size="small"
+                        variant={action === 'received' ? 'primary' : 'ghost'}
                         aria-pressed={action === 'received'}
                         onClick={() => changeAction('received')}
                     >
                         Recibidas
-                    </button>
+                    </Button>
 
-                    <button
-                        type="button"
-                        className={action === 'sent' ? 'is-active' : ''}
+                    <Button
+                        size="small"
+                        variant={action === 'sent' ? 'primary' : 'ghost'}
                         aria-pressed={action === 'sent'}
                         onClick={() => changeAction('sent')}
                     >
                         Enviadas
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="meeting-requests-filters">
@@ -442,10 +522,33 @@ export default function MeetingRequestsPage() {
                                             {request.message || 'Sin mensaje adicional.'}
                                         </small>
 
-                                        {request.ownerResponseMessage && (
+                                        {getRejectionReason(request) && (
+                                            <small className="meeting-request-response meeting-request-response--danger">
+                                                Motivo del rechazo: {getRejectionReason(request)}
+                                            </small>
+                                        )}
+
+                                        {request.status !== 'rejected' && request.ownerResponseMessage && (
                                             <small className="meeting-request-response">
                                                 Respuesta: {request.ownerResponseMessage}
                                             </small>
+                                        )}
+
+                                        {request.status === 'cancelled' && request.cancellationReason && (
+                                            <small className="meeting-request-response meeting-request-response--muted">
+                                                Motivo de la cancelación: {request.cancellationReason}
+                                            </small>
+                                        )}
+
+                                        {request.meetUrl && (
+                                            <a
+                                                className="meeting-request-meet"
+                                                href={request.meetUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                <FiVideo aria-hidden="true" /> Unirse a Google Meet
+                                            </a>
                                         )}
                                     </div>
                                 ),
@@ -463,7 +566,7 @@ export default function MeetingRequestsPage() {
                                             <small>
                                                 {schedule.range}
                                                 <br />
-                                                {schedule.timeZone}
+                                                {schedule.zoneLabel}
                                             </small>
                                         </div>
                                     );
@@ -567,14 +670,14 @@ export default function MeetingRequestsPage() {
                         )}
 
                         <div className="requests-table-time">
-                            **Horario actual**
+                            <p className="ui-eyebrow">HORARIO ACTUAL</p>
+
+                            <strong>{formatRequestSchedule(editingRequest).date}</strong>
 
                             <small>
-                                {formatRequestSchedule(editingRequest).date}
-                                <br />
                                 {formatRequestSchedule(editingRequest).range}
                                 <br />
-                                {editingRequest.timeZone}
+                                {formatRequestSchedule(editingRequest).zoneLabel}
                             </small>
                         </div>
 
@@ -605,7 +708,7 @@ export default function MeetingRequestsPage() {
                 }}
                 title="Cancelar solicitud"
                 eyebrow="SOLICITUD DE REUNIÓN"
-                description="¿Estás seguro de que deseas cancelar esta solicitud? Esta acción no se puede deshacer."
+                description="Indica por qué cancelas la solicitud. El motivo se mostrará al destinatario y no se puede deshacer."
                 size="medium"
                 footer={
                     <>
@@ -649,9 +752,21 @@ export default function MeetingRequestsPage() {
                             <small>
                                 {formatRequestSchedule(cancellingRequest).range}
                                 <br />
-                                {cancellingRequest.timeZone}
+                                {formatRequestSchedule(cancellingRequest).zoneLabel}
                             </small>
                         </div>
+
+                        <Textarea
+                            label="Motivo de la cancelación"
+                            value={cancelReason}
+                            onChange={event => setCancelReason(event.target.value)}
+                            placeholder="Por ejemplo: surgió un imprevisto y necesito reprogramar."
+                            rows={3}
+                            maxLength={2000}
+                            minLength={MIN_REASON_LENGTH}
+                            required
+                            disabled={cancelling}
+                        />
                     </div>
                 )}
             </Dialog>
@@ -686,10 +801,7 @@ export default function MeetingRequestsPage() {
                                 <Button
                                     variant="danger"
                                     disabled={decidingId !== null}
-                                    loading={decidingId === viewingRequest.id}
-                                    onClick={() =>
-                                        void resolveRequest(viewingRequest, 'rejected')
-                                    }
+                                    onClick={() => openRejectDialog(viewingRequest)}
                                 >
                                     Rechazar
                                 </Button>
@@ -799,7 +911,13 @@ export default function MeetingRequestsPage() {
                             <small>
                                 {formatRequestSchedule(viewingRequest).range}
                                 <br />
-                                Zona horaria: {viewingRequest.timeZone}
+                                {formatRequestSchedule(viewingRequest).zoneLabel}
+                                {formatRequestSchedule(viewingRequest).original && (
+                                    <>
+                                        <br />
+                                        Registrada como: {formatRequestSchedule(viewingRequest).original}
+                                    </>
+                                )}
                             </small>
                         </div>
 
@@ -825,7 +943,33 @@ export default function MeetingRequestsPage() {
                             </div>
                         )}
 
-                        {viewingRequest.ownerResponseMessage && (
+                        {viewingRequest.meetUrl && (
+                            <div className="requests-table-title">
+                                <p className="ui-eyebrow">
+                                    VIDEOLLAMADA
+                                </p>
+
+                                <a
+                                    className="ui-button ui-button--secondary ui-button--small meeting-request-meet-button"
+                                    href={viewingRequest.meetUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    <FiVideo aria-hidden="true" />
+                                    Unirse a Google Meet
+                                    <FiExternalLink aria-hidden="true" />
+                                </a>
+                            </div>
+                        )}
+
+                        {getRejectionReason(viewingRequest) && (
+                            <Alert tone="danger">
+                                <strong>Motivo del rechazo:</strong>{' '}
+                                {getRejectionReason(viewingRequest)}
+                            </Alert>
+                        )}
+
+                        {viewingRequest.status !== 'rejected' && viewingRequest.ownerResponseMessage && (
                             <div className="requests-table-title">
                                 <p className="ui-eyebrow">
                                     RESPUESTA DEL DESTINATARIO
@@ -837,10 +981,18 @@ export default function MeetingRequestsPage() {
                             </div>
                         )}
 
+                        {viewingRequest.status === 'cancelled' && viewingRequest.cancellationReason && (
+                            <Alert tone="info">
+                                <strong>Motivo de la cancelación:</strong>{' '}
+                                {viewingRequest.cancellationReason}
+                            </Alert>
+                        )}
+
                         {viewingRequest.status === 'pending' && action === 'received' && (
                             <p className="flow-note">
-                                Al aceptar, la reunión quedará confirmada en tu agenda.
-                                Si rechazas la solicitud, no se creará la reunión.
+                                Al aceptar, la reunión se creará con un enlace de Google Meet en tu
+                                calendario y también en el del solicitante si tiene Google Calendar
+                                conectado. Para rechazarla deberás indicar un motivo.
                             </p>
                         )}
 
@@ -850,6 +1002,71 @@ export default function MeetingRequestsPage() {
                                 Puedes editarla o cancelarla desde el listado.
                             </p>
                         )}
+                    </div>
+                )}
+            </Dialog>
+            <Dialog
+                open={rejectingRequest !== null}
+                onOpenChange={open => {
+                    if (!open) closeRejectDialog();
+                }}
+                title="Rechazar solicitud"
+                eyebrow="SOLICITUD DE REUNIÓN"
+                description="Indica el motivo del rechazo. Se mostrará a la persona que envió la solicitud."
+                size="medium"
+                footer={
+                    <>
+                        <Button
+                            variant="ghost"
+                            disabled={decidingId !== null}
+                            onClick={closeRejectDialog}
+                        >
+                            Volver
+                        </Button>
+
+                        <Button
+                            variant="danger"
+                            loading={rejectingRequest !== null && decidingId === rejectingRequest.id}
+                            onClick={confirmReject}
+                        >
+                            Rechazar solicitud
+                        </Button>
+                    </>
+                }
+            >
+                {rejectingRequest && (
+                    <div className="flow-form">
+                        {rejectError && (
+                            <Alert tone="danger">
+                                {rejectError}
+                            </Alert>
+                        )}
+
+                        <div className="requests-table-title">
+                            <strong>{rejectingRequest.title}</strong>
+                            <small>{getCounterpartName(rejectingRequest)}</small>
+                        </div>
+
+                        <div className="requests-table-time">
+                            {formatRequestSchedule(rejectingRequest).date}
+                            <small>
+                                {formatRequestSchedule(rejectingRequest).range}
+                                <br />
+                                {formatRequestSchedule(rejectingRequest).zoneLabel}
+                            </small>
+                        </div>
+
+                        <Textarea
+                            label="Motivo del rechazo"
+                            value={rejectReason}
+                            onChange={event => setRejectReason(event.target.value)}
+                            placeholder="Por ejemplo: ese día tengo otra reunión; ¿podrías proponer otro horario?"
+                            rows={3}
+                            maxLength={2000}
+                            minLength={MIN_REASON_LENGTH}
+                            required
+                            disabled={decidingId !== null}
+                        />
                     </div>
                 )}
             </Dialog>

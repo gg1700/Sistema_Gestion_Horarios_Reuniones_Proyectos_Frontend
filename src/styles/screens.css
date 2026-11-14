@@ -533,37 +533,18 @@ button.agenda-event:hover { background: #254b3a; }
 }
 
 .meeting-requests-direction {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-}
-
-.meeting-requests-direction button {
-  border: 1px solid #355341;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #294234;
   border-radius: 999px;
-  padding: 9px 16px;
-  background: transparent;
-  color: #90b69e;
-  font: inherit;
-  font-size: 11px;
-  cursor: pointer;
-  transition: background .18s ease, border-color .18s ease, color .18s ease;
+  background: #0f1d1a;
 }
 
-.meeting-requests-direction button:hover {
-  border-color: #7ab993;
-  color: #c5e8d0;
-}
-
-.meeting-requests-direction button.is-active {
-  background: #1b382b;
-  border-color: var(--ui-mint);
-  color: #c6f4d7;
-}
-
-.meeting-requests-direction button:focus-visible {
-  outline: 2px solid var(--ui-mint);
-  outline-offset: 3px;
+.meeting-requests-direction .ui-button {
+  border-radius: 999px;
+  min-width: 96px;
 }
 
 .meeting-requests-filters {
@@ -576,6 +557,35 @@ button.agenda-event:hover { background: #254b3a; }
 
 .meeting-request-response {
   color: #a3d8b5 !important;
+}
+
+.meeting-request-response--danger {
+  color: #f0a9a0 !important;
+}
+
+.meeting-request-response--muted {
+  color: #9fb4a8 !important;
+}
+
+.meeting-request-meet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin-top: 4px;
+  color: var(--ui-mint);
+  font-size: 10px;
+  text-decoration: none;
+}
+
+.meeting-request-meet:hover,
+.meeting-request-meet:focus-visible {
+  text-decoration: underline;
+}
+
+.meeting-request-meet-button {
+  width: fit-content;
+  text-decoration: none;
 }
 
 .meeting-requests-pagination {

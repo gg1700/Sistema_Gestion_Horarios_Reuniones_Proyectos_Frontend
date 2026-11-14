@@ -21,6 +21,7 @@ export interface CalendarEventItem {
   isPublic: boolean;
   eventStatus: CalendarEventStatus;
   syncStatus: CalendarEventSyncStatus;
+  meetUrl?: string | null;
 }
 
 export interface CalendarEventRangeQuery {

@@ -23,6 +23,8 @@ export interface MeetingRequestItem {
   resolvedAt: string | null;
   ownerResponseMessage: string | null;
   guestEmail: string | null;
+  meetUrl?: string | null;
+  cancellationReason?: string | null;
 }
 
 export interface MeetingRequestsResponse {
@@ -61,6 +63,8 @@ export interface CreatedMeetingRequest {
   ownerResponseMessage: string | null;
   guestName: string | null;
   guestEmail: string | null;
+  meetUrl?: string | null;
+  cancellationReason?: string | null;
 }
 
 export type MeetingRequestDecision = 'accepted' | 'rejected';
