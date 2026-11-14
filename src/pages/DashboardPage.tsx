@@ -29,6 +29,7 @@ import {
   dateLabel,
   rangeLabel,
   shiftDate,
+  zonedDateTimeIso,
 } from '../utils/calendar';
 import {
   paths,
@@ -82,8 +83,8 @@ export default function DashboardPage() {
 
       try {
         const result = await getCalendarEvents({
-          from: `${today}T00:00:00-04:00`,
-          to: `${endDate}T00:00:00-04:00`,
+          from: zonedDateTimeIso(today),
+          to: zonedDateTimeIso(endDate),
           limit: 100,
         });
 

@@ -7,6 +7,7 @@ import {
   FiLock,
   FiMapPin,
   FiTrash2,
+  FiVideo,
 } from 'react-icons/fi';
 
 import { Dialog } from '../../modals';
@@ -32,16 +33,26 @@ import {
   dateLabel,
   rangeLabel,
   timeLabel,
+  timeZoneLabel,
+  zonedDateTimeIso,
 } from '../../../utils/calendar';
+import { OWNER_TIME_ZONE } from '../../../types/calendar';
 
-const TIME_ZONE = 'America/La_Paz';
+const TIME_ZONE = OWNER_TIME_ZONE;
+const PAST_TOLERANCE_MS = 60_000;
 
 function toDateTimeInput(value: string) {
   return `${dateKey(value)}T${timeLabel(value)}`;
 }
 
 function toApiDateTime(value: string) {
-  return new Date(`${value}:00-04:00`).toISOString();
+  const [day, time] = value.split('T');
+  return zonedDateTimeIso(day, time.slice(0, 5), TIME_ZONE);
+}
+
+/** Valor mínimo para los campos datetime-local: el minuto actual en la zona local. */
+function currentDateTimeInput() {
+  return toDateTimeInput(new Date().toISOString());
 }
 
 function CalendarIdentity({ calendarName }: { calendarName: string }) {
@@ -99,6 +110,12 @@ export function CalendarEventEditor({
 
     const startsAt = toApiDateTime(start);
     const endsAt = toApiDateTime(end);
+    const startChanged = !event || startsAt !== new Date(event.startsAt).toISOString();
+
+    if (startChanged && Date.parse(startsAt) < Date.now() - PAST_TOLERANCE_MS) {
+      setError('No se pueden agendar eventos en fechas u horas pasadas.');
+      return;
+    }
 
     if (Date.parse(startsAt) >= Date.parse(endsAt)) {
       setError('La hora de finalización debe ser posterior al inicio.');
@@ -191,6 +208,7 @@ export function CalendarEventEditor({
             label="Inicio"
             type="datetime-local"
             required
+            min={event ? undefined : currentDateTimeInput()}
             value={start}
             onChange={input => setStart(input.target.value)}
           />
@@ -206,7 +224,7 @@ export function CalendarEventEditor({
         </div>
 
         <p className="event-timezone">
-          America/La_Paz · UTC−4
+          {timeZoneLabel(TIME_ZONE)}
         </p>
 
         <Textarea
@@ -307,7 +325,7 @@ export function CalendarEventDetails({
           <dd>
             {dateLabel(event.startsAt)}
             <br />
-            {timeLabel(event.startsAt)} · La Paz (UTC−4)
+            {timeLabel(event.startsAt)} · {timeZoneLabel(TIME_ZONE)}
           </dd>
         </div>
 
@@ -316,7 +334,7 @@ export function CalendarEventDetails({
           <dd>
             {dateLabel(event.endsAt)}
             <br />
-            {timeLabel(event.endsAt)} · La Paz (UTC−4)
+            {timeLabel(event.endsAt)} · {timeZoneLabel(TIME_ZONE)}
           </dd>
         </div>
 
@@ -344,6 +362,16 @@ export function CalendarEventDetails({
           </div>
         )}
       </dl>
+
+      {event.meetUrl && (
+        <div className="event-detail-meet">
+          <FiVideo aria-hidden="true" />
+          <span>Videollamada de Google Meet</span>
+          <a href={event.meetUrl} target="_blank" rel="noreferrer">
+            Unirse a la reunión
+          </a>
+        </div>
+      )}
 
       <section className="event-detail-description">
         <h3>Descripción</h3>

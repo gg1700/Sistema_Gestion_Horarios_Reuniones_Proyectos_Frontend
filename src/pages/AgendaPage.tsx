@@ -43,7 +43,9 @@ import {
   isDateKey,
   rangeLabel,
   shiftDate,
+  timeZoneLabel,
   weekStart,
+  zonedDateTimeIso,
 } from '../utils/calendar';
 
 type AgendaEvent = CalendarEventItem & {
@@ -101,8 +103,8 @@ export default function AgendaPage() {
 
       try {
         const result = await getCalendarEvents({
-          from: `${week}T00:00:00-04:00`,
-          to: `${shiftDate(week, 7)}T00:00:00-04:00`,
+          from: zonedDateTimeIso(week),
+          to: zonedDateTimeIso(shiftDate(week, 7)),
           limit: 100,
         });
 
@@ -452,7 +454,7 @@ export default function AgendaPage() {
                     Evento de Google Calendar
                   </span>
 
-                  <small>America/La_Paz · UTC−4</small>
+                  <small>{timeZoneLabel()}</small>
                 </div>
               </div>
             </div>

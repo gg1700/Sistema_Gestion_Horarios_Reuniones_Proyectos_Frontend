@@ -43,6 +43,13 @@ import type {
 } from '../types/calendarAvailability';
 import { ApiError } from '../types/api';
 import { isDateKey, shiftDate } from '../utils/calendar';
+import { resolveViewerTimeZone } from '../types/calendar';
+
+const VIEWER_TIME_ZONE = resolveViewerTimeZone();
+
+function isUpcomingSlot(slot: PublicAvailabilitySlot) {
+  return Date.parse(slot.startsAt) > Date.now();
+}
 
 interface AvailabilityPageProps {
   overlay?: ReactNode;
@@ -156,9 +163,11 @@ export default function AvailabilityPage({
   const { publicHandle } = useParams();
   const [query, setQuery] = useSearchParams();
 
-  const initialDate = isDateKey(query.get('fecha'))
-    ? query.get('fecha')!
-    : dateKeyInTimeZone(new Date(), 'America/La_Paz');
+  const fallbackToday = dateKeyInTimeZone(new Date(), VIEWER_TIME_ZONE);
+  const requestedDate = query.get('fecha');
+  const initialDate = isDateKey(requestedDate) && requestedDate >= fallbackToday
+    ? requestedDate
+    : fallbackToday;
 
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [month, setMonth] = useState(
@@ -197,7 +206,8 @@ export default function AvailabilityPage({
     Boolean(member?.profile) || isGuest;
 
   const timeZone =
-    availability?.timeZone ?? 'America/La_Paz';
+    availability?.timeZone ?? VIEWER_TIME_ZONE;
+  const showsViewerTime = timeZone !== VIEWER_TIME_ZONE;
 
   const today = dateKeyInTimeZone(new Date(), timeZone);
 
@@ -272,7 +282,14 @@ export default function AvailabilityPage({
   }, []);
 
   useEffect(() => {
-    if (!availability || query.has('fecha')) {
+    if (!availability) {
+      return;
+    }
+
+    const requested = query.get('fecha');
+    const ownerTodayKey = dateKeyInTimeZone(new Date(), availability.timeZone);
+
+    if (requested && isDateKey(requested) && requested >= ownerTodayKey) {
       return;
     }
 
@@ -294,8 +311,10 @@ export default function AvailabilityPage({
 
   const gridDays = getMonthDays(month);
 
+  const upcomingSlots = (availability?.slots ?? []).filter(isUpcomingSlot);
+
   const availableDateKeys = new Set(
-    (availability?.slots ?? []).map(slot =>
+    upcomingSlots.map(slot =>
       dateKeyInTimeZone(
         new Date(slot.startsAt),
         timeZone,
@@ -303,7 +322,7 @@ export default function AvailabilityPage({
     ),
   );
 
-  const selectedSlots = (availability?.slots ?? [])
+  const selectedSlots = upcomingSlots
     .filter(
       slot =>
         dateKeyInTimeZone(
@@ -356,8 +375,12 @@ export default function AvailabilityPage({
   function moveMonth(offset: number) {
     const next = getNextMonth(month, offset);
 
+    if (next.slice(0, 7) < today.slice(0, 7)) {
+      return;
+    }
+
     setMonth(next);
-    selectDate(next);
+    selectDate(next < today ? today : next);
   }
 
   function closeDialog() {
@@ -370,6 +393,12 @@ export default function AvailabilityPage({
 
   async function sendRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (selectedSlot && !isUpcomingSlot(selectedSlot)) {
+      setError('Ese horario ya pasó. Elige un horario futuro.');
+      setChosenStart('');
+      return;
+    }
 
     if (
       !selectedSlot ||
@@ -390,7 +419,9 @@ export default function AvailabilityPage({
         title: title.trim(),
         startsAt: new Date(selectedSlot.startsAt).toISOString(),
         endsAt: new Date(selectedSlot.endsAt).toISOString(),
-        timeZone: availability.timeZone,
+        // Zona horaria de quien solicita: se usa para crear la reunión en su
+        // propio calendario cuando sea aceptada.
+        timeZone: VIEWER_TIME_ZONE,
 
         ...(isGuest
           ? {
@@ -512,6 +543,7 @@ export default function AvailabilityPage({
                     type="button"
                     className="flow-arrow-button"
                     aria-label="Mes anterior"
+                    disabled={month.slice(0, 7) <= today.slice(0, 7)}
                     onClick={() => moveMonth(-1)}
                   >
                     <FiChevronLeft />
@@ -596,6 +628,12 @@ export default function AvailabilityPage({
                   de {availability.name}.
                   <br />
                   {availability.timeZone}
+                  {showsViewerTime && (
+                    <>
+                      <br />
+                      Tu zona horaria es {VIEWER_TIME_ZONE}; cada horario indica también tu hora local.
+                    </>
+                  )}
                 </span>
               </p>
             </section>
@@ -641,7 +679,11 @@ export default function AvailabilityPage({
                           )}
                         </span>
 
-                        <small>Disponible</small>
+                        <small>
+                          {showsViewerTime
+                            ? `Tu hora: ${formatSlotTime(slot, VIEWER_TIME_ZONE)}`
+                            : 'Disponible'}
+                        </small>
                       </button>
                     );
                   })
