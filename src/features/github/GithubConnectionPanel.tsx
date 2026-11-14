@@ -1,6 +1,6 @@
 
 import { FiArrowRight } from 'react-icons/fi';
-import { ProviderIcon, ButtonLink } from '../../components/ui';
+import { ProviderIcon, ButtonLink, Button } from '../../components/ui';
 import { paths } from '../../constants/paths';
 import { apiBase, RepositoryApiError } from './api';
 import { useRepositories } from './useRepositories';
@@ -54,20 +54,26 @@ export function GithubConnectionPanel() {
             <p role="alert">{error.message}</p>
 
             {error instanceof RepositoryApiError &&
-            [401, 409].includes(error.status) ? (
-              <a
-                className="flow-link"
-                href={`${apiBase}/api/v1/auth/github?intent=${error.status === 401 ? 'login' : 'link'}`}
+              [401, 409].includes(error.status) ? (
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() =>
+                  window.location.assign(
+                    `${apiBase}/api/v1/auth/github?intent=${error.status === 401 ? 'login' : 'link'}`
+                  )
+                }
               >
                 Autorizar GitHub
-              </a>
+              </Button>
             ) : (
-              <button
-                className="flow-link"
+              <Button
+                variant="secondary"
+                size="small"
                 onClick={() => void reload()}
               >
                 Reintentar
-              </button>
+              </Button>
             )}
           </>
         )}

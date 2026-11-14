@@ -30,7 +30,7 @@ export default function ConnectionsPage() {
 
   function closeModal() {
     setQuery({});
-    void calendar.refreshStatus().catch(() => {});
+    void calendar.refreshStatus().catch(() => { });
   }
 
   useEffect(() => {
@@ -151,14 +151,14 @@ export default function ConnectionsPage() {
 
                   <div className="connection-actions">
                     {connectedGoogle ? (
-                      <button
-                        type="button"
-                        className="flow-link"
+                      <Button
+                        variant="secondary"
+                        size="small"
                         onClick={() => openModal('reconectar-google')}
                       >
                         <FiRefreshCw />
                         Reconectar
-                      </button>
+                      </Button>
                     ) : (
                       <Button
                         variant="secondary"
@@ -168,16 +168,13 @@ export default function ConnectionsPage() {
                         Seleccionar calendario
                       </Button>
                     )}
-
-                    <div className="connection-separation-actions">
-                      <button
-                        type="button"
-                        className="flow-link connection-unlink"
-                        onClick={() => openModal('desconectar-calendar')}
-                      >
-                        Desconectar Calendar
-                      </button>
-                    </div>
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() => openModal('desconectar-calendar')}
+                    >
+                      Desconectar Calendar
+                    </Button>
                   </div>
                 </>
               ) : reconnectGoogle ? (
@@ -202,16 +199,13 @@ export default function ConnectionsPage() {
                     >
                       Volver a autorizar
                     </Button>
-
-                    <div className="connection-separation-actions">
-                      <button
-                        type="button"
-                        className="flow-link connection-unlink"
-                        onClick={() => openModal('desconectar-calendar')}
-                      >
-                        Desconectar Calendar
-                      </button>
-                    </div>
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() => openModal('desconectar-calendar')}
+                    >
+                      Desconectar Calendar
+                    </Button>
                   </div>
                 </>
               ) : (
