@@ -1,4 +1,5 @@
-import { FiAlertCircle, FiArrowRight, FiLink } from 'react-icons/fi';
+import { FiAlertCircle, FiLink } from 'react-icons/fi';
+import { Button } from '../ui/Button';
 import Modal from './Modal';
 import ModalHeader from './ModalHeader';
 import TextField from '../ui/TextField';
@@ -112,23 +113,12 @@ function CompleteRegistrationModal({ user, onClose }: CompleteRegistrationModalP
       </div>
 
       <footer className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-ui-border px-5 py-[18px] sm:px-8">
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={isSubmitting}
-          className="min-h-[3.25rem] flex-1 rounded-control border border-ui-field-border bg-ui-surface px-5 text-[11px] font-semibold text-ui-text transition-colors hover:border-ui-soft disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
-        >
+        <Button variant="ghost" onClick={onClose} disabled={isSubmitting} className="flex-1 sm:flex-none">
           Volver
-        </button>
-        <button
-          type="submit"
-          form={formId}
-          disabled={isSubmitting}
-          className="flex min-h-[3.25rem] flex-1 items-center justify-center gap-2.5 rounded-control bg-ui-mint px-5 text-[11px] font-semibold text-ui-ink transition-colors hover:bg-ui-mint-strong disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
-        >
+        </Button>
+        <Button type="submit" form={formId} loading={isSubmitting} className="flex-1 sm:flex-none">
           {isSubmitting ? 'Guardando...' : 'Crear mi perfil'}
-          {!isSubmitting && <FiArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />}
-        </button>
+        </Button>
       </footer>
     </Modal>
   );

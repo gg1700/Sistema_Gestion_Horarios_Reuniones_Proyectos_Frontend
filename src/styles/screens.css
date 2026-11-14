@@ -544,6 +544,11 @@ button.agenda-event:hover { background: #254b3a; }
   min-width: 96px;
 }
 
+.meeting-requests-direction .ui-button--ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
 .meeting-requests-filters {
   width: min(230px, 100%);
 }
