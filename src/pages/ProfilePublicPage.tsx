@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { FiArrowRight, FiCalendar } from 'react-icons/fi';
+import { FiCalendar } from 'react-icons/fi';
 import { VisitorShell } from '../components/features/flows/FlowShell';
 import { PublicProfileView } from '../components/features/profile/PublicProfileView';
 import { PublicProfileUnavailable } from '../components/features/profile/PublicProfileUnavailable';
@@ -73,5 +73,5 @@ export default function ProfilePublicPage() {
     profile?.handle
   ]);
 
-  return <VisitorShell>{isLoading ? <p role="status">Cargando perfil público…</p> : error ? <Alert tone="danger">{error}</Alert> : profile ? <><PublicProfileView profile={profile} visitor actions={<div className="public-profile-header-action"><ButtonLink to={flowPaths.availability(profile.handle)} trailingIcon={<FiArrowRight />}>Consultar disponibilidad</ButtonLink><small>Encuentra un espacio para reunirte.</small></div>} /><div className="public-profile-invitation"><FiCalendar /><div><h3>Hagamos coincidir nuestras órbitas.</h3><p>Consulta los horarios disponibles y envía una solicitud de reunión.</p></div><TextLink to={flowPaths.availability(profile.handle)}>Ver disponibilidad</TextLink></div></> : <PublicProfileUnavailable />}</VisitorShell>;
+  return <VisitorShell>{isLoading ? <p role="status">Cargando perfil público…</p> : error ? <Alert tone="danger">{error}</Alert> : profile ? <><PublicProfileView profile={profile} visitor actions={<div className="public-profile-header-action"><ButtonLink to={flowPaths.availability(profile.handle)}>Consultar disponibilidad</ButtonLink><small>Encuentra un espacio para reunirte.</small></div>} /><div className="public-profile-invitation"><FiCalendar /><div><h3>Hagamos coincidir nuestras órbitas.</h3><p>Consulta los horarios disponibles y envía una solicitud de reunión.</p></div><TextLink to={flowPaths.availability(profile.handle)}>Ver disponibilidad</TextLink></div></> : <PublicProfileUnavailable />}</VisitorShell>;
 }

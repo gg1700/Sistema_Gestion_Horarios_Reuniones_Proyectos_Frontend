@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiCalendar, FiCheck, FiCopy, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiCalendar, FiTrash2 } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { ProfileTabs } from '../components/features/profile/ProfileParts';
 import { Alert, Button, SectionHeading, Select } from '../components/ui';
@@ -325,7 +325,6 @@ export default function CalendarAvailabilitySettingsPage() {
                                             <Button
                                                 variant="ghost"
                                                 size="small"
-                                                leadingIcon={<FiPlus />}
                                                 onClick={() => addRule(dayOfWeek)}
                                             >
                                                 Agregar
@@ -399,7 +398,6 @@ export default function CalendarAvailabilitySettingsPage() {
                             </p>
 
                             <Button
-                                leadingIcon={<FiCheck />}
                                 loading={savingRules}
                                 disabled={savingRules || !dirty}
                                 onClick={saveRules}
@@ -459,7 +457,6 @@ export default function CalendarAvailabilitySettingsPage() {
                                     <Button
                                         variant="ghost"
                                         size="small"
-                                        leadingIcon={<FiCopy />}
                                         onClick={copyLink}
                                     >
                                         Copiar enlace

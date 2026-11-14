@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { FiCheck, FiShield } from 'react-icons/fi';
+import { FiShield } from 'react-icons/fi';
 
 import { Dialog } from '../../modals';
 import { Button } from '../../ui';
@@ -101,7 +101,6 @@ export function EditProfileDialog({
           <Button
             type="submit"
             form="edit-personal-info"
-            leadingIcon={<FiCheck />}
             loading={saving}
           >
             Guardar cambios

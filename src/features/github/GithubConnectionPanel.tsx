@@ -1,5 +1,5 @@
 
-import { FiArrowRight } from 'react-icons/fi';
+
 import { ProviderIcon, ButtonLink, Button } from '../../components/ui';
 import { paths } from '../../constants/paths';
 import { apiBase, RepositoryApiError } from './api';
@@ -42,7 +42,6 @@ export function GithubConnectionPanel() {
               to={paths.githubInfo}
               variant="secondary"
               size="small"
-              trailingIcon={<FiArrowRight />}
             >
               Ver información y gestionar repositorios
             </ButtonLink>

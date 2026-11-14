@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { FiUpload } from 'react-icons/fi';
+
 import { Alert, Avatar, Button, Input } from '../../ui';
 import type { Profile } from '../../../types/profile-response.types';
 import type { UpdateProfilePayload } from '../../../types/profile';
@@ -265,7 +265,6 @@ export function ProfileForm({
           type="button"
           variant="secondary"
           size="small"
-          leadingIcon={<FiUpload />}
           disabled={saving}
           onClick={() => fileRef.current?.click()}
         >

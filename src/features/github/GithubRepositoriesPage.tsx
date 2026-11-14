@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router';
-import { FiArrowLeft, FiExternalLink, FiRefreshCw, FiServer, FiStar } from 'react-icons/fi';
+import { FiArrowLeft, FiExternalLink, FiServer, FiStar } from 'react-icons/fi';
 import { MemberShell } from '../../components/features/flows/FlowShell';
 import { ProfileTabs } from '../../components/features/profile/ProfileParts';
 import { TextLink } from '../../components/features/flows/FlowPrimitives';
@@ -18,7 +18,7 @@ export default function GithubRepositoriesPage() {
   return <MemberShell><SectionHeading title="Tu trabajo, en tu perfil" eyebrow="MI CUENTA / PERFIL / CONEXIONES" accentPeriod actions={<TextLink to={paths.connections} icon={<FiArrowLeft />}>Volver a conexiones</TextLink>} /><ProfileTabs connections />
     {loading && <p role="status">Consultando tus repositorios en GitHub…</p>}
     {error && <Alert tone="danger">{error.message} {authError ? <a href={`${apiBase}/api/v1/auth/github?intent=${error instanceof RepositoryApiError && error.status === 401 ? 'login' : 'link'}`}>Autorizar GitHub</a> : <Button variant="ghost" onClick={() => void reload()}>Reintentar</Button>}</Alert>}
-    {data && <><header className="github-account-heading"><ProviderIcon provider="github" /><div><h2>GitHub <span>@{data.username}</span></h2><p>Repositorios de tu cuenta vinculada. La publicación se configura por separado.</p></div><Button loading={loading} variant="ghost" leadingIcon={<FiRefreshCw />} onClick={() => void reload()}>Actualizar</Button></header>
+    {data && <><header className="github-account-heading"><ProviderIcon provider="github" /><div><h2>GitHub <span>@{data.username}</span></h2><p>Repositorios de tu cuenta vinculada. La publicación se configura por separado.</p></div><Button loading={loading} variant="ghost" onClick={() => void reload()}>Actualizar</Button></header>
       {data.warnings.map(warning => <Alert key={warning} tone="warning">{warning}</Alert>)}
       <div className="profile-section-head"><h3>Repositorios seleccionados</h3><Button variant="secondary" disabled={loading || Boolean(error)} onClick={() => setQuery({ modal: 'repositorios' })}>Gestionar</Button></div>
       {selected.map(repo => <article key={repo.id} className="github-repository"><header><FiServer /><h4>{repo.name}</h4><span>{repo.visible ? 'Visible en tu perfil' : 'Solo tú'}</span><a href={repo.url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir ${repo.name} en GitHub`}><FiExternalLink /></a></header><p>{repo.description ?? 'Sin descripción.'}</p><footer><span>{repo.language ?? 'Lenguaje no especificado'}</span><span><FiStar />{repo.stars}</span><small>Desde GitHub</small></footer></article>)}

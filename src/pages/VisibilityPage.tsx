@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiCheck, FiEye, FiLock } from 'react-icons/fi';
+import { FiLock } from 'react-icons/fi';
 import { ProfilePreviewDialog } from '../components/features/profile/ProfilePreviewDialog';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { ProfileTabs } from '../components/features/profile/ProfileParts';
@@ -89,7 +89,6 @@ export default function VisibilityPage() {
         actions={(
           <Button
             variant="secondary"
-            leadingIcon={<FiEye />}
             disabled={isLoading || isSaving || !profile}
             onClick={() => setPreviewOpen(true)}
           >
@@ -240,7 +239,6 @@ export default function VisibilityPage() {
             </Button>
 
             <Button
-              leadingIcon={<FiCheck />}
               disabled={isSaving || !hasPendingChanges}
               onClick={save}
             >

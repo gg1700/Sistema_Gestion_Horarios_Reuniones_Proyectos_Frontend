@@ -20,7 +20,7 @@
 .public-link-address > div > svg { width: 18px; height: 18px; color: #8bb79a; flex-shrink: 0; }
 .public-link-address > div > p { color: #80b795; font: 400 18px/28px var(--ui-font-heading); margin: 0; overflow-wrap: anywhere; }
 .public-link-address strong, .public-link-identifier strong { font-weight: 500; color: #c7e7d3; }
-.public-link-address .ui-button { margin-left: auto; min-height: 36px; font-size: 10px; flex-shrink: 0; }
+.public-link-address .ui-button { margin-left: auto; flex-shrink: 0; }
 .public-link-identifier { display: grid; grid-template-columns: 1fr auto; gap: 16px 22px; align-items: start; padding: 25px 0 23px; border-bottom: 1px solid #2c4835; }
 .public-link-identifier > .ui-button { margin-top: 6px; }
 .public-link-identifier > small { color: #74937f; font-size: 9px; text-align: right; }
@@ -76,7 +76,6 @@
 .public-profile-view--visitor h2 { font-size: 42px; line-height: 52px; }
 .public-profile-view--visitor .public-profile-view__orbit { right: 29%; top: -16px; width: 290px; height: 170px; }
 .public-profile-header-action { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; margin-left: auto; }
-.public-profile-header-action > .ui-button { min-height: 48px; padding: 0 30px; font-size: 11px; }
 .public-profile-header-action > small { font-size: 9px; color: #6c937a; }
 .public-profile-view--visitor .public-profile-columns { grid-template-columns: 1.14fr 1fr; gap: 65px; }
 .public-profile-view--visitor .public-profile-columns--single { grid-template-columns: 1fr; }
@@ -101,7 +100,7 @@
 .public-profile-unavailable h1 { font: 500 38px/48px var(--ui-font-heading); color: #d6eadd; letter-spacing: -.7px; margin: 25px 0; }
 .public-profile-unavailable h1 > span { color: var(--ui-mint); }
 .public-profile-unavailable > div > p:not(.ui-eyebrow) { color: #82ac90; font-size: 12px; line-height: 24px; }
-.public-profile-unavailable .ui-button { margin-top: 18px; padding: 0 30px; }
+.public-profile-unavailable .ui-button { margin-top: 18px; }
 .public-profile-unavailable > div > .flow-note { margin-top: 26px; font-size: 10px; }
 
 .agenda-context-line { min-height: 26px; margin: -3px 0 16px; }
@@ -493,8 +492,3 @@
   min-width: 155px;
 }
 
-.meeting-request-actions .ui-button {
-  min-height: 32px;
-  padding-inline: 11px;
-  font-size: 9px;
-}

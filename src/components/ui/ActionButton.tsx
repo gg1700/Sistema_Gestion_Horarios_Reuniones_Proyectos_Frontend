@@ -1,29 +1,25 @@
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps } from 'react';
+import { classNames } from '../../utils/classNames';
 
 type ActionButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
 
 interface ActionButtonProps extends ComponentProps<'button'> {
   variant?: ActionButtonVariant;
   isFullWidth?: boolean;
-  leftIcon?: ReactNode;
-  rightIcon?: ReactNode;
 }
 
+/** Usa los mismos estilos que Button para que todos los botones se vean iguales. */
 const variantClassNames: Record<ActionButtonVariant, string> = {
-  primary: 'min-h-[3.25rem] rounded-control bg-ui-mint px-5 font-semibold text-ui-ink hover:bg-ui-mint-strong',
-  secondary:
-    'min-h-[3.25rem] rounded-control border border-ui-field-border bg-ui-surface px-5 font-semibold text-ui-text hover:border-ui-soft',
-  outline:
-    'min-h-10 rounded-control border border-ui-field-border px-4 font-semibold text-ui-text hover:border-ui-mint/60 hover:bg-ui-hover',
-  ghost: 'min-h-10 rounded-control font-semibold text-ui-mint hover:text-[#DEFFEB]',
-  link: 'min-h-8 text-[11px] text-[#A3E6BE] hover:text-[#DEFFEB]',
+  primary: 'ui-button ui-button--primary ui-button--medium',
+  secondary: 'ui-button ui-button--secondary ui-button--medium',
+  outline: 'ui-button ui-button--secondary ui-button--small',
+  ghost: 'ui-button ui-button--ghost ui-button--small',
+  link: 'ui-text-button',
 };
 
 function ActionButton({
   variant = 'primary',
   isFullWidth = false,
-  leftIcon,
-  rightIcon,
   type = 'button',
   className = '',
   children,
@@ -32,14 +28,10 @@ function ActionButton({
   return (
     <button
       type={type}
-      className={`flex items-center justify-center gap-2.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-        variantClassNames[variant]
-      } ${isFullWidth ? 'w-full' : 'w-fit'} ${className}`}
+      className={classNames(variantClassNames[variant], isFullWidth ? 'w-full' : 'w-fit', className)}
       {...buttonProps}
     >
-      {leftIcon && <span aria-hidden="true">{leftIcon}</span>}
       {children}
-      {rightIcon && <span aria-hidden="true">{rightIcon}</span>}
     </button>
   );
 }

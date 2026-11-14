@@ -6,7 +6,6 @@ import {
 } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import {
-  FiArrowRight,
   FiCalendar,
   FiCheck,
   FiChevronLeft,
@@ -698,7 +697,6 @@ export default function AvailabilityPage({
 
               <Button
                 disabled={!selectedSlot || loadingAvailability}
-                trailingIcon={<FiArrowRight />}
                 onClick={() =>
                   setQuery(current => {
                     const next = new URLSearchParams(current);
@@ -746,7 +744,6 @@ export default function AvailabilityPage({
                     form="booking-form"
                     loading={sending}
                     disabled={!identityReady}
-                    trailingIcon={<FiArrowRight />}
                   >
                     Enviar solicitud
                   </Button>

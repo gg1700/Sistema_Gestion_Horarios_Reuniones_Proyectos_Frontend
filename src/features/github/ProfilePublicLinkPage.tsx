@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiCopy, FiExternalLink, FiLink } from 'react-icons/fi';
+import { FiExternalLink, FiLink } from 'react-icons/fi';
 import { MemberShell } from '../../components/features/flows/FlowShell';
 import { ProfileTabs } from '../../components/features/profile/ProfileParts';
 import {
@@ -153,7 +153,6 @@ export default function ProfilePublicLinkPage() {
 
               <Button
                 variant="secondary"
-                leadingIcon={<FiCopy />}
                 disabled={!publicLink.publicLinkActive}
                 onClick={() => void copy()}
               >

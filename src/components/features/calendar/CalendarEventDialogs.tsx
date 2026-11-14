@@ -1,12 +1,10 @@
 
 import { useState, type FormEvent } from 'react';
 import {
-  FiArrowRight,
   FiCalendar,
   FiClock,
   FiLock,
   FiMapPin,
-  FiTrash2,
   FiVideo,
 } from 'react-icons/fi';
 
@@ -178,7 +176,6 @@ export function CalendarEventEditor({
             type="submit"
             form="calendar-event-form"
             loading={saving}
-            trailingIcon={<FiArrowRight />}
           >
             {event ? 'Guardar cambios' : 'Crear evento'}
           </Button>
@@ -277,7 +274,6 @@ export function CalendarEventDetails({
         <>
           <Button
             variant="ghost"
-            trailingIcon={<FiTrash2 />}
             onClick={onDelete}
           >
             Eliminar evento
@@ -289,7 +285,6 @@ export function CalendarEventDetails({
 
           <Button
             onClick={onEdit}
-            trailingIcon={<FiArrowRight />}
           >
             Editar evento
           </Button>

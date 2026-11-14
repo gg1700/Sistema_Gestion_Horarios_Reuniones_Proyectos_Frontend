@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiArrowRight, FiCalendar, FiCheck, FiExternalLink, FiRefreshCw, FiSearch, FiShield } from 'react-icons/fi';
+import { FiCalendar, FiCheck, FiExternalLink, FiSearch, FiShield } from 'react-icons/fi';
 import { Dialog } from '../../modals';
 import { Alert, Button, Input, ProviderIcon, Select } from '../../ui';
 import { timeZoneOptions } from '../../../constants/timeZones';
@@ -66,7 +66,6 @@ function AuthorizeProvider({
 
           <Button
             onClick={calendar.connect}
-            trailingIcon={<FiArrowRight />}
           >
             Autorizar en Google
           </Button>
@@ -292,7 +291,6 @@ function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void;
                 (mode === 'select' ? !chosen : !name.trim())
               }
               onClick={() => void save()}
-              trailingIcon={<FiCheck />}
             >
               {calendar.saving
                 ? 'Guardando...'
@@ -399,7 +397,6 @@ function CalendarSelection({ onClose, onNext, calendar }: { onClose: () => void;
                     disabled={calendar.loading || needsReconnect}
                     onClick={() => void refreshCalendars()}
                   >
-                    <FiRefreshCw />
                     Actualizar lista
                   </Button>
                 </div>
@@ -520,7 +517,6 @@ function DisconnectCalendar({
             disabled={calendar.saving}
             loading={calendar.saving}
             onClick={() => void disconnect()}
-            trailingIcon={<FiArrowRight />}
           >
             Desconectar Calendar
           </Button>

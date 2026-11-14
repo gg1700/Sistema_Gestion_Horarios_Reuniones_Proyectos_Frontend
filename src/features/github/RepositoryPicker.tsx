@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiCheck, FiChevronDown, FiChevronUp, FiEye, FiSearch } from 'react-icons/fi';
+import { FiChevronDown, FiChevronUp, FiEye, FiSearch } from 'react-icons/fi';
 import { Dialog } from '../../components/modals';
 import { Alert, Button, Checkbox, Input, ProviderIcon } from '../../components/ui';
 import { saveRepositories, type RepositoryCatalogue } from './api';
@@ -24,7 +24,7 @@ export function RepositoryPicker({ data, onClose, onSaved }: { data: RepositoryC
     catch (failure) { setError(failure instanceof Error ? failure.message : 'No se pudo guardar.'); setSaving(false); }
   }
   return <Dialog open dismissible={!saving} onOpenChange={open => { if (!open && !saving) onClose(); }} title="Elige qué proyectos te representan." eyebrow="GITHUB / REPOSITORIOS" description={`Selecciona hasta ${data.maxSelected} repositorios públicos y define el orden en tu perfil.`} size="large" className="repository-selection-dialog"
-    footer={<><span className="profile-dialog-note"><ProviderIcon provider="github" />@{data.username}</span><Button variant="secondary" disabled={saving} onClick={onClose}>Cancelar</Button><Button loading={saving} onClick={save} trailingIcon={<FiCheck />}>Guardar selección</Button></>}>
+    footer={<><span className="profile-dialog-note"><ProviderIcon provider="github" />@{data.username}</span><Button variant="secondary" disabled={saving} onClick={onClose}>Cancelar</Button><Button loading={saving} onClick={save}>Guardar selección</Button></>}>
     {error && <Alert tone="danger">{error}</Alert>}
     <Input label="Buscar por nombre de repositorio" placeholder="Buscar por nombre de repositorio" leadingContent={<FiSearch />} value={search} onChange={event => setSearch(event.target.value)} />
     <div className="repository-selection-columns"><div>{shown.map(repo => <article className="repository-choice" key={repo.id}>

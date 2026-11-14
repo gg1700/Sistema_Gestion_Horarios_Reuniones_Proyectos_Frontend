@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import {
-  FiArrowRight,
   FiCheck,
   FiChevronLeft,
   FiChevronRight,
@@ -243,7 +242,6 @@ export default function AgendaPage() {
             <Button
               onClick={() => eventAction('crear')}
               disabled={!connected || loadingEvents}
-              trailingIcon={<FiArrowRight />}
             >
               Crear evento
             </Button>
@@ -515,14 +513,13 @@ export default function AgendaPage() {
                   <p>{focused.location}</p>
                 )}
 
-                <button
-                  type="button"
-                  className="flow-link"
+                <Button
+                  size="small"
+                  variant="secondary"
                   onClick={() => openEvent(focused)}
                 >
                   Ver y editar evento
-                  <FiArrowRight />
-                </button>
+                </Button>
               </>
             ) : (
               <>

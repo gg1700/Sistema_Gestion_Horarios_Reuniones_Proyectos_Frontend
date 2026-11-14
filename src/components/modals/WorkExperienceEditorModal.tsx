@@ -1,4 +1,4 @@
-import { FiAlertCircle, FiCheck } from 'react-icons/fi';
+import { FiAlertCircle } from 'react-icons/fi';
 import Modal from './Modal';
 import ModalHeader from './ModalHeader';
 import TextField from '../ui/TextField';
@@ -110,7 +110,7 @@ function WorkExperienceEditorModal({ form }: WorkExperienceEditorModalProps) {
         <ActionButton variant="secondary" onClick={form.closeEditor}>
           Cancelar
         </ActionButton>
-        <ActionButton onClick={form.saveWorkExperience} leftIcon={<FiCheck />}>
+        <ActionButton onClick={form.saveWorkExperience}>
           {isEditing ? 'Guardar cambios' : 'Guardar experiencia'}
         </ActionButton>
       </footer>

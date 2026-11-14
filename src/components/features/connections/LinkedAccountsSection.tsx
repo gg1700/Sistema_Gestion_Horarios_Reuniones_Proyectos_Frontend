@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiLink, FiShield } from 'react-icons/fi';
+import { FiShield } from 'react-icons/fi';
 import { Dialog } from '../../modals';
 import { Alert, Button, ProviderIcon } from '../../ui';
 import { StatusDot } from '../flows/FlowPrimitives';
@@ -163,7 +163,7 @@ export function LinkedAccountsSection() {
                     size="small"
                     onClick={() => link(provider)}
                   >
-                    <FiLink /> Vincular {providerName(provider)}
+                    Vincular {providerName(provider)}
                   </Button>
                 ) : (
                   <>

@@ -1,4 +1,4 @@
-import { FiArrowRight } from 'react-icons/fi';
+
 import { VisitorShell } from '../components/features/flows/FlowShell';
 import { OrbitIllustration } from '../components/features/flows/OrbitIllustration';
 import { ButtonLink, ProviderIcon } from '../components/ui';
@@ -9,7 +9,7 @@ export default function LandingPage() {
     <p className="ui-eyebrow"><span className="flow-small-orbit" />PERSONAS · TIEMPO · PROYECTOS</p>
     <h1>Todo lo que haces,<br />en una misma <em>órbita.</em></h1>
     <p className="landing-description">Reúne tu perfil, tus calendarios y tu actividad profesional. Comparte tu disponibilidad y encuentra el momento para conectar.</p>
-    <div className="landing-actions"><ButtonLink to={paths.access} trailingIcon={<FiArrowRight />}>Empezar ahora</ButtonLink><span>Entra con Google o GitHub.</span></div>
+    <div className="landing-actions"><ButtonLink to={paths.access}>Empezar ahora</ButtonLink><span>Entra con Google o GitHub.</span></div>
     <div className="landing-integrations"><span>CONEXIONES PARA TU ESPACIO</span><div><span><ProviderIcon provider="google" />Google Calendar</span><span><ProviderIcon provider="github" />GitHub</span></div></div>
   </div><OrbitIllustration services /></section>
     <section className="landing-method"><header><p className="ui-eyebrow">ASÍ EMPIEZA TU ÓRBITA</p><span>Tú decides qué conectar y qué compartir.</span></header>

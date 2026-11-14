@@ -1,6 +1,6 @@
 
 import { useState, type FormEvent } from 'react';
-import { FiCheck } from 'react-icons/fi';
+
 import { Dialog } from '../../modals';
 import { Alert, Button, Checkbox, Input, Textarea } from '../../ui';
 import type { ProfileWorkExperience } from '../../../types/profile-response.types';
@@ -162,7 +162,6 @@ export function ExperienceEditor({
           <Button
             type="submit"
             form="experience-form"
-            leadingIcon={<FiCheck />}
             loading={saving}
           >
             {experience ? 'Guardar cambios' : 'Agregar experiencia'}

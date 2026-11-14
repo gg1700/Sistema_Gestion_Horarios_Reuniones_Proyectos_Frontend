@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  FiArrowRight,
   FiCalendar,
-  FiClock,
   FiLink,
 } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
@@ -217,7 +215,6 @@ export default function DashboardPage() {
             variant="secondary"
             onClick={shareProfile}
             disabled={!profile}
-            trailingIcon={<FiArrowRight />}
           >
             Compartir mi perfil
           </Button>

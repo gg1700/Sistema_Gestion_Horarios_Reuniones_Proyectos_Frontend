@@ -1,4 +1,4 @@
-import { FiExternalLink, FiLink, FiLock, FiMail, FiPlus } from 'react-icons/fi';
+import { FiExternalLink, FiLink, FiLock, FiMail } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { TextLink } from '../components/features/flows/FlowPrimitives';
 import {
@@ -83,7 +83,6 @@ export default function ProfilePage() {
           size="small"
           onClick={() => setCreatingExperience(true)}
         >
-          <FiPlus />
           Agregar experiencia
         </Button>
       </aside>

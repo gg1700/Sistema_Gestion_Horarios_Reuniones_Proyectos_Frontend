@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router';
 import {
   FiEye,
   FiLink,
-  FiLogOut,
   FiUser,
   FiX,
 } from 'react-icons/fi';
@@ -136,7 +135,6 @@ export function AccountMenu({
         className="flow-account-menu__logout"
         onClick={() => void logout()}
       >
-        <FiLogOut />
         Cerrar sesión
       </button>
     </div>

@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { FiActivity, FiRefreshCw } from 'react-icons/fi';
+import { FiActivity } from 'react-icons/fi';
 import { Alert, Button } from '../../components/ui';
 import {
   apiBase,
@@ -204,7 +204,6 @@ export function GithubActivitySection() {
         <Button
           variant="ghost"
           size="small"
-          leadingIcon={<FiRefreshCw />}
           loading={loading}
           disabled={loading}
           onClick={() => setRevision(value => value + 1)}

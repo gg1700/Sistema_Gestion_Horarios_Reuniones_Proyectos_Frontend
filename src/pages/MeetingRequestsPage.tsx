@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { FiExternalLink, FiRefreshCw, FiVideo } from 'react-icons/fi';
+import { FiVideo } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { Person, StatusDot, TextLink } from '../components/features/flows/FlowPrimitives';
 import {
@@ -459,7 +459,6 @@ export default function MeetingRequestsPage() {
                     variant="ghost"
                     size="small"
                     loading={loading}
-                    leadingIcon={<FiRefreshCw />}
                     onClick={refresh}
                 >
                     Actualizar
@@ -955,9 +954,7 @@ export default function MeetingRequestsPage() {
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    <FiVideo aria-hidden="true" />
                                     Unirse a Google Meet
-                                    <FiExternalLink aria-hidden="true" />
                                 </a>
                             </div>
                         )}

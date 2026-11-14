@@ -1,4 +1,4 @@
-import { FiEye, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiEye, FiTrash2 } from 'react-icons/fi';
 import ActionButton from '../../ui/ActionButton';
 import IconButton from '../../ui/IconButton';
 import VisibilityToggle from '../../ui/VisibilityToggle';
@@ -91,7 +91,7 @@ function LinksEditor({ links, errors = {}, canAddLink, onAdd, onUpdate, onRemove
       })}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <ActionButton variant="link" onClick={onAdd} disabled={!canAddLink} leftIcon={<FiPlus />}>
+        <ActionButton variant="link" onClick={onAdd} disabled={!canAddLink}>
           {canAddLink ? 'Agregar enlace' : 'Llegaste al máximo de enlaces'}
         </ActionButton>
         <span className="flex items-center gap-1.5 text-[9px] text-ui-moss">

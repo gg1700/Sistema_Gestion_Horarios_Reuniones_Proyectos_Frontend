@@ -1,4 +1,4 @@
-import { FiPlus, FiShield } from 'react-icons/fi';
+import { FiShield } from 'react-icons/fi';
 import ActionButton from '../../ui/ActionButton';
 import WorkExperienceCard from './WorkExperienceCard';
 import WorkExperienceEditorModal from '../../modals/WorkExperienceEditorModal';
@@ -40,7 +40,7 @@ function WorkExperienceStep({ form }: WorkExperienceStepProps) {
       )}
 
       <div className="border-b border-ui-divider pt-5 pb-12">
-        <ActionButton variant="link" onClick={form.openNewWorkExperience} disabled={!canAddMore} leftIcon={<FiPlus />}>
+        <ActionButton variant="link" onClick={form.openNewWorkExperience} disabled={!canAddMore}>
           {canAddMore ? 'Agregar experiencia' : 'Llegaste al máximo de experiencias'}
         </ActionButton>
       </div>

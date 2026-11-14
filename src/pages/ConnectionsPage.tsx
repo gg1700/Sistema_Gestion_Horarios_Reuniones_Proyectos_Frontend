@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { FiArrowRight, FiCalendar, FiRefreshCw, FiShield } from 'react-icons/fi';
+import { FiCalendar, FiShield } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { OrbitIllustration } from '../components/features/flows/OrbitIllustration';
 import { StatusDot, TextLink } from '../components/features/flows/FlowPrimitives';
@@ -156,7 +156,6 @@ export default function ConnectionsPage() {
                         size="small"
                         onClick={() => openModal('reconectar-google')}
                       >
-                        <FiRefreshCw />
                         Reconectar
                       </Button>
                     ) : (
@@ -228,7 +227,6 @@ export default function ConnectionsPage() {
                     <Button
                       variant="secondary"
                       size="small"
-                      trailingIcon={<FiArrowRight />}
                       onClick={() => openModal('conectar-google')}
                     >
                       Conectar Google
