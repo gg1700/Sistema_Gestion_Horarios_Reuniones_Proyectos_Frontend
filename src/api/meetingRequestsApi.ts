@@ -9,6 +9,8 @@ import type {
   CreatedMeetingRequest,
   MeetingRequestDecisionPayload,
   UpdateMeetingRequestPayload,
+  RescheduleProposalPayload,
+  ProposalResponsePayload,
 } from '../types/meetingRequests';
 
 export async function getMeetingRequests(
@@ -145,4 +147,38 @@ export async function cancelMeetingRequest(
     throw new Error(response.message || 'No se pudo cancelar la solicitud.');
 
   return response.data;
+}
+
+interface MeetingRequestActionResponse {
+  success: boolean;
+  message: string;
+  data?: CreatedMeetingRequest;
+}
+
+/** El anfitrión propone otro horario (o, con un visitante, confirma directamente el nuevo horario). */
+export async function proposeMeetingReschedule(
+  requestId: string,
+  payload: RescheduleProposalPayload,
+): Promise<{ message: string; data: CreatedMeetingRequest }> {
+  const response = await sendRequest<MeetingRequestActionResponse>(
+    `/api/v1/meeting-requests/received/${encodeURIComponent(requestId)}/reschedule`,
+    { method: 'PATCH', body: payload },
+  );
+  if (!response.success || !response.data)
+    throw new Error(response.message || 'No se pudo proponer el nuevo horario.');
+  return { message: response.message, data: response.data };
+}
+
+/** El solicitante acepta el horario propuesto o responde con otro. */
+export async function respondToMeetingProposal(
+  requestId: string,
+  payload: ProposalResponsePayload,
+): Promise<{ message: string; data: CreatedMeetingRequest }> {
+  const response = await sendRequest<MeetingRequestActionResponse>(
+    `/api/v1/meeting-requests/sent/${encodeURIComponent(requestId)}/proposal`,
+    { method: 'PATCH', body: payload },
+  );
+  if (!response.success || !response.data)
+    throw new Error(response.message || 'No se pudo responder a la propuesta.');
+  return { message: response.message, data: response.data };
 }

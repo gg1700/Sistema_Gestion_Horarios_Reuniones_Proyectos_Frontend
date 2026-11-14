@@ -21,8 +21,12 @@ import type {
 import {
     cancelMeetingRequest,
     decideMeetingRequest,
+    proposeMeetingReschedule,
+    respondToMeetingProposal,
     updateMeetingRequest,
 } from '../api/meetingRequestsApi';
+import { RescheduleDialog, type RescheduleSubmit } from '../components/features/requests/RescheduleDialog';
+import { useMemberIdentity } from '../features/github/MemberIdentityContext';
 import { Dialog } from '../components/modals';
 import { Input, Textarea } from '../components/ui';
 import type { UpdateMeetingRequestPayload } from '../types/meetingRequests';
@@ -52,6 +56,8 @@ function getStatusLabel(status: MeetingRequestStatus) {
             return 'Rechazada';
         case 'cancelled':
             return 'Cancelada';
+        case 'reschedule_proposed':
+            return 'Nuevo horario propuesto';
     }
 }
 
@@ -67,6 +73,8 @@ function getStatusTone(
             return 'danger';
         case 'cancelled':
             return 'muted';
+        case 'reschedule_proposed':
+            return 'warning';
     }
 }
 
@@ -119,6 +127,19 @@ function formatRequestSchedule(request: MeetingRequestItem) {
     };
 }
 
+function formatProposal(request: MeetingRequestItem) {
+    if (!request.proposedStartsAt || !request.proposedEndsAt) return null;
+    return formatScheduleIn({
+        ...request,
+        startsAt: request.proposedStartsAt,
+        endsAt: request.proposedEndsAt,
+    }, viewerTimeZone());
+}
+
+function requestDuration(request: MeetingRequestItem) {
+    return Math.max(Date.parse(request.endsAt) - Date.parse(request.startsAt), 15 * 60_000);
+}
+
 function getRejectionReason(request: MeetingRequestItem) {
     return request.status === 'rejected' ? request.ownerResponseMessage : null;
 }
@@ -143,7 +164,10 @@ function getCounterpartName(request: MeetingRequestItem) {
     );
 }
 
+type RescheduleMode = 'propose' | 'counter';
+
 export default function MeetingRequestsPage() {
+    const member = useMemberIdentity();
     const [action, setAction] =
         useState<MeetingRequestAction>('received');
 
@@ -178,6 +202,10 @@ export default function MeetingRequestsPage() {
         useState<MeetingRequestItem | null>(null);
     const [rejectReason, setRejectReason] = useState('');
     const [rejectError, setRejectError] = useState('');
+
+    const [rescheduling, setRescheduling] =
+        useState<{ request: MeetingRequestItem; mode: RescheduleMode } | null>(null);
+    const [acceptingProposalId, setAcceptingProposalId] = useState<string | null>(null);
 
     const {
         requests,
@@ -239,6 +267,45 @@ export default function MeetingRequestsPage() {
             else setDecisionError(message);
         } finally {
             setDecidingId(null);
+        }
+    }
+
+    function openReschedule(request: MeetingRequestItem, mode: RescheduleMode) {
+        setViewingRequest(null);
+        setDecisionError('');
+        setRescheduling({ request, mode });
+    }
+
+    async function submitReschedule(choice: RescheduleSubmit) {
+        if (!rescheduling) return;
+        const { request, mode } = rescheduling;
+        const result = mode === 'propose'
+            ? await proposeMeetingReschedule(request.id, choice)
+            : await respondToMeetingProposal(request.id, {
+                decision: 'counter',
+                startsAt: choice.startsAt,
+                endsAt: choice.endsAt,
+                timeZone: viewerTimeZone(),
+                ...(choice.message ? { message: choice.message } : {}),
+            });
+        setDecisionMessage(result.message.replace(/reunion/g, 'reunión').replace(/invitacion/g, 'invitación'));
+        setRescheduling(null);
+        refresh();
+    }
+
+    async function acceptProposal(request: MeetingRequestItem) {
+        if (acceptingProposalId) return;
+        try {
+            setAcceptingProposalId(request.id);
+            setDecisionError('');
+            await respondToMeetingProposal(request.id, { decision: 'accepted' });
+            setDecisionMessage('Aceptaste el nuevo horario. La reunión quedó confirmada con su enlace de Google Meet.');
+            setViewingRequest(null);
+            refresh();
+        } catch (failure) {
+            setDecisionError(failure instanceof Error ? failure.message : 'No se pudo aceptar el nuevo horario.');
+        } finally {
+            setAcceptingProposalId(null);
         }
     }
 
@@ -405,18 +472,19 @@ export default function MeetingRequestsPage() {
                 }
             />
 
-            <div className="meeting-requests-toolbar">
-                {decisionError && (
-                    <Alert tone="danger">
-                        {decisionError}
-                    </Alert>
-                )}
+            {decisionError && (
+                <Alert className="meeting-requests-alert" tone="danger" onDismiss={() => setDecisionError('')}>
+                    {decisionError}
+                </Alert>
+            )}
 
-                {decisionMessage && (
-                    <p className="flow-copy" role="status">
-                        {decisionMessage}
-                    </p>
-                )}
+            {decisionMessage && (
+                <Alert className="meeting-requests-alert" tone="success" onDismiss={() => setDecisionMessage('')}>
+                    {decisionMessage}
+                </Alert>
+            )}
+
+            <div className="meeting-requests-toolbar">
                 <div
                     className="meeting-requests-direction"
                     role="group"
@@ -451,6 +519,7 @@ export default function MeetingRequestsPage() {
                         <option value="pending">Pendientes</option>
                         <option value="accepted">Aceptadas</option>
                         <option value="rejected">Rechazadas</option>
+                        <option value="reschedule_proposed">Con nuevo horario propuesto</option>
                         <option value="cancelled">Canceladas</option>
                     </Select>
                 </div>
@@ -520,6 +589,12 @@ export default function MeetingRequestsPage() {
                                         <small>
                                             {request.message || 'Sin mensaje adicional.'}
                                         </small>
+
+                                        {request.status === 'reschedule_proposed' && formatProposal(request) && (
+                                            <small className="meeting-request-response meeting-request-response--warning">
+                                                Nuevo horario propuesto: {formatProposal(request)!.date}, {formatProposal(request)!.range}
+                                            </small>
+                                        )}
 
                                         {getRejectionReason(request) && (
                                             <small className="meeting-request-response meeting-request-response--danger">
@@ -798,11 +873,19 @@ export default function MeetingRequestsPage() {
                         {viewingRequest?.status === 'pending' && action === 'received' && (
                             <>
                                 <Button
-                                    variant="danger"
+                                    variant="ghost"
                                     disabled={decidingId !== null}
                                     onClick={() => openRejectDialog(viewingRequest)}
                                 >
                                     Rechazar
+                                </Button>
+
+                                <Button
+                                    variant="secondary"
+                                    disabled={decidingId !== null || !member?.profile}
+                                    onClick={() => openReschedule(viewingRequest, 'propose')}
+                                >
+                                    {viewingRequest.guestEmail ? 'Confirmar en otro horario' : 'Proponer otro horario'}
                                 </Button>
 
                                 <Button
@@ -813,6 +896,37 @@ export default function MeetingRequestsPage() {
                                     }
                                 >
                                     Aceptar
+                                </Button>
+                            </>
+                        )}
+
+                        {viewingRequest?.status === 'reschedule_proposed' && action === 'sent' && (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    disabled={acceptingProposalId !== null}
+                                    onClick={() => {
+                                        const request = viewingRequest;
+                                        setViewingRequest(null);
+                                        openCancelDialog(request);
+                                    }}
+                                >
+                                    Cancelar solicitud
+                                </Button>
+
+                                <Button
+                                    variant="secondary"
+                                    disabled={acceptingProposalId !== null || !viewingRequest.handleName}
+                                    onClick={() => openReschedule(viewingRequest, 'counter')}
+                                >
+                                    Proponer otro horario
+                                </Button>
+
+                                <Button
+                                    loading={acceptingProposalId === viewingRequest.id}
+                                    onClick={() => void acceptProposal(viewingRequest)}
+                                >
+                                    Aceptar nuevo horario
                                 </Button>
                             </>
                         )}
@@ -942,6 +1056,22 @@ export default function MeetingRequestsPage() {
                             </div>
                         )}
 
+                        {viewingRequest.status === 'reschedule_proposed' && formatProposal(viewingRequest) && (
+                            <div className="meeting-request-proposal">
+                                <p className="ui-eyebrow">
+                                    {action === 'sent' ? 'NUEVO HORARIO PROPUESTO PARA TI' : 'NUEVO HORARIO QUE PROPUSISTE'}
+                                </p>
+                                <strong>{formatProposal(viewingRequest)!.date}</strong>
+                                <span>{formatProposal(viewingRequest)!.range} · {formatRequestSchedule(viewingRequest).zoneLabel}</span>
+                                {viewingRequest.proposalMessage && (
+                                    <small>Mensaje: {viewingRequest.proposalMessage}</small>
+                                )}
+                                {action === 'received' && (
+                                    <small>Esperando la respuesta del solicitante.</small>
+                                )}
+                            </div>
+                        )}
+
                         {viewingRequest.meetUrl && (
                             <div className="requests-table-title">
                                 <p className="ui-eyebrow">
@@ -987,9 +1117,11 @@ export default function MeetingRequestsPage() {
 
                         {viewingRequest.status === 'pending' && action === 'received' && (
                             <p className="flow-note">
-                                Al aceptar, la reunión se creará con un enlace de Google Meet en tu
-                                calendario y también en el del solicitante si tiene Google Calendar
-                                conectado. Para rechazarla deberás indicar un motivo.
+                                {viewingRequest.guestEmail
+                                    ? 'Si el horario no te conviene, confírmalo en otro horario: el visitante recibirá por correo la invitación de Google Calendar con el enlace de Meet.'
+                                    : 'Si el horario no te conviene, propón otro: el solicitante podrá aceptarlo o sugerir uno distinto.'}
+                                {' '}Al aceptar, la reunión se crea con enlace de Google Meet en tu calendario y en el del
+                                solicitante si tiene Google Calendar conectado. Rechaza solo si no habrá reunión; deberás indicar un motivo.
                             </p>
                         )}
 
@@ -1002,6 +1134,32 @@ export default function MeetingRequestsPage() {
                     </div>
                 )}
             </Dialog>
+            {rescheduling && (rescheduling.mode === 'propose' ? member?.profile?.handleName : rescheduling.request.handleName) && (
+                <RescheduleDialog
+                    handle={(rescheduling.mode === 'propose'
+                        ? member!.profile!.handleName
+                        : rescheduling.request.handleName)!}
+                    durationMs={requestDuration(rescheduling.request)}
+                    currentStartsAt={new Date(rescheduling.request.startsAt).toISOString()}
+                    title={rescheduling.mode === 'propose'
+                        ? (rescheduling.request.guestEmail ? 'Confirmar en otro horario' : 'Proponer otro horario')
+                        : 'Proponer otro horario'}
+                    description={rescheduling.mode === 'propose'
+                        ? `Elige uno de tus horarios libres para «${rescheduling.request.title}».`
+                        : `Elige otro horario libre de ${getCounterpartName(rescheduling.request)} para «${rescheduling.request.title}».`}
+                    note={rescheduling.mode === 'propose'
+                        ? (rescheduling.request.guestEmail
+                            ? 'El visitante no tiene cuenta: la reunión se confirma en este horario y Google Calendar le enviará la invitación por correo para que la acepte o la rechace.'
+                            : 'La solicitud quedará a la espera de que el solicitante acepte el nuevo horario o proponga otro.')
+                        : 'La solicitud volverá a quedar pendiente hasta que el anfitrión la acepte.'}
+                    submitLabel={rescheduling.mode === 'propose' && rescheduling.request.guestEmail
+                        ? 'Confirmar reunión'
+                        : 'Enviar propuesta'}
+                    onClose={() => setRescheduling(null)}
+                    onSubmit={submitReschedule}
+                />
+            )}
+
             <Dialog
                 open={rejectingRequest !== null}
                 onOpenChange={open => {

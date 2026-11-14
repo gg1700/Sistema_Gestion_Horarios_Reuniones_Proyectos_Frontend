@@ -615,3 +615,75 @@ button.agenda-event:hover { background: #254b3a; }
     gap: 8px;
   }
 }
+.reschedule-days,
+.reschedule-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.reschedule-days > button,
+.reschedule-slots > button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 2.25rem;
+  padding: 8px 14px;
+  border: 1px solid var(--ui-field-border);
+  border-radius: 10px;
+  background: var(--ui-surface-raised);
+  color: var(--ui-text);
+  font: 600 12px/1.2 var(--ui-font-body);
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: border-color 150ms, background-color 150ms, color 150ms;
+}
+
+.reschedule-days > button:hover,
+.reschedule-slots > button:hover {
+  border-color: color-mix(in srgb, var(--ui-mint) 55%, var(--ui-field-border));
+}
+
+.reschedule-days > button.is-selected,
+.reschedule-slots > button.is-selected {
+  border-color: var(--ui-mint);
+  background: var(--ui-mint);
+  color: var(--ui-ink);
+}
+
+.reschedule-slots > button small {
+  font-weight: 400;
+  font-size: 10px;
+  opacity: .8;
+  text-transform: none;
+}
+
+.reschedule-picker .flow-copy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.meeting-request-proposal {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--ui-warning) 45%, transparent);
+  border-radius: var(--ui-radius-control);
+  background: color-mix(in srgb, var(--ui-warning) 7%, transparent);
+  color: var(--ui-text);
+}
+
+.meeting-request-proposal small {
+  color: var(--ui-muted);
+}
+
+.meeting-request-response--warning {
+  color: var(--ui-warning) !important;
+}
+
+.meeting-requests-alert {
+  margin-bottom: 18px;
+}

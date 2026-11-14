@@ -5,7 +5,8 @@ export type MeetingRequestStatus =
   | 'pending'
   | 'accepted'
   | 'rejected'
-  | 'cancelled';
+  | 'cancelled'
+  | 'reschedule_proposed';
 
 export interface MeetingRequestItem {
   id: string;
@@ -25,6 +26,9 @@ export interface MeetingRequestItem {
   guestEmail: string | null;
   meetUrl?: string | null;
   cancellationReason?: string | null;
+  proposedStartsAt?: string | null;
+  proposedEndsAt?: string | null;
+  proposalMessage?: string | null;
 }
 
 export interface MeetingRequestsResponse {
@@ -65,6 +69,9 @@ export interface CreatedMeetingRequest {
   guestEmail: string | null;
   meetUrl?: string | null;
   cancellationReason?: string | null;
+  proposedStartsAt?: string | null;
+  proposedEndsAt?: string | null;
+  proposalMessage?: string | null;
 }
 
 export type MeetingRequestDecision = 'accepted' | 'rejected';
@@ -81,3 +88,12 @@ export interface UpdateMeetingRequestPayload {
   endsAt?: string;
   timeZone?: string;
 }
+export interface RescheduleProposalPayload {
+  startsAt: string;
+  endsAt: string;
+  message?: string;
+}
+
+export type ProposalResponsePayload =
+  | { decision: 'accepted'; message?: string }
+  | { decision: 'counter'; startsAt: string; endsAt: string; timeZone?: string; message?: string };
