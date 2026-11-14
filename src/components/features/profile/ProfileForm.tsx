@@ -27,7 +27,7 @@ export function ProfileForm({
   id,
   profile,
   saving,
-  onSave,}: ProfileFormProps) {
+  onSave, }: ProfileFormProps) {
   const [name, setName] = useState(profile.name);
   const [firstSurname, setFirstSurname] = useState(profile.firstSurname);
   const [surname, setSurname] = useState(profile.surname?.surname ?? '');
@@ -297,7 +297,11 @@ export function ProfileForm({
           maxLength={100}
           value={surname}
           disabled={saving}
-          hint="Dejarlo vacío conserva el valor actual."
+          hint={
+            profile.surname
+              ? 'Dejarlo vacío conserva el valor actual.'
+              : 'Puedes agregar tu segundo apellido ahora.'
+          }
           onChange={event => setSurname(event.target.value)}
         />
       </div>
