@@ -31,8 +31,8 @@ function getMaximumDigits(countryCode: string) {
   return findCountryByCode(countryCode)?.phoneDigits.maximum ?? defaultMaximumDigits;
 }
 
-function keepAllowedDigits(value: string, countryCode: string) {
-  return value.replace(/\D/g, '').slice(0, getMaximumDigits(countryCode));
+function keepDigits(value: string) {
+  return value.replace(/\D/g, '').slice(0, defaultMaximumDigits);
 }
 
 function PhonesEditor({ phones, errors = {}, canAddPhone, onAdd, onUpdate, onRemove }: PhonesEditorProps) {
@@ -48,9 +48,9 @@ function PhonesEditor({ phones, errors = {}, canAddPhone, onAdd, onUpdate, onRem
               value={phone.countryCode}
               displayValue={`+${phone.countryCode}`}
               options={countryCodeOptions}
-              onChange={(countryCode) =>
-                onUpdate(phone.id, { countryCode: countryCode, number: keepAllowedDigits(phone.number, countryCode) })
-              }
+              // Cambiar el país no modifica el número: si su longitud no coincide
+              // con el nuevo país, la validación del formulario lo indica.
+              onChange={(countryCode) => onUpdate(phone.id, { countryCode })}
               className="w-24 shrink-0"
             />
             <input
@@ -58,9 +58,9 @@ function PhonesEditor({ phones, errors = {}, canAddPhone, onAdd, onUpdate, onRem
               inputMode="numeric"
               aria-label={`Número de teléfono ${index + 1}`}
               value={phone.number}
-              onChange={(event) => onUpdate(phone.id, { number: keepAllowedDigits(event.target.value, phone.countryCode) })}
+              onChange={(event) => onUpdate(phone.id, { number: keepDigits(event.target.value) })}
               placeholder={getPhonePlaceholder(phone.countryCode)}
-              maxLength={getMaximumDigits(phone.countryCode)}
+              maxLength={Math.max(getMaximumDigits(phone.countryCode), phone.number.length)}
               className={`w-full min-w-0 ${fieldBoxClassName} ${getFieldBorderClassName(Boolean(errors[phone.id]))}`}
             />
             <IconButton
