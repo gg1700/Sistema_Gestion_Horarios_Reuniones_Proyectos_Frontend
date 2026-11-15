@@ -4,6 +4,7 @@ import { MemberShell } from '../components/features/flows/FlowShell';
 import { ProfileTabs } from '../components/features/profile/ProfileParts';
 import { Alert, Button, SectionHeading, Select } from '../components/ui';
 import { timeZoneOptions } from '../constants/timeZones';
+import { resolveViewerTimeZone } from '../types/calendar';
 import { useUI } from '../contexts/UIContext';
 
 import {
@@ -74,7 +75,13 @@ export default function CalendarAvailabilitySettingsPage() {
                     return;
                 }
 
-                setTimeZone(availability.timeZone);
+                // Si aún no configuró nada, el backend devuelve UTC por defecto: se propone
+                // la zona horaria del navegador para no publicar horarios corridos.
+                setTimeZone(
+                    availability.rules.length === 0 && availability.timeZone === 'UTC'
+                        ? resolveViewerTimeZone()
+                        : availability.timeZone,
+                );
                 setRules(
                     availability.rules.map((rule, index) =>
                         createRuleDraft(rule, index),
@@ -299,6 +306,14 @@ export default function CalendarAvailabilitySettingsPage() {
                                     </option>
                                 ))}
                             </Select>
+
+                            {timeZone !== resolveViewerTimeZone() && (
+                                <Alert tone="warning">
+                                    <span>
+                                        {`Tus horarios se publican en ${timeZone.replace(/_/g, ' ')}, pero tu computadora está en ${resolveViewerTimeZone().replace(/_/g, ' ')}. Si pones 9:00, quien te visite desde tu zona verá otra hora. Si vives en ${resolveViewerTimeZone().replace(/_/g, ' ')}, elige esa zona y guarda.`}
+                                    </span>
+                                </Alert>
+                            )}
                         </div>
 
                         <div className="calendar-settings-days">

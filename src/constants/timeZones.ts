@@ -20,7 +20,7 @@ const COMMON_TIME_ZONES: TimeZoneOption[] = [
   { value: 'America/New_York', label: 'EE. UU. Este (America/New_York)' },
   { value: 'America/Los_Angeles', label: 'EE. UU. Pacífico (America/Los_Angeles)' },
   { value: 'Europe/Madrid', label: 'España (Europe/Madrid)' },
-  { value: 'UTC', label: 'UTC' },
+  { value: 'UTC', label: 'UTC (hora universal, sin país)' },
 ];
 
 /**
