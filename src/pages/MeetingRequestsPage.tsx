@@ -365,7 +365,11 @@ export default function MeetingRequestsPage() {
 
             await cancelMeetingRequest(cancellingRequest.id, reason);
 
-            setDecisionMessage('La solicitud se canceló correctamente.');
+            setDecisionMessage(
+                cancellingRequest.status === 'accepted'
+                    ? 'La reunión se canceló correctamente.'
+                    : 'La solicitud se retiró correctamente.'
+            );
             setCancellingRequest(null);
             setCancelReason('');
 
@@ -749,9 +753,17 @@ export default function MeetingRequestsPage() {
                 onOpenChange={open => {
                     if (!open) closeCancelDialog();
                 }}
-                title="Cancelar solicitud"
+                title={
+                    cancellingRequest?.status === 'accepted'
+                        ? 'Cancelar reunión'
+                        : 'Cancelar solicitud'
+                }
                 eyebrow="SOLICITUD DE REUNIÓN"
-                description="¿Estás seguro de que deseas cancelar esta solicitud? Esta acción no se puede deshacer."
+                description={
+                    cancellingRequest?.status === 'accepted'
+                        ? 'Esta reunión ya está confirmada. Al cancelarla, se notificará a la otra persona y se eliminarán los eventos de ambos calendarios.'
+                        : '¿Estás seguro de que deseas retirar esta solicitud? Esta acción no se puede deshacer.'
+                }
                 size="medium"
                 footer={
                     <>
@@ -768,7 +780,11 @@ export default function MeetingRequestsPage() {
                             loading={cancelling}
                             onClick={() => void confirmCancelRequest()}
                         >
-                            Sí, cancelar solicitud
+                            {
+                                cancellingRequest?.status === 'accepted'
+                                    ? 'Confirmar cancelación'
+                                    : 'Sí, retirar solicitud'
+                            }
                         </Button>
                     </>
                 }
@@ -1036,6 +1052,21 @@ export default function MeetingRequestsPage() {
                                 Esta solicitud todavía está pendiente de respuesta.
                                 Puedes editarla o cancelarla desde el listado.
                             </p>
+                        )}
+
+                        {viewingRequest?.status === 'accepted' && (
+                            <Button
+                                variant="danger"
+                                disabled={cancelling || savingEdit}
+                                onClick={() => {
+                                    const request = viewingRequest;
+
+                                    setViewingRequest(null);
+                                    openCancelDialog(request);
+                                }}
+                            >
+                                Cancelar reunión
+                            </Button>
                         )}
                     </div>
                 )}

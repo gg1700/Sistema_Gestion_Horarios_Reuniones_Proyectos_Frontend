@@ -223,20 +223,22 @@ export function GithubActivitySection() {
       >
         <Button
           size="small"
-          variant={type === 'list' ? 'secondary' : 'ghost'}
+          variant={type === 'list' ? 'primary' : 'secondary'}
           disabled={loading}
+          aria-pressed={type === 'list'}
           onClick={() => setType('list')}
         >
-          Lista
+          Lista de actividad
         </Button>
 
         <Button
           size="small"
-          variant={type === 'grid' ? 'secondary' : 'ghost'}
+          variant={type === 'grid' ? 'primary' : 'secondary'}
           disabled={loading}
+          aria-pressed={type === 'grid'}
           onClick={() => setType('grid')}
         >
-          Calendario
+          Grilla de actividad
         </Button>
       </div>
 
