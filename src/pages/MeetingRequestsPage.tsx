@@ -26,6 +26,7 @@ import {
 import { Dialog } from '../components/modals';
 import { Input, Textarea } from '../components/ui';
 import type { UpdateMeetingRequestPayload } from '../types/meetingRequests';
+import { resolveViewerTimeZone } from '../types/calendar';
 
 const PAGE_LIMIT = 20;
 
@@ -57,12 +58,11 @@ function getStatusTone(
     }
 }
 
-function formatRequestSchedule(request: MeetingRequestItem) {
-    const timeZone = request.timeZone || 'America/La_Paz';
-
+function formatScheduleIn(
+    request: MeetingRequestItem,
+    timeZone: string) {
     const start = new Date(request.startsAt);
     const end = new Date(request.endsAt);
-
     const date = new Intl.DateTimeFormat('es-BO', {
         timeZone,
         weekday: 'short',
@@ -85,6 +85,26 @@ function formatRequestSchedule(request: MeetingRequestItem) {
     };
 }
 
+function formatRequestSchedule(request: MeetingRequestItem) {
+    const localTimeZone = resolveViewerTimeZone();
+
+    const local = formatScheduleIn(request, localTimeZone,);
+    const originalTimeZone = request.timeZone || localTimeZone;
+    const original = originalTimeZone !== localTimeZone
+        ? formatScheduleIn(request, originalTimeZone)
+        : null;
+    const differs = original !== null
+        && (original.range !== local.range || original.date !== local.date);
+
+    return {
+        ...local,
+        zoneLabel: `Tu hora local (${localTimeZone.replace(/_/g, ' ')})`,
+        original: differs && original
+            ? `${original.date}, ${original.range} en ${original.timeZone.replace(/_/g, ' ')}`
+            : null,
+    };
+}
+
 function formatRequestCreatedAt(createdAt: string) {
     return new Intl.DateTimeFormat('es-BO', {
         day: 'numeric',
@@ -92,7 +112,8 @@ function formatRequestCreatedAt(createdAt: string) {
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        timeZone: 'America/La_Paz',
+        hourCycle: 'h23',
+        timeZone: resolveViewerTimeZone(),
     }).format(new Date(createdAt));
 }
 
@@ -463,7 +484,7 @@ export default function MeetingRequestsPage() {
                                             <small>
                                                 {schedule.range}
                                                 <br />
-                                                {schedule.timeZone}
+                                                {schedule.zoneLabel}
                                             </small>
                                         </div>
                                     );
@@ -574,7 +595,7 @@ export default function MeetingRequestsPage() {
                                 <br />
                                 {formatRequestSchedule(editingRequest).range}
                                 <br />
-                                {editingRequest.timeZone}
+                                {formatRequestSchedule(editingRequest).zoneLabel}
                             </small>
                         </div>
 
@@ -649,7 +670,7 @@ export default function MeetingRequestsPage() {
                             <small>
                                 {formatRequestSchedule(cancellingRequest).range}
                                 <br />
-                                {cancellingRequest.timeZone}
+                                {formatRequestSchedule(cancellingRequest).zoneLabel}
                             </small>
                         </div>
                     </div>
@@ -799,7 +820,14 @@ export default function MeetingRequestsPage() {
                             <small>
                                 {formatRequestSchedule(viewingRequest).range}
                                 <br />
-                                Zona horaria: {viewingRequest.timeZone}
+                                {formatRequestSchedule(viewingRequest).zoneLabel}
+
+                                {formatRequestSchedule(viewingRequest).original && (
+                                    <>
+                                        <br />
+                                        Registrada como: {formatRequestSchedule(viewingRequest).original}
+                                    </>
+                                )}
                             </small>
                         </div>
 
