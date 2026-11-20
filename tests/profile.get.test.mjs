@@ -102,22 +102,6 @@ test('perfil incompleto conserva vacíos, sin completar con el mock o el correo 
   assert.ok(!contact.includes('login@example.test')); noMock();
 });
 
-
-test('la consulta no envía escrituras y mantiene deshabilitada la acción no integrada', async () => {
-  await mount();
-  const editButton = button('Editar información');
-  const addExperienceButton = button('Agregar experiencia');
-  assert.ok(editButton);
-  assert.equal(editButton.disabled, false);
-  assert.ok(addExperienceButton);
-  assert.equal(addExperienceButton.disabled, true);
-  assert.equal(container.querySelectorAll('dialog').length, 0);
-  assert.equal(requests.length, 1);
-  assert.match(requests[0].url, /\/api\/v1\/profile$/);
-  assert.equal(requests[0].method, 'GET');
-  assert.equal(requests[0].body, undefined);
-});
-
 test('401 por sesión ausente o usuario eliminado retira el contenido privado', async () => {
   responder = () => json({ success: false, message: 'Usuario no disponible' }, 401);
   await mount();

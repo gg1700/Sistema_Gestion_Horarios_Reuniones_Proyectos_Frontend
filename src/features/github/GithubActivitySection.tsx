@@ -1,7 +1,7 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { FiActivity, FiRefreshCw } from 'react-icons/fi';
-import { Alert, Button } from '../../components/ui';
+import { Alert, Button, Pagination, usePagination } from '../../components/ui';
 import {
   apiBase,
   RepositoryApiError,
@@ -10,6 +10,8 @@ import {
   type GithubActivityEvent,
   type GithubContributionGrid,
 } from './api';
+
+const ACTIVITY_PAGE_SIZE = 10;
 
 type ActivityData = GithubActivityEvent[] | GithubContributionGrid;
 
@@ -177,13 +179,15 @@ export function GithubActivitySection() {
     error.status === 401 &&
     /sesion|autorizacion/i.test(error.message);
 
-  const authorizationUrl = `${apiBase}/api/v1/auth/github?intent=${
-    sessionExpired ? 'login' : 'link'
-  }`;
+  const authorizationUrl = `${apiBase}/api/v1/auth/github?intent=${sessionExpired ? 'login' : 'link'
+    }`;
 
-  const events = type === 'list' && Array.isArray(activity)
-    ? activity
-    : [];
+  const events = useMemo(
+    () => (type === 'list' && Array.isArray(activity) ? activity : []),
+    [type, activity],
+  );
+
+  const pagination = usePagination(events, ACTIVITY_PAGE_SIZE);
 
   const grid = type === 'grid' &&
     activity !== null &&
@@ -248,7 +252,7 @@ export function GithubActivitySection() {
 
           {authorizationRequired ? (
             <a href={authorizationUrl}>
-                {sessionExpired
+              {sessionExpired
                 ? 'Iniciar sesión nuevamente'
                 : 'Conectar o volver a autorizar GitHub'}
             </a>
@@ -266,21 +270,30 @@ export function GithubActivitySection() {
 
       {!loading && !error && type === 'list' && (
         events.length > 0 ? (
-          <ol className="github-activity">
-            {events.map((event, index) => (
-              <li key={`${event.repo.id}-${event.date}-${index}`}>
-                <time dateTime={event.date ?? undefined}>
-                  {formatDate(event.date)}
-                </time>
+          <>
+            <ol className="github-activity" start={pagination.from}>
+              {pagination.pageItems.map((event, index) => (
+                <li key={`${event.repo.id}-${event.date}-${pagination.from + index}`}>
+                  <time dateTime={event.date ?? undefined}>
+                    {formatDate(event.date)}
+                  </time>
 
-                <h4>
-                  {eventTitle(event)} {event.repo.name}
-                </h4>
+                  <h4>
+                    {eventTitle(event)} {event.repo.name}
+                  </h4>
 
-                <p>{eventDetail(event)}</p>
-              </li>
-            ))}
-          </ol>
+                  <p>{eventDetail(event)}</p>
+                </li>
+              ))}
+            </ol>
+
+            <Pagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              onChange={pagination.setPage}
+              summary={`Mostrando ${pagination.from}–${pagination.to} de ${pagination.total} eventos`}
+            />
+          </>
         ) : (
           <p className="github-activity-empty">
             No hay actividad reciente para mostrar.

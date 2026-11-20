@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { FiCalendar, FiCheck, FiCopy, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
 import { ProfileTabs } from '../components/features/profile/ProfileParts';
-import { Alert, Button, SectionHeading } from '../components/ui';
+import { Alert, Button, SectionHeading, Select } from '../components/ui';
+import { timeZoneOptions } from '../constants/timeZones';
+import { resolveViewerTimeZone } from '../types/calendar';
 import { useUI } from '../contexts/UIContext';
-
 import {
     getAvailabilityRules,
     getPublicCalendarLink,
@@ -44,7 +45,7 @@ function createRuleDraft(
 export default function CalendarAvailabilitySettingsPage() {
     const { notify } = useUI();
 
-    const [timeZone, setTimeZone] = useState('America/La_Paz');
+    const [timeZone, setTimeZone] = useState(resolveViewerTimeZone());
     const [rules, setRules] = useState<RuleDraft[]>([]);
     const [publicLink, setPublicLink] =
         useState<PublicCalendarLink | null>(null);
@@ -73,14 +74,23 @@ export default function CalendarAvailabilitySettingsPage() {
                     return;
                 }
 
-                setTimeZone(availability.timeZone);
+                const shouldSuggestViewerTimeZone =
+                    availability.rules.length === 0 &&
+                    availability.timeZone === 'UTC';
+
+                setTimeZone(
+                    shouldSuggestViewerTimeZone
+                        ? resolveViewerTimeZone()
+                        : availability.timeZone,
+                );
+
                 setRules(
                     availability.rules.map((rule, index) =>
                         createRuleDraft(rule, index),
                     ),
                 );
                 setPublicLink(link);
-                setDirty(false);
+                setDirty(shouldSuggestViewerTimeZone);
             } catch (failure) {
                 if (active) {
                     setError(
@@ -282,25 +292,37 @@ export default function CalendarAvailabilitySettingsPage() {
                         </header>
 
                         <div className="calendar-settings-timezone">
-                            <label htmlFor="availability-timezone">
-                                Zona horaria del calendario
-                            </label>
-
-                            <input
+                            <Select
                                 id="availability-timezone"
-                                type="text"
+                                label="Zona horaria del calendario"
                                 value={timeZone}
-                                placeholder="America/La_Paz"
+                                hint="Los horarios disponibles se publican en esta zona horaria. Cada visitante también podrá verlos en su hora local."
                                 onChange={event => {
                                     setTimeZone(event.target.value);
                                     setDirty(true);
                                 }}
-                            />
+                            >
+                                {timeZoneOptions(timeZone).map(option => (
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </Select>
 
-                            <small>
-                                Usa un identificador IANA, por ejemplo
-                                {' '}America/La_Paz o Europe/Madrid.
-                            </small>
+                            {timeZone !== resolveViewerTimeZone() && (
+                                <Alert tone="warning">
+                                    <span>
+                                        Tus horarios se publican en {
+                                            timeZone.replace(/_/g, ' ')
+                                        }, pero tu computadora utiliza {
+                                            resolveViewerTimeZone().replace(/_/g, ' ')
+                                        }. Comprueba que esta sea la zona horaria en la que deseas publicar tu disponibilidad.
+                                    </span>
+                                </Alert>
+                            )}
                         </div>
 
                         <div className="calendar-settings-days">

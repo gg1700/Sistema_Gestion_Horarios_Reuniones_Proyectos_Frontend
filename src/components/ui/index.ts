@@ -12,3 +12,4 @@ export { EmptyState } from './EmptyState';
 export { DataTable } from './DataTable';
 export type { TableColumn } from './DataTable';
 export { OrbitalGraphic } from './OrbitalGraphic';
+export { Pagination, usePagination } from './Pagination';
