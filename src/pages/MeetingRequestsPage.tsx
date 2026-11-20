@@ -525,7 +525,10 @@ export default function MeetingRequestsPage() {
 
                                         {request.ownerResponseMessage && (
                                             <small className="meeting-request-response">
-                                                Respuesta: {request.ownerResponseMessage}
+                                                {request.status === 'rejected'
+                                                    ? 'Motivo del rechazo: '
+                                                    : 'Respuesta: '}
+                                                {request.ownerResponseMessage}
                                             </small>
                                         )}
                                     </div>
