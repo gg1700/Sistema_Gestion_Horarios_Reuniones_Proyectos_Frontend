@@ -35,11 +35,11 @@ import {
 import { OWNER_TIME_ZONE } from '../../../types/calendar';
 import { cancelMeetingRequest } from '../../../api/meetingRequestsApi';
 
-const TIME_ZONE = OWNER_TIME_ZONE;
+const DEFAULT_TIME_ZONE = OWNER_TIME_ZONE;
 
 function getCalendarErrorMessage(
   failure: unknown,
-  fallback: string
+  fallback: string,
 ): string {
   const message =
     failure instanceof Error
@@ -48,62 +48,58 @@ function getCalendarErrorMessage(
 
   const normalized = message.toLowerCase();
 
-  if (/fecha.*futur|must be.*future|past.*date|start.*future/.test(normalized))
+  if (/fecha.*futur|must be.*future|past.*date|start.*future/.test(normalized)) {
     return 'La fecha y hora de inicio debe ser posterior al momento actual.';
+  }
 
-  if (/startsat.*endsat|endsat.*start|hora de finalización.*posterior|end.*after.*start/.test(normalized))
+  if (/startsat.*endsat|endsat.*start|hora de finalización.*posterior|end.*after.*start/.test(normalized)) {
     return 'La hora de finalización debe ser posterior a la hora de inicio.';
+  }
 
-  if (/google_event_not_found|event not found/.test(normalized))
+  if (/google_event_not_found|event not found/.test(normalized)) {
     return 'El evento ya no está disponible en Google Calendar. Actualiza tu agenda.';
+  }
 
-  if (/reconnection_required|google_not_connected/.test(normalized))
+  if (/reconnection_required|google_not_connected/.test(normalized)) {
     return 'Tu conexión con Google Calendar necesita una nueva autorización.';
+  }
 
-  if (/google_calendar_unavailable|google_rate_limited|google_invalid_response/.test(normalized))
+  if (/google_calendar_unavailable|google_rate_limited|google_invalid_response/.test(normalized)) {
     return 'No se pudo comunicar con Google Calendar. Inténtalo nuevamente.';
+  }
 
-  if (/[áéíóúñ¿¡]/i.test(message) || /^(la|el|no |esta|este|google calendar)/i.test(message))
+  if (/[áéíóúñ¿¡]/i.test(message) || /^(la|el|no |esta|este|google calendar)/i.test(message)) {
     return message;
+  }
 
   return fallback;
 }
 
-function currentDateTimeInput() {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(new Date());
-
-  const value = (type: string) =>
-    parts.find(part => part.type === type)?.value ?? '';
-
-  return (
-    `${value('year')}-${value('month')}-${value('day')}` +
-    `T${value('hour')}:${value('minute')}`
-  );
+function toDateTimeInput(
+  value: string,
+  timeZone: string,
+): string {
+  return `${dateKey(value, timeZone)}T${timeLabel(value, timeZone)}`;
 }
 
-function toDateTimeInput(value: string) {
-  return `${dateKey(value)}T${timeLabel(value)}`;
-}
-
-function toApiDateTime(value: string) {
+function toApiDateTime(
+  value: string,
+  timeZone: string,
+): string {
   const [day, time] = value.split('T');
 
   return zonedDateTimeIso(
     day,
     time.slice(0, 5),
-    TIME_ZONE,
+    timeZone,
   );
 }
 
-function CalendarIdentity({ calendarName }: { calendarName: string }) {
+function CalendarIdentity({
+  calendarName,
+}: {
+  calendarName: string;
+}) {
   return (
     <div className="event-calendar-identity">
       <ProviderIcon provider="google" />
@@ -117,29 +113,35 @@ export function CalendarEventEditor({
   event,
   initialDate,
   calendarName,
+  timeZone = DEFAULT_TIME_ZONE,
   onClose,
   onSaved,
 }: {
   event?: CalendarEventItem;
   initialDate: string;
   calendarName: string;
+  timeZone?: string;
   onClose: () => void;
   onSaved: (event: CalendarEventItem, created: boolean) => void;
 }) {
   const [title, setTitle] = useState(event?.title ?? '');
+
   const [start, setStart] = useState(
     event
-      ? toDateTimeInput(event.startsAt)
+      ? toDateTimeInput(event.startsAt, timeZone)
       : `${initialDate}T09:00`,
   );
+
   const [end, setEnd] = useState(
     event
-      ? toDateTimeInput(event.endsAt)
+      ? toDateTimeInput(event.endsAt, timeZone)
       : `${initialDate}T10:00`,
   );
+
   const [description, setDescription] = useState(
     event?.description ?? '',
   );
+
   const [location, setLocation] = useState(
     event?.location ?? '',
   );
@@ -156,8 +158,29 @@ export function CalendarEventEditor({
       return;
     }
 
-    const startsAt = toApiDateTime(start);
-    const endsAt = toApiDateTime(end);
+    if (!start || !end) {
+      setError('Debes indicar la fecha y hora de inicio y finalización.');
+      return;
+    }
+
+    let startsAt: string;
+    let endsAt: string;
+
+    try {
+      startsAt = toApiDateTime(start, timeZone);
+      endsAt = toApiDateTime(end, timeZone);
+    } catch {
+      setError('No se pudieron interpretar las fechas y horas ingresadas.');
+      return;
+    }
+
+    if (
+      !Number.isFinite(Date.parse(startsAt)) ||
+      !Number.isFinite(Date.parse(endsAt))
+    ) {
+      setError('La fecha y hora ingresadas no son válidas.');
+      return;
+    }
 
     if (Date.parse(startsAt) <= Date.now()) {
       setError('La fecha y hora de inicio debe ser futura.');
@@ -176,7 +199,7 @@ export function CalendarEventEditor({
         title: title.trim(),
         startsAt,
         endsAt,
-        timeZone: TIME_ZONE,
+        timeZone,
         description,
         location,
         ...(!event ? { isPublic: false } : {}),
@@ -191,8 +214,8 @@ export function CalendarEventEditor({
       setError(
         getCalendarErrorMessage(
           failure,
-          'No se pudo guardar el evento. Verifica los datos e inténtalo nuevamente.'
-        )
+          'No se pudo guardar el evento. Verifica los datos e inténtalo nuevamente.',
+        ),
       );
     } finally {
       setSaving(false);
@@ -256,7 +279,6 @@ export function CalendarEventEditor({
             label="Inicio"
             type="datetime-local"
             required
-            min={currentDateTimeInput()}
             value={start}
             onChange={input => setStart(input.target.value)}
           />
@@ -265,14 +287,13 @@ export function CalendarEventEditor({
             label="Fin"
             type="datetime-local"
             required
-            min={start}
             value={end}
             onChange={input => setEnd(input.target.value)}
           />
         </div>
 
         <p className="event-timezone">
-          {timeZoneLabel(TIME_ZONE)}
+          {timeZoneLabel(timeZone)}
         </p>
 
         <Textarea
@@ -297,21 +318,18 @@ export function CalendarEventEditor({
 export function CalendarEventDetails({
   event,
   calendarName,
+  timeZone = DEFAULT_TIME_ZONE,
   onClose,
   onEdit,
   onDelete,
 }: {
   event: CalendarEventItem;
   calendarName: string;
+  timeZone?: string;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const range = {
-    start: event.startsAt,
-    end: event.endsAt,
-  };
-
   return (
     <Dialog
       open
@@ -373,18 +391,18 @@ export function CalendarEventDetails({
         <div>
           <dt>Inicio</dt>
           <dd>
-            {dateLabel(event.startsAt)}
+            {dateLabel(event.startsAt, {}, timeZone)}
             <br />
-            {timeLabel(event.startsAt)} · {timeZoneLabel(TIME_ZONE)}
+            {timeLabel(event.startsAt, timeZone)} · {timeZoneLabel(timeZone)}
           </dd>
         </div>
 
         <div>
           <dt>Fin</dt>
           <dd>
-            {dateLabel(event.endsAt)}
+            {dateLabel(event.endsAt, {}, timeZone)}
             <br />
-            {timeLabel(event.endsAt)} · {timeZoneLabel(TIME_ZONE)}
+            {timeLabel(event.endsAt, timeZone)} · {timeZoneLabel(timeZone)}
           </dd>
         </div>
 
@@ -467,7 +485,7 @@ export function DeleteCalendarEvent({
       (reason.trim().length < 5 || reason.trim().length > 2000)
     ) {
       setError(
-        'El motivo de la cancelación debe tener entre 5 y 2000 caracteres.'
+        'El motivo de la cancelación debe tener entre 5 y 2000 caracteres.',
       );
       return;
     }
@@ -478,7 +496,7 @@ export function DeleteCalendarEvent({
       if (event.meetingRequestId) {
         await cancelMeetingRequest(
           event.meetingRequestId,
-          reason.trim()
+          reason.trim(),
         );
       } else {
         await deleteCalendarEvent(event.id);
@@ -491,8 +509,8 @@ export function DeleteCalendarEvent({
           failure,
           isMeetingRequest
             ? 'No se pudo cancelar la reunión. Inténtalo nuevamente.'
-            : 'No se pudo eliminar el evento. Inténtalo nuevamente.'
-        )
+            : 'No se pudo eliminar el evento. Inténtalo nuevamente.',
+        ),
       );
     } finally {
       setDeleting(false);
@@ -565,7 +583,7 @@ export function DeleteCalendarEvent({
 
         <p>
           <FiClock />
-          {rangeLabel(range)} · {timeZoneLabel(TIME_ZONE)}
+          {rangeLabel(range)} · {timeZoneLabel(DEFAULT_TIME_ZONE)}
         </p>
       </section>
 

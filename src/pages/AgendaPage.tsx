@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import {
@@ -37,6 +36,9 @@ import {
   useGoogleCalendar,
 } from '../hooks/useGoogleCalendar';
 import {
+  useCalendarTimeZone,
+} from '../hooks/useCalendarTimeZone';
+import {
   calendarDaySegments,
   dateKey,
   dateLabel,
@@ -57,13 +59,17 @@ export default function AgendaPage() {
   const [query, setQuery] = useSearchParams();
 
   const calendar = useGoogleCalendar();
+  const viewerTimeZone = useCalendarTimeZone();
 
   const [events, setEvents] = useState<AgendaEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [error, setError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const today = dateKey(new Date().toISOString());
+  const today = dateKey(
+    new Date().toISOString(),
+    viewerTimeZone,
+  );
 
   const selectedDay = isDateKey(query.get('dia'))
     ? query.get('dia')!
@@ -103,8 +109,16 @@ export default function AgendaPage() {
 
       try {
         const result = await getCalendarEvents({
-          from: zonedDateTimeIso(week),
-          to: zonedDateTimeIso(shiftDate(week, 7)),
+          from: zonedDateTimeIso(
+            week,
+            '00:00',
+            viewerTimeZone,
+          ),
+          to: zonedDateTimeIso(
+            shiftDate(week, 7),
+            '00:00',
+            viewerTimeZone,
+          ),
           limit: 100,
         });
 
@@ -143,11 +157,12 @@ export default function AgendaPage() {
     calendar.status.status,
     connected,
     week,
+    viewerTimeZone,
     refreshKey,
   ]);
 
   const daySegments = days.map(day =>
-    calendarDaySegments(events, day),
+    calendarDaySegments(events, day, viewerTimeZone),
   );
 
   const allSegments = daySegments.flat();
@@ -171,6 +186,7 @@ export default function AgendaPage() {
   const selectedEvents = calendarDaySegments(
     events,
     selectedDay,
+    viewerTimeZone,
   ).map(item => item.event);
 
   const selectedId =
@@ -213,7 +229,7 @@ export default function AgendaPage() {
     setRefreshKey(value => value + 1);
 
     setQuery({
-      dia: dateKey(event.startsAt),
+      dia: dateKey(event.startsAt, viewerTimeZone),
       seleccion: event.id,
       resultado: created ? 'creado' : 'actualizado',
     });
@@ -308,14 +324,22 @@ export default function AgendaPage() {
             </button>
 
             <strong>
-              {dateLabel(week, {
-                weekday: undefined,
-                year: undefined,
-              })}
+              {dateLabel(
+                week,
+                {
+                  weekday: undefined,
+                  year: undefined,
+                },
+                viewerTimeZone,
+              )}
               {' — '}
-              {dateLabel(days[6], {
-                weekday: undefined,
-              })}
+              {dateLabel(
+                days[6],
+                {
+                  weekday: undefined,
+                },
+                viewerTimeZone,
+              )}
             </strong>
 
             <span>Semana</span>
@@ -344,12 +368,16 @@ export default function AgendaPage() {
                       aria-pressed={selectedDay === day}
                     >
                       <span>
-                        {dateLabel(day, {
-                          weekday: 'short',
-                          day: undefined,
-                          month: undefined,
-                          year: undefined,
-                        }).toUpperCase()}
+                        {dateLabel(
+                          day,
+                          {
+                            weekday: 'short',
+                            day: undefined,
+                            month: undefined,
+                            year: undefined,
+                          },
+                          viewerTimeZone,
+                        ).toUpperCase()}
                       </span>
 
                       <strong>{Number(day.slice(-2))}</strong>
@@ -419,10 +447,13 @@ export default function AgendaPage() {
                                 left: `calc(${column * 100 / columns}% + 4px)`,
                                 width: `calc(${100 / columns}% - 8px)`,
                               }}
-                              aria-label={`${event.title}, ${rangeLabel({
-                                start: event.start,
-                                end: event.end,
-                              })}`}
+                              aria-label={`${event.title}, ${rangeLabel(
+                                {
+                                  start: event.start,
+                                  end: event.end,
+                                },
+                                viewerTimeZone,
+                              )}`}
                               onClick={() => {
                                 setQuery({
                                   dia: day,
@@ -434,10 +465,13 @@ export default function AgendaPage() {
 
                               {height >= 40 && (
                                 <small>
-                                  {rangeLabel({
-                                    start: event.start,
-                                    end: event.end,
-                                  })}
+                                  {rangeLabel(
+                                    {
+                                      start: event.start,
+                                      end: event.end,
+                                    },
+                                    viewerTimeZone,
+                                  )}
                                 </small>
                               )}
                             </button>
@@ -454,7 +488,7 @@ export default function AgendaPage() {
                     Evento de Google Calendar
                   </span>
 
-                  <small>{timeZoneLabel()}</small>
+                  <small>{timeZoneLabel(viewerTimeZone)}</small>
                 </div>
               </div>
             </div>
@@ -465,18 +499,26 @@ export default function AgendaPage() {
           <p className="ui-eyebrow">DÍA SELECCIONADO</p>
 
           <h2>
-            {dateLabel(selectedDay, {
-              month: undefined,
-              year: undefined,
-            })}
+            {dateLabel(
+              selectedDay,
+              {
+                month: undefined,
+                year: undefined,
+              },
+              viewerTimeZone,
+            )}
             .
           </h2>
 
           <span className="agenda-month">
-            {dateLabel(selectedDay, {
-              weekday: undefined,
-              day: undefined,
-            })}
+            {dateLabel(
+              selectedDay,
+              {
+                weekday: undefined,
+                day: undefined,
+              },
+              viewerTimeZone,
+            )}
           </span>
 
           <section>
@@ -499,10 +541,13 @@ export default function AgendaPage() {
                 </StatusDot>
 
                 <time>
-                  {rangeLabel({
-                    start: focused.start,
-                    end: focused.end,
-                  })}
+                  {rangeLabel(
+                    {
+                      start: focused.start,
+                      end: focused.end,
+                    },
+                    viewerTimeZone,
+                  )}
                 </time>
 
                 <h3>{focused.title}</h3>
@@ -553,10 +598,13 @@ export default function AgendaPage() {
                 onClick={() => openEvent(item)}
               >
                 <time>
-                  {rangeLabel({
-                    start: item.startsAt,
-                    end: item.endsAt,
-                  })}
+                  {rangeLabel(
+                    {
+                      start: item.startsAt,
+                      end: item.endsAt,
+                    },
+                    viewerTimeZone,
+                  )}
                 </time>
 
                 <strong>{item.title}</strong>
@@ -596,6 +644,7 @@ export default function AgendaPage() {
         <CalendarEventEditor
           initialDate={selectedDay}
           calendarName={calendarName}
+          timeZone={viewerTimeZone}
           onClose={closeModal}
           onSaved={saved}
         />
@@ -607,6 +656,7 @@ export default function AgendaPage() {
           event={openedEvent}
           initialDate={selectedDay}
           calendarName={calendarName}
+          timeZone={viewerTimeZone}
           onClose={() =>
             setQuery({
               dia: selectedDay,
@@ -634,6 +684,7 @@ export default function AgendaPage() {
         <CalendarEventDetails
           event={openedEvent}
           calendarName={calendarName}
+          timeZone={viewerTimeZone}
           onClose={closeModal}
           onEdit={() => eventAction('editar')}
           onDelete={() => eventAction('eliminar')}

@@ -43,13 +43,7 @@ import type {
 } from '../types/calendarAvailability';
 import { ApiError } from '../types/api';
 import { isDateKey, shiftDate } from '../utils/calendar';
-import { resolveViewerTimeZone } from '../types/calendar';
-
-const VIEWER_TIME_ZONE = resolveViewerTimeZone();
-
-function isUpcomingSlot(slot: PublicAvailabilitySlot) {
-  return Date.parse(slot.startsAt) > Date.now();
-}
+import { useCalendarTimeZone } from '../hooks/useCalendarTimeZone';
 
 interface AvailabilityPageProps {
   overlay?: ReactNode;
@@ -159,14 +153,16 @@ export default function AvailabilityPage({
   overlay,
 }: AvailabilityPageProps) {
   const member = useMemberIdentity();
+  const viewerTimeZone = useCalendarTimeZone();
 
   const { publicHandle } = useParams();
   const [query, setQuery] = useSearchParams();
 
   const fallbackToday = dateKeyInTimeZone(
     new Date(),
-    VIEWER_TIME_ZONE,
+    viewerTimeZone,
   );
+
   const requestedDate = query.get('fecha');
 
   const initialDate =
@@ -175,6 +171,7 @@ export default function AvailabilityPage({
       : fallbackToday;
 
   const [selectedDate, setSelectedDate] = useState(initialDate);
+
   const [month, setMonth] = useState(
     `${initialDate.slice(0, 7)}-01`,
   );
@@ -210,12 +207,44 @@ export default function AvailabilityPage({
   const identityReady =
     Boolean(member?.profile) || isGuest;
 
-  const timeZone =
-    availability?.timeZone ?? VIEWER_TIME_ZONE;
+  const ownerTimeZone =
+    availability?.timeZone ?? viewerTimeZone;
 
-  const showsViewerTime = timeZone !== VIEWER_TIME_ZONE;
+  const showsOwnerTime =
+    ownerTimeZone !== viewerTimeZone;
 
-  const today = dateKeyInTimeZone(new Date(), timeZone);
+  const today = dateKeyInTimeZone(
+    new Date(),
+    viewerTimeZone,
+  );
+
+  useEffect(() => {
+    const requested = query.get('fecha');
+
+    if (
+      requested &&
+      isDateKey(requested) &&
+      requested >= today
+    ) {
+      if (requested !== selectedDate) {
+        setSelectedDate(requested);
+      }
+
+      const requestedMonth = `${requested.slice(0, 7)}-01`;
+
+      if (requestedMonth !== month) {
+        setMonth(requestedMonth);
+      }
+
+      return;
+    }
+
+    if (selectedDate < today) {
+      setSelectedDate(today);
+      setMonth(`${today.slice(0, 7)}-01`);
+      setQuery({ fecha: today });
+    }
+  }, [viewerTimeZone]);
 
   useEffect(() => {
     let active = true;
@@ -294,46 +323,41 @@ export default function AvailabilityPage({
 
     const requested = query.get('fecha');
 
-    const ownerTodayKey = dateKeyInTimeZone(
+    const viewerToday = dateKeyInTimeZone(
       new Date(),
-      availability.timeZone,
+      viewerTimeZone,
     );
 
     if (
       requested &&
       isDateKey(requested) &&
-      requested >= ownerTodayKey
+      requested >= viewerToday
     ) {
       return;
     }
 
-    const ownerToday = dateKeyInTimeZone(
-      new Date(),
-      availability.timeZone,
-    );
+    setSelectedDate(viewerToday);
 
-    setSelectedDate(ownerToday);
+    const viewerMonth = `${viewerToday.slice(0, 7)}-01`;
 
-    const ownerMonth = `${ownerToday.slice(0, 7)}-01`;
-
-    if (ownerMonth !== month) {
-      setMonth(ownerMonth);
+    if (viewerMonth !== month) {
+      setMonth(viewerMonth);
     }
 
-    setQuery({ fecha: ownerToday });
+    setQuery({ fecha: viewerToday });
   }, [availability]);
 
   const gridDays = getMonthDays(month);
 
   const upcomingSlots = (availability?.slots ?? []).filter(
-    isUpcomingSlot,
+    slot => Date.parse(slot.startsAt) > Date.now(),
   );
 
   const availableDateKeys = new Set(
     upcomingSlots.map(slot =>
       dateKeyInTimeZone(
         new Date(slot.startsAt),
-        timeZone,
+        viewerTimeZone,
       ),
     ),
   );
@@ -343,7 +367,7 @@ export default function AvailabilityPage({
       slot =>
         dateKeyInTimeZone(
           new Date(slot.startsAt),
-          timeZone,
+          viewerTimeZone,
         ) === selectedDate,
     )
     .sort(
@@ -362,13 +386,13 @@ export default function AvailabilityPage({
     }
 
     const stillAvailable = availability.slots.some(
-      slot => slot.startsAt === chosenStart
+      slot => slot.startsAt === chosenStart,
     );
 
     if (!stillAvailable) {
       setChosenStart('');
       setError(
-        'El horario que seleccionaste acaba de ser ocupado. Elige otro horario.'
+        'El horario que seleccionaste acaba de ser ocupado. Elige otro horario.',
       );
 
       setQuery({
@@ -429,13 +453,13 @@ export default function AvailabilityPage({
         title: title.trim(),
         startsAt: new Date(selectedSlot.startsAt).toISOString(),
         endsAt: new Date(selectedSlot.endsAt).toISOString(),
-        timeZone: VIEWER_TIME_ZONE,
+        timeZone: viewerTimeZone,
 
         ...(isGuest
           ? {
-            guestName: name.trim(),
-            guestEmail: email.trim(),
-          }
+              guestName: name.trim(),
+              guestEmail: email.trim(),
+            }
           : {}),
 
         ...(message.trim()
@@ -624,22 +648,22 @@ export default function AvailabilityPage({
                   • &nbsp; Día con horarios disponibles
                 </span>
 
-                <span>{availability.timeZone}</span>
+                <span>{viewerTimeZone}</span>
               </div>
 
               <p className="flow-note">
                 <FiClock />
 
                 <span>
-                  Los horarios se muestran primero en tu hora local
-                  ({VIEWER_TIME_ZONE}).
+                  Los horarios se muestran en tu hora local
+                  ({viewerTimeZone}).
 
                   <br />
 
-                  Las fechas y la disponibilidad corresponden al calendario
-                  de {availability.name} ({availability.timeZone}).
+                  La disponibilidad pertenece al calendario de
+                  {' '}{availability.name} ({availability.timeZone}).
 
-                  {showsViewerTime && (
+                  {showsOwnerTime && (
                     <>
                       <br />
                       También podrás consultar la hora del propietario
@@ -685,13 +709,13 @@ export default function AvailabilityPage({
                         {selected ? <FiCheck /> : <FiClock />}
 
                         <span>
-                          {formatSlotTime(slot, VIEWER_TIME_ZONE)}
+                          {formatSlotTime(slot, viewerTimeZone)}
                         </span>
 
-                        {showsViewerTime && (
+                        {showsOwnerTime && (
                           <small>
                             Hora de {availability.name}:{' '}
-                            {formatSlotTime(slot, availability.timeZone)}
+                            {formatSlotTime(slot, ownerTimeZone)}
                           </small>
                         )}
 
@@ -775,16 +799,16 @@ export default function AvailabilityPage({
                   <FiCalendar />
                   {formatSlotDate(
                     selectedSlot,
-                    VIEWER_TIME_ZONE,
+                    viewerTimeZone,
                   )}
                 </p>
 
-                {showsViewerTime && (
+                {showsOwnerTime && (
                   <small>
                     Fecha del calendario de {availability.name}:{' '}
                     {formatSlotDate(
                       selectedSlot,
-                      availability.timeZone,
+                      ownerTimeZone,
                     )}
                   </small>
                 )}
@@ -793,20 +817,20 @@ export default function AvailabilityPage({
                   <FiClock />
                   {formatSlotTime(
                     selectedSlot,
-                    VIEWER_TIME_ZONE,
+                    viewerTimeZone,
                   )}
 
                   <small>
-                    Tu hora local ({VIEWER_TIME_ZONE})
+                    Tu hora local ({viewerTimeZone})
                   </small>
                 </p>
 
-                {showsViewerTime && (
+                {showsOwnerTime && (
                   <small>
                     Hora de {availability.name}:{' '}
                     {formatSlotTime(
                       selectedSlot,
-                      availability.timeZone,
+                      ownerTimeZone,
                     )}
                   </small>
                 )}
@@ -952,7 +976,7 @@ export default function AvailabilityPage({
             <p>
               <FiCalendar />
               {new Intl.DateTimeFormat('es-BO', {
-                timeZone: createdRequest.timeZone,
+                timeZone: viewerTimeZone,
                 weekday: 'long',
                 day: 'numeric',
                 month: 'long',
@@ -964,7 +988,7 @@ export default function AvailabilityPage({
               <FiClock />
 
               {new Intl.DateTimeFormat('es-BO', {
-                timeZone: createdRequest.timeZone,
+                timeZone: viewerTimeZone,
                 hour: '2-digit',
                 minute: '2-digit',
                 hourCycle: 'h23',
@@ -973,12 +997,16 @@ export default function AvailabilityPage({
               {' — '}
 
               {new Intl.DateTimeFormat('es-BO', {
-                timeZone: createdRequest.timeZone,
+                timeZone: viewerTimeZone,
                 hour: '2-digit',
                 minute: '2-digit',
                 hourCycle: 'h23',
               }).format(new Date(createdRequest.endsAt))}
             </p>
+
+            <small>
+              Tu hora local ({viewerTimeZone})
+            </small>
           </div>
         </Dialog>
       )}

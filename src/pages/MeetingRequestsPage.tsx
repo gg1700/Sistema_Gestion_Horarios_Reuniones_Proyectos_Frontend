@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { FiRefreshCw } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
@@ -60,9 +59,11 @@ function getStatusTone(
 
 function formatScheduleIn(
     request: MeetingRequestItem,
-    timeZone: string) {
+    timeZone: string
+) {
     const start = new Date(request.startsAt);
     const end = new Date(request.endsAt);
+
     const date = new Intl.DateTimeFormat('es-BO', {
         timeZone,
         weekday: 'short',
@@ -123,7 +124,6 @@ function formatRequestCreatedAt(
         timeZone,
     }).format(new Date(createdAt));
 }
-
 
 function getCounterpartName(request: MeetingRequestItem) {
     return (
@@ -218,6 +218,7 @@ export default function MeetingRequestsPage() {
             );
 
             setViewingRequest(null);
+
             refresh();
 
             return true;
@@ -380,6 +381,7 @@ export default function MeetingRequestsPage() {
                     ? 'La reunión se canceló correctamente.'
                     : 'La solicitud se retiró correctamente.'
             );
+
             setCancellingRequest(null);
             setCancelReason('');
 
@@ -432,6 +434,7 @@ export default function MeetingRequestsPage() {
                         {decisionMessage}
                     </p>
                 )}
+
                 <div
                     className="meeting-requests-direction"
                     role="group"
@@ -543,12 +546,12 @@ export default function MeetingRequestsPage() {
                                                     ? 'Motivo del rechazo: '
                                                     : 'Respuesta: '}
                                                 {request.ownerResponseMessage}
+                                            </small>
+                                        )}
 
-                                                {request.cancellationReason && (
-                                                    <small className="meeting-request-response">
-                                                        Motivo de cancelación: {request.cancellationReason}
-                                                    </small>
-                                                )}
+                                        {request.cancellationReason && (
+                                            <small className="meeting-request-response">
+                                                Motivo de cancelación: {request.cancellationReason}
                                             </small>
                                         )}
                                     </div>
@@ -681,14 +684,23 @@ export default function MeetingRequestsPage() {
                         )}
 
                         <div className="requests-table-time">
-                            **Horario actual**
+                            <strong>Horario actual</strong>
 
                             <small>
-                                {formatRequestSchedule(editingRequest).date}
+                                {formatRequestSchedule(
+                                    editingRequest,
+                                    viewerTimeZone,
+                                ).date}
                                 <br />
-                                {formatRequestSchedule(editingRequest).range}
+                                {formatRequestSchedule(
+                                    editingRequest,
+                                    viewerTimeZone,
+                                ).range}
                                 <br />
-                                {formatRequestSchedule(editingRequest).zoneLabel}
+                                {formatRequestSchedule(
+                                    editingRequest,
+                                    viewerTimeZone,
+                                ).zoneLabel}
                             </small>
                         </div>
 
@@ -832,12 +844,21 @@ export default function MeetingRequestsPage() {
                         </div>
 
                         <div className="requests-table-time">
-                            {formatRequestSchedule(cancellingRequest).date}
+                            {formatRequestSchedule(
+                                cancellingRequest,
+                                viewerTimeZone,
+                            ).date}
 
                             <small>
-                                {formatRequestSchedule(cancellingRequest).range}
+                                {formatRequestSchedule(
+                                    cancellingRequest,
+                                    viewerTimeZone,
+                                ).range}
                                 <br />
-                                {formatRequestSchedule(cancellingRequest).zoneLabel}
+                                {formatRequestSchedule(
+                                    cancellingRequest,
+                                    viewerTimeZone,
+                                ).zoneLabel}
                             </small>
                         </div>
 
@@ -1010,14 +1031,14 @@ export default function MeetingRequestsPage() {
                                     viewingRequest,
                                     viewerTimeZone,
                                 ).original && (
-                                        <>
-                                            <br />
-                                            Registrada como: {formatRequestSchedule(
-                                                viewingRequest,
-                                                viewerTimeZone,
-                                            ).original}
-                                        </>
-                                    )}
+                                    <>
+                                        <br />
+                                        Registrada como: {formatRequestSchedule(
+                                            viewingRequest,
+                                            viewerTimeZone,
+                                        ).original}
+                                    </>
+                                )}
                             </small>
                         </div>
 
@@ -1071,7 +1092,9 @@ export default function MeetingRequestsPage() {
                                     MOTIVO DE CANCELACIÓN
                                 </p>
 
-                                <small>{viewingRequest.cancellationReason}</small>
+                                <small>
+                                    {viewingRequest.cancellationReason}
+                                </small>
                             </div>
                         )}
 
@@ -1083,7 +1106,9 @@ export default function MeetingRequestsPage() {
                                         : 'RESPUESTA DEL DESTINATARIO'}
                                 </p>
 
-                                <small>{viewingRequest.ownerResponseMessage}</small>
+                                <small>
+                                    {viewingRequest.ownerResponseMessage}
+                                </small>
                             </div>
                         )}
 
@@ -1101,7 +1126,7 @@ export default function MeetingRequestsPage() {
                             </p>
                         )}
 
-                        {viewingRequest?.status === 'accepted' && (
+                        {viewingRequest.status === 'accepted' && (
                             <Button
                                 variant="danger"
                                 disabled={cancelling || savingEdit}
