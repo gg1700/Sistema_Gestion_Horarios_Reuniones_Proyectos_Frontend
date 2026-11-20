@@ -7,6 +7,7 @@ import {
   FiLock,
   FiMapPin,
   FiTrash2,
+  FiVideo,
 } from 'react-icons/fi';
 import { Dialog } from '../../modals';
 import {
@@ -22,7 +23,6 @@ import {
   updateCalendarEvent,
   deleteCalendarEvent,
 } from '../../../api/calendarEventsApi';
-
 import type { CalendarEventItem } from '../../../types/calendarEvents';
 import {
   dateKey,
@@ -33,8 +33,41 @@ import {
   zonedDateTimeIso,
 } from '../../../utils/calendar';
 import { OWNER_TIME_ZONE } from '../../../types/calendar';
+import { cancelMeetingRequest } from '../../../api/meetingRequestsApi';
 
 const TIME_ZONE = OWNER_TIME_ZONE;
+
+function getCalendarErrorMessage(
+  failure: unknown,
+  fallback: string
+): string {
+  const message =
+    failure instanceof Error
+      ? failure.message
+      : '';
+
+  const normalized = message.toLowerCase();
+
+  if (/fecha.*futur|must be.*future|past.*date|start.*future/.test(normalized))
+    return 'La fecha y hora de inicio debe ser posterior al momento actual.';
+
+  if (/startsat.*endsat|endsat.*start|hora de finalización.*posterior|end.*after.*start/.test(normalized))
+    return 'La hora de finalización debe ser posterior a la hora de inicio.';
+
+  if (/google_event_not_found|event not found/.test(normalized))
+    return 'El evento ya no está disponible en Google Calendar. Actualiza tu agenda.';
+
+  if (/reconnection_required|google_not_connected/.test(normalized))
+    return 'Tu conexión con Google Calendar necesita una nueva autorización.';
+
+  if (/google_calendar_unavailable|google_rate_limited|google_invalid_response/.test(normalized))
+    return 'No se pudo comunicar con Google Calendar. Inténtalo nuevamente.';
+
+  if (/[áéíóúñ¿¡]/i.test(message) || /^(la|el|no |esta|este|google calendar)/i.test(message))
+    return message;
+
+  return fallback;
+}
 
 function currentDateTimeInput() {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -156,9 +189,10 @@ export function CalendarEventEditor({
       onSaved(savedEvent, !event);
     } catch (failure) {
       setError(
-        failure instanceof Error
-          ? failure.message
-          : 'No se pudo guardar el evento.',
+        getCalendarErrorMessage(
+          failure,
+          'No se pudo guardar el evento. Verifica los datos e inténtalo nuevamente.'
+        )
       );
     } finally {
       setSaving(false);
@@ -294,7 +328,9 @@ export function CalendarEventDetails({
             trailingIcon={<FiTrash2 />}
             onClick={onDelete}
           >
-            Eliminar evento
+            {event.meetingRequestId
+              ? 'Cancelar reunión'
+              : 'Eliminar evento'}
           </Button>
 
           <Button variant="secondary" onClick={onClose}>
@@ -382,6 +418,23 @@ export function CalendarEventDetails({
         <p>{event.description || 'Sin descripción.'}</p>
       </section>
 
+      {event.meetUrl && (
+        <div className="event-detail-meet">
+          <FiVideo />
+
+          <span>Google Meet</span>
+
+          <a
+            href={event.meetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Unirse a la reunión
+            <FiArrowRight />
+          </a>
+        </div>
+      )}
+
       <p className="flow-note">
         <FiLock />
         Los detalles de este evento no se publican automáticamente
@@ -402,19 +455,44 @@ export function DeleteCalendarEvent({
 }) {
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [reason, setReason] = useState('');
+
+  const isMeetingRequest = Boolean(event.meetingRequestId);
 
   async function remove() {
     setError('');
+
+    if (
+      isMeetingRequest &&
+      (reason.trim().length < 5 || reason.trim().length > 2000)
+    ) {
+      setError(
+        'El motivo de la cancelación debe tener entre 5 y 2000 caracteres.'
+      );
+      return;
+    }
+
     setDeleting(true);
 
     try {
-      await deleteCalendarEvent(event.id);
+      if (event.meetingRequestId) {
+        await cancelMeetingRequest(
+          event.meetingRequestId,
+          reason.trim()
+        );
+      } else {
+        await deleteCalendarEvent(event.id);
+      }
+
       onDeleted();
     } catch (failure) {
       setError(
-        failure instanceof Error
-          ? failure.message
-          : 'No se pudo eliminar el evento.',
+        getCalendarErrorMessage(
+          failure,
+          isMeetingRequest
+            ? 'No se pudo cancelar la reunión. Inténtalo nuevamente.'
+            : 'No se pudo eliminar el evento. Inténtalo nuevamente.'
+        )
       );
     } finally {
       setDeleting(false);
@@ -432,8 +510,16 @@ export function DeleteCalendarEvent({
       onOpenChange={open => {
         if (!open && !deleting) onClose();
       }}
-      title="¿Eliminar este evento?"
-      eyebrow="GOOGLE CALENDAR / ELIMINACIÓN"
+      title={
+        isMeetingRequest
+          ? '¿Cancelar esta reunión?'
+          : '¿Eliminar este evento?'
+      }
+      eyebrow={
+        isMeetingRequest
+          ? 'REUNIÓN / CANCELACIÓN'
+          : 'GOOGLE CALENDAR / ELIMINACIÓN'
+      }
       className="delete-event-dialog"
       footer={
         <>
@@ -442,7 +528,7 @@ export function DeleteCalendarEvent({
             onClick={onClose}
             disabled={deleting}
           >
-            Conservar evento
+            Volver
           </Button>
 
           <Button
@@ -450,15 +536,23 @@ export function DeleteCalendarEvent({
             loading={deleting}
             onClick={remove}
           >
-            Eliminar evento
+            {isMeetingRequest
+              ? 'Confirmar cancelación'
+              : 'Eliminar evento'}
           </Button>
         </>
       }
     >
-      {error && <Alert tone="danger">{error}</Alert>}
+      {error && (
+        <Alert tone="danger">
+          {error}
+        </Alert>
+      )}
 
       <p className="flow-copy">
-        Este evento se eliminará de Google Calendar.
+        {isMeetingRequest
+          ? 'Esta reunión está confirmada. Al cancelarla, se notificará a la otra persona y se eliminarán los eventos vinculados de ambos calendarios.'
+          : 'Este evento se eliminará de Google Calendar.'}
       </p>
 
       <section className="delete-event-summary">
@@ -475,9 +569,21 @@ export function DeleteCalendarEvent({
         </p>
       </section>
 
-      <p className="flow-copy">
-        Esta operación no se puede deshacer.
-      </p>
+      {isMeetingRequest ? (
+        <Textarea
+          label="Motivo de la cancelación"
+          value={reason}
+          onChange={input => setReason(input.target.value)}
+          placeholder="Explica brevemente por qué cancelas esta reunión..."
+          rows={4}
+          maxLength={2000}
+          required
+        />
+      ) : (
+        <p className="flow-copy">
+          Esta operación no se puede deshacer.
+        </p>
+      )}
     </Dialog>
   );
 }

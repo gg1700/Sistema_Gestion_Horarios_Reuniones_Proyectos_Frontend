@@ -631,14 +631,19 @@ export default function AvailabilityPage({
                 <FiClock />
 
                 <span>
-                  Los horarios se muestran en la zona horaria
-                  de {availability.name}.
+                  Los horarios se muestran primero en tu hora local
+                  ({VIEWER_TIME_ZONE}).
+
                   <br />
-                  {availability.timeZone}
+
+                  Las fechas y la disponibilidad corresponden al calendario
+                  de {availability.name} ({availability.timeZone}).
+
                   {showsViewerTime && (
                     <>
                       <br />
-                      Tu zona horaria es {VIEWER_TIME_ZONE}; cada horario indica también tu hora local.
+                      También podrás consultar la hora del propietario
+                      como referencia en cada horario.
                     </>
                   )}
                 </span>
@@ -680,15 +685,13 @@ export default function AvailabilityPage({
                         {selected ? <FiCheck /> : <FiClock />}
 
                         <span>
-                          {formatSlotTime(
-                            slot,
-                            availability.timeZone,
-                          )}
+                          {formatSlotTime(slot, VIEWER_TIME_ZONE)}
                         </span>
 
                         {showsViewerTime && (
                           <small>
-                            Tu hora: {formatSlotTime(slot, VIEWER_TIME_ZONE)}
+                            Hora de {availability.name}:{' '}
+                            {formatSlotTime(slot, availability.timeZone)}
                           </small>
                         )}
 
@@ -772,19 +775,41 @@ export default function AvailabilityPage({
                   <FiCalendar />
                   {formatSlotDate(
                     selectedSlot,
-                    availability.timeZone,
+                    VIEWER_TIME_ZONE,
                   )}
                 </p>
+
+                {showsViewerTime && (
+                  <small>
+                    Fecha del calendario de {availability.name}:{' '}
+                    {formatSlotDate(
+                      selectedSlot,
+                      availability.timeZone,
+                    )}
+                  </small>
+                )}
 
                 <p>
                   <FiClock />
                   {formatSlotTime(
                     selectedSlot,
-                    availability.timeZone,
+                    VIEWER_TIME_ZONE,
                   )}
 
-                  <small>{availability.timeZone}</small>
+                  <small>
+                    Tu hora local ({VIEWER_TIME_ZONE})
+                  </small>
                 </p>
+
+                {showsViewerTime && (
+                  <small>
+                    Hora de {availability.name}:{' '}
+                    {formatSlotTime(
+                      selectedSlot,
+                      availability.timeZone,
+                    )}
+                  </small>
+                )}
               </div>
 
               <form
