@@ -36,6 +36,26 @@ import { OWNER_TIME_ZONE } from '../../../types/calendar';
 
 const TIME_ZONE = OWNER_TIME_ZONE;
 
+function currentDateTimeInput() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+
+  const value = (type: string) =>
+    parts.find(part => part.type === type)?.value ?? '';
+
+  return (
+    `${value('year')}-${value('month')}-${value('day')}` +
+    `T${value('hour')}:${value('minute')}`
+  );
+}
+
 function toDateTimeInput(value: string) {
   return `${dateKey(value)}T${timeLabel(value)}`;
 }
@@ -105,6 +125,11 @@ export function CalendarEventEditor({
 
     const startsAt = toApiDateTime(start);
     const endsAt = toApiDateTime(end);
+
+    if (Date.parse(startsAt) <= Date.now()) {
+      setError('La fecha y hora de inicio debe ser futura.');
+      return;
+    }
 
     if (Date.parse(startsAt) >= Date.parse(endsAt)) {
       setError('La hora de finalización debe ser posterior al inicio.');
@@ -197,6 +222,7 @@ export function CalendarEventEditor({
             label="Inicio"
             type="datetime-local"
             required
+            min={currentDateTimeInput()}
             value={start}
             onChange={input => setStart(input.target.value)}
           />
