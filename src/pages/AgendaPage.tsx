@@ -565,7 +565,9 @@ export default function AgendaPage() {
                   className="flow-link"
                   onClick={() => openEvent(focused)}
                 >
-                  Ver y editar evento
+                  {focused.meetingRequestId
+                    ? 'Ver detalle de reunión'
+                    : 'Ver y editar evento'}
                   <FiArrowRight />
                 </button>
               </>
@@ -650,26 +652,29 @@ export default function AgendaPage() {
         />
       )}
 
-      {openedEvent && action === 'editar' && (
-        <CalendarEventEditor
-          key={openedEvent.id}
-          event={openedEvent}
-          initialDate={selectedDay}
-          calendarName={calendarName}
-          timeZone={viewerTimeZone}
-          onClose={() =>
-            setQuery({
-              dia: selectedDay,
-              evento: openedEvent.id,
-            })
-          }
-          onSaved={saved}
-        />
-      )}
+      {openedEvent &&
+        action === 'editar' &&
+        !openedEvent.meetingRequestId && (
+          <CalendarEventEditor
+            key={openedEvent.id}
+            event={openedEvent}
+            initialDate={selectedDay}
+            calendarName={calendarName}
+            timeZone={viewerTimeZone}
+            onClose={() =>
+              setQuery({
+                dia: selectedDay,
+                evento: openedEvent.id,
+              })
+            }
+            onSaved={saved}
+          />
+        )}
 
       {openedEvent && action === 'eliminar' && (
         <DeleteCalendarEvent
           event={openedEvent}
+          timeZone={viewerTimeZone}
           onClose={() =>
             setQuery({
               dia: selectedDay,
@@ -680,16 +685,18 @@ export default function AgendaPage() {
         />
       )}
 
-      {openedEvent && !action && (
-        <CalendarEventDetails
-          event={openedEvent}
-          calendarName={calendarName}
-          timeZone={viewerTimeZone}
-          onClose={closeModal}
-          onEdit={() => eventAction('editar')}
-          onDelete={() => eventAction('eliminar')}
-        />
-      )}
+      {openedEvent &&
+        (!action ||
+          (action === 'editar' && Boolean(openedEvent.meetingRequestId))) && (
+          <CalendarEventDetails
+            event={openedEvent}
+            calendarName={calendarName}
+            timeZone={viewerTimeZone}
+            onClose={closeModal}
+            onEdit={() => eventAction('editar')}
+            onDelete={() => eventAction('eliminar')}
+          />
+        )}
 
       {query.has('evento') && !openedEvent && !action && (
         <Dialog

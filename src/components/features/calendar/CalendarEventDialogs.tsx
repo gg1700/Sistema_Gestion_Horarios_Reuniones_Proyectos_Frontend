@@ -1,4 +1,3 @@
-
 import { useState, type FormEvent } from 'react';
 import {
   FiArrowRight,
@@ -330,6 +329,8 @@ export function CalendarEventDetails({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const isMeetingRequest = Boolean(event.meetingRequestId);
+
   return (
     <Dialog
       open
@@ -346,7 +347,7 @@ export function CalendarEventDetails({
             trailingIcon={<FiTrash2 />}
             onClick={onDelete}
           >
-            {event.meetingRequestId
+            {isMeetingRequest
               ? 'Cancelar reunión'
               : 'Eliminar evento'}
           </Button>
@@ -355,12 +356,14 @@ export function CalendarEventDetails({
             Volver
           </Button>
 
-          <Button
-            onClick={onEdit}
-            trailingIcon={<FiArrowRight />}
-          >
-            Editar evento
-          </Button>
+          {!isMeetingRequest && (
+            <Button
+              onClick={onEdit}
+              trailingIcon={<FiArrowRight />}
+            >
+              Editar evento
+            </Button>
+          )}
         </>
       }
     >
@@ -453,6 +456,13 @@ export function CalendarEventDetails({
         </div>
       )}
 
+      {isMeetingRequest && (
+        <p className="flow-note">
+          Esta reunión está vinculada a una solicitud aceptada. Para cambiar
+          el horario, cancela la reunión y envía una nueva solicitud.
+        </p>
+      )}
+
       <p className="flow-note">
         <FiLock />
         Los detalles de este evento no se publican automáticamente
@@ -464,10 +474,12 @@ export function CalendarEventDetails({
 
 export function DeleteCalendarEvent({
   event,
+  timeZone = DEFAULT_TIME_ZONE,
   onClose,
   onDeleted,
 }: {
   event: CalendarEventItem;
+  timeZone?: string;
   onClose: () => void;
   onDeleted: () => void;
 }) {
@@ -578,12 +590,12 @@ export function DeleteCalendarEvent({
 
         <p>
           <FiCalendar />
-          {dateLabel(event.startsAt)}
+          {dateLabel(event.startsAt, {}, timeZone)}
         </p>
 
         <p>
           <FiClock />
-          {rangeLabel(range)} · {timeZoneLabel(DEFAULT_TIME_ZONE)}
+          {rangeLabel(range, timeZone)} · {timeZoneLabel(timeZone)}
         </p>
       </section>
 
