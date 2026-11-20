@@ -111,7 +111,7 @@ test('la consulta no envía escrituras y permite abrir el formulario de experien
   assert.ok(addExperienceButton);
   assert.equal(addExperienceButton.disabled, false);
   await act(async () => addExperienceButton.click());
-  assert.equal(container.querySelectorAll('dialog').length, 1);
+  assert.equal(dom.document.body.querySelectorAll('dialog').length, 1);
   assert.match(text(), /Agregar experiencia\./);
   assert.equal(requests.length, 1);
   assert.match(requests[0].url, /\/api\/v1\/profile$/);
