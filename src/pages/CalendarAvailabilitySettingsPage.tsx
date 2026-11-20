@@ -45,7 +45,7 @@ function createRuleDraft(
 export default function CalendarAvailabilitySettingsPage() {
     const { notify } = useUI();
 
-    const [timeZone, setTimeZone] = useState('America/La_Paz');
+    const [timeZone, setTimeZone] = useState(resolveViewerTimeZone());
     const [rules, setRules] = useState<RuleDraft[]>([]);
     const [publicLink, setPublicLink] =
         useState<PublicCalendarLink | null>(null);
