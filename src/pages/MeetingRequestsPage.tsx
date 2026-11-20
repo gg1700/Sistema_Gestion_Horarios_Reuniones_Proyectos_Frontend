@@ -26,6 +26,7 @@ import {
     updateMeetingRequest,
 } from '../api/meetingRequestsApi';
 import { RescheduleDialog, type RescheduleSubmit } from '../components/features/requests/RescheduleDialog';
+import { RESCHEDULE_ENABLED } from '../config/features';
 import { useMemberIdentity } from '../features/github/MemberIdentityContext';
 import { Dialog } from '../components/modals';
 import { Input, Textarea } from '../components/ui';
@@ -206,6 +207,7 @@ export default function MeetingRequestsPage() {
     const [rescheduling, setRescheduling] =
         useState<{ request: MeetingRequestItem; mode: RescheduleMode } | null>(null);
     const [acceptingProposalId, setAcceptingProposalId] = useState<string | null>(null);
+    const [showRescheduleSoon, setShowRescheduleSoon] = useState(false);
 
     const {
         requests,
@@ -271,6 +273,10 @@ export default function MeetingRequestsPage() {
     }
 
     function openReschedule(request: MeetingRequestItem, mode: RescheduleMode) {
+        if (!RESCHEDULE_ENABLED) {
+            setShowRescheduleSoon(true);
+            return;
+        }
         setViewingRequest(null);
         setDecisionError('');
         setRescheduling({ request, mode });
@@ -519,7 +525,9 @@ export default function MeetingRequestsPage() {
                         <option value="pending">Pendientes</option>
                         <option value="accepted">Aceptadas</option>
                         <option value="rejected">Rechazadas</option>
-                        <option value="reschedule_proposed">Con nuevo horario propuesto</option>
+                        {RESCHEDULE_ENABLED && (
+                            <option value="reschedule_proposed">Con nuevo horario propuesto</option>
+                        )}
                         <option value="cancelled">Canceladas</option>
                     </Select>
                 </div>
@@ -885,7 +893,7 @@ export default function MeetingRequestsPage() {
                                     disabled={decidingId !== null || !member?.profile}
                                     onClick={() => openReschedule(viewingRequest, 'propose')}
                                 >
-                                    {viewingRequest.guestEmail ? 'Confirmar en otro horario' : 'Proponer otro horario'}
+                                    Reprogramar
                                 </Button>
 
                                 <Button
@@ -900,7 +908,7 @@ export default function MeetingRequestsPage() {
                             </>
                         )}
 
-                        {viewingRequest?.status === 'reschedule_proposed' && action === 'sent' && (
+                        {RESCHEDULE_ENABLED && viewingRequest?.status === 'reschedule_proposed' && action === 'sent' && (
                             <>
                                 <Button
                                     variant="ghost"
@@ -1117,10 +1125,10 @@ export default function MeetingRequestsPage() {
 
                         {viewingRequest.status === 'pending' && action === 'received' && (
                             <p className="flow-note">
-                                {viewingRequest.guestEmail
-                                    ? 'Si el horario no te conviene, confírmalo en otro horario: el visitante recibirá por correo la invitación de Google Calendar con el enlace de Meet.'
-                                    : 'Si el horario no te conviene, propón otro: el solicitante podrá aceptarlo o sugerir uno distinto.'}
-                                {' '}Al aceptar, la reunión se crea con enlace de Google Meet en tu calendario y en el del
+                                {RESCHEDULE_ENABLED && (viewingRequest.guestEmail
+                                    ? 'Si el horario no te conviene, confírmalo en otro horario: el visitante recibirá por correo la invitación de Google Calendar con el enlace de Meet. '
+                                    : 'Si el horario no te conviene, propón otro: el solicitante podrá aceptarlo o sugerir uno distinto. ')}
+                                Al aceptar, la reunión se crea con enlace de Google Meet en tu calendario y en el del
                                 solicitante si tiene Google Calendar conectado. Rechaza solo si no habrá reunión; deberás indicar un motivo.
                             </p>
                         )}
@@ -1134,7 +1142,26 @@ export default function MeetingRequestsPage() {
                     </div>
                 )}
             </Dialog>
-            {rescheduling && (rescheduling.mode === 'propose' ? member?.profile?.handleName : rescheduling.request.handleName) && (
+            <Dialog
+                open={showRescheduleSoon}
+                onOpenChange={setShowRescheduleSoon}
+                title="Reprogramar reunión"
+                eyebrow="PRÓXIMAMENTE"
+                description="La reprogramación de solicitudes estará disponible en una próxima versión."
+                size="small"
+                footer={
+                    <Button onClick={() => setShowRescheduleSoon(false)}>
+                        Entendido
+                    </Button>
+                }
+            >
+                <p className="flow-copy">
+                    Por ahora puedes aceptar la solicitud o rechazarla indicando el motivo;
+                    el solicitante podrá enviarte una nueva solicitud con otro horario.
+                </p>
+            </Dialog>
+
+            {RESCHEDULE_ENABLED && rescheduling && (rescheduling.mode === 'propose' ? member?.profile?.handleName : rescheduling.request.handleName) && (
                 <RescheduleDialog
                     handle={(rescheduling.mode === 'propose'
                         ? member!.profile!.handleName
