@@ -131,16 +131,22 @@ interface CancelMeetingRequestApiResponse {
 }
 
 export async function cancelMeetingRequest(
-  requestId: string): Promise<CreatedMeetingRequest> {
+  requestId: string,
+  reason: string,
+): Promise<CreatedMeetingRequest> {
   const response = await sendRequest<CancelMeetingRequestApiResponse>(
     `/api/v1/meeting-requests/${encodeURIComponent(requestId)}`,
     {
       method: 'DELETE',
+      body: { reason },
     },
   );
 
-  if (!response.success || !response.data)
-    throw new Error(response.message || 'No se pudo cancelar la solicitud.');
+  if (!response.success || !response.data) {
+    throw new Error(
+      response.message || 'No se pudo cancelar la solicitud.',
+    );
+  }
 
   return response.data;
 }
