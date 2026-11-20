@@ -1,7 +1,8 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { FiUpload } from 'react-icons/fi';
-import { Alert, Avatar, Button, Input } from '../../ui';
+import { Alert, Avatar, Button, Input, Select } from '../../ui';
+import { countries, describePhoneDigits, findCountryByCode } from '../../../constants/countries';
 import type { Profile } from '../../../types/profile-response.types';
 import type { UpdateProfilePayload } from '../../../types/profile';
 
@@ -21,6 +22,20 @@ interface ProfileFormProps {
   profile: Profile;
   saving: boolean;
   onSave: (value: ProfileFormValue) => Promise<void>;
+}
+
+function getPhoneError(phone: EditablePhone) {
+  const number = phone.phoneNumber.trim();
+  if (!number) return 'El número de teléfono es obligatorio.';
+
+  const country = findCountryByCode(phone.countryCode);
+  if (!country) return 'Selecciona un código de país.';
+  if (!/^\d+$/.test(number)) return 'El teléfono debe contener solamente números.';
+
+  const { minimum, maximum } = country.phoneDigits;
+  if (number.length < minimum || number.length > maximum)
+    return `${country.name} requiere ${describePhoneDigits(country)}.`;
+  return '';
 }
 
 export function ProfileForm({
@@ -169,6 +184,13 @@ export function ProfileForm({
     if (saving) return;
 
     setError('');
+
+    const invalidPhone = phones.find(phone => getPhoneError(phone));
+
+    if (invalidPhone) {
+      setError(getPhoneError(invalidPhone));
+      return;
+    }
 
     try {
       const payload: UpdateProfilePayload = {
@@ -378,34 +400,54 @@ export function ProfileForm({
         <h3>Teléfonos</h3>
 
         {phones.length > 0 ? (
-          phones.map((phone, index) => (
-            <div className="flow-fields" key={phone.id}>
-              <Input
-                label={`Código de país ${index + 1} (sin +)`}
-                required
-                maxLength={3}
-                pattern="[1-9][0-9]{0,2}"
-                value={phone.countryCode}
-                disabled={saving}
-                onChange={event =>
-                  updatePhone(phone.id, 'countryCode', event.target.value)
-                }
-              />
+          phones.map((phone, index) => {
+            const country = findCountryByCode(phone.countryCode);
+            const phoneError = getPhoneError(phone);
 
-              <Input
-                label={`Número de teléfono ${index + 1}`}
-                type="tel"
-                required
-                maxLength={15}
-                pattern="[0-9]{6,15}"
-                value={phone.phoneNumber}
-                disabled={saving}
-                onChange={event =>
-                  updatePhone(phone.id, 'phoneNumber', event.target.value)
-                }
-              />
-            </div>
-          ))
+            return (
+              <div className="flow-fields" key={phone.id}>
+                <Select
+                  label={`País y código telefónico ${index + 1}`}
+                  required
+                  value={phone.countryCode}
+                  disabled={saving}
+                  onChange={event =>
+                    updatePhone(phone.id, 'countryCode', event.target.value)
+                  }
+                >
+                  <option value="">Selecciona un país</option>
+                  {countries.map(countryOption => (
+                    <option key={countryOption.code} value={countryOption.code}>
+                      {countryOption.name} (+{countryOption.code})
+                    </option>
+                  ))}
+                </Select>
+
+                <Input
+                  label={`Número de teléfono ${index + 1}`}
+                  type="tel"
+                  inputMode="numeric"
+                  required
+                  maxLength={15}
+                  value={phone.phoneNumber}
+                  disabled={saving}
+                  hint={
+                    country
+                      ? `Introduce ${describePhoneDigits(country)}.`
+                      : 'Selecciona primero un país.'
+                  }
+                  error={phoneError || undefined}
+                  onChange={event =>
+                    updatePhone(
+                      phone.id,
+                      'phoneNumber',
+                      event.target.value.replace(/\D/g, '').slice(0, 15)
+                    )
+                  }
+                />
+              </div>
+            );
+          })
         ) : (
           <p className="flow-note">No tienes teléfonos registrados.</p>
         )}
