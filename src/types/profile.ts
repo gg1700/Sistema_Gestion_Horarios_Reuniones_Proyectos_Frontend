@@ -79,33 +79,33 @@ export interface UpdateProfileSurname {
 }
 
 export interface UpdateProfilePhone {
-  id: string;
+  id?: string;
   phoneNumber: string;
   countryCode: string;
   visibility: boolean;
 }
 
 export interface UpdateProfileContactEmail {
-  id: string;
+  id?: string;
   email: string;
   visibility: boolean;
 }
 
 export interface UpdateProfileAddress {
-  id: string;
+  id?: string;
   address: string;
   visibility: boolean;
 }
 
 export interface UpdateProfileLink {
-  id: string;
+  id?: string;
   text: string;
   url: string;
   visibility: boolean;
 }
 
 export interface UpdateProfileCountry {
-  id: string;
+  id?: string;
   countryName: string;
   visibility: boolean;
 }

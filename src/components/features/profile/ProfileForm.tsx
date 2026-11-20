@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { FiUpload } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiUpload } from 'react-icons/fi';
 import { Alert, Avatar, Button, Input, Select } from '../../ui';
 import {
   countries as phoneCountries,
@@ -10,11 +10,29 @@ import {
 import type { Profile } from '../../../types/profile-response.types';
 import type { UpdateProfilePayload } from '../../../types/profile';
 
-type EditablePhone = NonNullable<UpdateProfilePayload['phones']>[number];
-type EditableEmail = NonNullable<UpdateProfilePayload['contactEmails']>[number];
-type EditableAddress = NonNullable<UpdateProfilePayload['addresses']>[number];
-type EditableLink = NonNullable<UpdateProfilePayload['links']>[number];
-type EditableCountry = NonNullable<UpdateProfilePayload['countries']>[number];
+type EditablePhone = NonNullable<UpdateProfilePayload['phones']>[number] & {
+  clientKey: string;
+};
+
+type EditableEmail = NonNullable<UpdateProfilePayload['contactEmails']>[number] & {
+  clientKey: string;
+};
+
+type EditableAddress = NonNullable<UpdateProfilePayload['addresses']>[number] & {
+  clientKey: string;
+};
+
+type EditableLink = NonNullable<UpdateProfilePayload['links']>[number] & {
+  clientKey: string;
+};
+
+type EditableCountry = NonNullable<UpdateProfilePayload['countries']>[number] & {
+  clientKey: string;
+};
+
+function createClientKey() {
+  return crypto.randomUUID();
+}
 
 export interface ProfileFormValue {
   personalInfo: UpdateProfilePayload;
@@ -54,6 +72,7 @@ export function ProfileForm({
   const [phones, setPhones] = useState<EditablePhone[]>(() =>
     profile.phones.map(phone => ({
       id: phone.id,
+      clientKey: createClientKey(),
       phoneNumber: phone.phoneNumber,
       countryCode: phone.countryCode,
       visibility: phone.visible,
@@ -63,6 +82,7 @@ export function ProfileForm({
   const [contactEmails, setContactEmails] = useState<EditableEmail[]>(() =>
     profile.contactEmails.map(email => ({
       id: email.id,
+      clientKey: createClientKey(),
       email: email.email,
       visibility: email.visible,
     }))
@@ -71,6 +91,7 @@ export function ProfileForm({
   const [addresses, setAddresses] = useState<EditableAddress[]>(() =>
     profile.addresses.map(address => ({
       id: address.id,
+      clientKey: createClientKey(),
       address: address.address,
       visibility: address.visible,
     }))
@@ -79,6 +100,7 @@ export function ProfileForm({
   const [countries, setCountries] = useState<EditableCountry[]>(() =>
     profile.countries.map(country => ({
       id: country.id,
+      clientKey: createClientKey(),
       countryName: country.countryName,
       visibility: country.visible,
     }))
@@ -87,6 +109,7 @@ export function ProfileForm({
   const [links, setLinks] = useState<EditableLink[]>(() =>
     profile.links.map(link => ({
       id: link.id,
+      clientKey: createClientKey(),
       text: link.text,
       url: link.url,
       visibility: link.visible,
@@ -115,51 +138,134 @@ export function ProfileForm({
   }, [profilePicture, profile.profilePicture]);
 
   function updatePhone(
-    id: string,
+    clientKey: string,
     field: 'phoneNumber' | 'countryCode',
     value: string
   ) {
     setPhones(current =>
       current.map(phone =>
-        phone.id === id ? { ...phone, [field]: value } : phone
+        phone.clientKey === clientKey ? { ...phone, [field]: value } : phone
       )
     );
   }
 
-  function updateEmail(id: string, value: string) {
+  function updateEmail(clientKey: string, value: string) {
     setContactEmails(current =>
       current.map(email =>
-        email.id === id ? { ...email, email: value } : email
+        email.clientKey === clientKey ? { ...email, email: value } : email
       )
     );
   }
 
-  function updateAddress(id: string, value: string) {
+  function updateAddress(clientKey: string, value: string) {
     setAddresses(current =>
       current.map(address =>
-        address.id === id ? { ...address, address: value } : address
+        address.clientKey === clientKey ? { ...address, address: value } : address
       )
     );
   }
 
-  function updateCountry(id: string, value: string) {
+  function updateCountry(clientKey: string, value: string) {
     setCountries(current =>
       current.map(country =>
-        country.id === id ? { ...country, countryName: value } : country
+        country.id === clientKey ? { ...country, countryName: value } : country
       )
     );
   }
 
   function updateLink(
-    id: string,
+    clientKey: string,
     field: 'text' | 'url',
     value: string
   ) {
     setLinks(current =>
       current.map(link =>
-        link.id === id ? { ...link, [field]: value } : link
+        link.clientKey === clientKey ? { ...link, [field]: value } : link
       )
     );
+  }
+
+  function addPhone() {
+    setPhones(current => [
+      ...current,
+      {
+        clientKey: createClientKey(),
+        phoneNumber: '',
+        countryCode: '',
+        visibility: true,
+      },
+    ]);
+  }
+
+  function removePhone(clientKey: string) {
+    setPhones(current => current.filter(phone => phone.clientKey !== clientKey));
+  }
+
+  function addEmail() {
+    setContactEmails(current => [
+      ...current,
+      {
+        clientKey: createClientKey(),
+        email: '',
+        visibility: true,
+      },
+    ]);
+  }
+
+  function removeEmail(clientKey: string) {
+    setContactEmails(current =>
+      current.filter(email => email.clientKey !== clientKey)
+    );
+  }
+
+  function addAddress() {
+    setAddresses(current => [
+      ...current,
+      {
+        clientKey: createClientKey(),
+        address: '',
+        visibility: true,
+      },
+    ]);
+  }
+
+  function removeAddress(clientKey: string) {
+    setAddresses(current =>
+      current.filter(address => address.clientKey !== clientKey)
+    );
+  }
+
+  function addCountry() {
+    setCountries(current => [
+      ...current,
+      {
+        clientKey: createClientKey(),
+        countryName: '',
+        visibility: true,
+      },
+    ]);
+  }
+
+  function removeCountry(clientKey: string) {
+    setCountries(current =>
+      current.filter(country => country.clientKey !== clientKey)
+    );
+  }
+
+  function addLink() {
+    setLinks(current => [
+      ...current,
+      {
+        clientKey: createClientKey(),
+        text: '',
+        url: '',
+        visibility: true,
+      },
+    ]);
+  }
+
+  function removeLink(clientKey: string) {
+    setLinks(current => current.filter(link => link.clientKey !== clientKey));
   }
 
   function selectProfilePicture(file?: File) {
@@ -209,42 +315,32 @@ export function ProfileForm({
         };
       }
 
-      if (phones.length > 0) {
-        payload.phones = phones.map(phone => ({
-          ...phone,
-          phoneNumber: phone.phoneNumber.trim(),
-          countryCode: phone.countryCode.trim(),
-        }));
-      }
+      payload.phones = phones.map(({ clientKey, ...phone }) => ({
+        ...phone,
+        phoneNumber: phone.phoneNumber.trim(),
+        countryCode: phone.countryCode.trim(),
+      }));
 
-      if (contactEmails.length > 0) {
-        payload.contactEmails = contactEmails.map(email => ({
-          ...email,
-          email: email.email.trim(),
-        }));
-      }
+      payload.contactEmails = contactEmails.map(({ clientKey, ...email }) => ({
+        ...email,
+        email: email.email.trim(),
+      }));
 
-      if (addresses.length > 0) {
-        payload.addresses = addresses.map(address => ({
-          ...address,
-          address: address.address.trim(),
-        }));
-      }
+      payload.addresses = addresses.map(({ clientKey, ...address }) => ({
+        ...address,
+        address: address.address.trim(),
+      }));
 
-      if (countries.length > 0) {
-        payload.countries = countries.map(country => ({
-          ...country,
-          countryName: country.countryName.trim(),
-        }));
-      }
+      payload.countries = countries.map(({ clientKey, ...country }) => ({
+        ...country,
+        countryName: country.countryName.trim(),
+      }));
 
-      if (links.length > 0) {
-        payload.links = links.map(link => ({
-          ...link,
-          text: link.text.trim(),
-          url: link.url.trim(),
-        }));
-      }
+      payload.links = links.map(({ clientKey, ...link }) => ({
+        ...link,
+        text: link.text.trim(),
+        url: link.url.trim(),
+      }));
 
       await onSave({
         personalInfo: payload,
@@ -333,22 +429,46 @@ export function ProfileForm({
       </div>
 
       <section className="profile-contact-section">
-        <h3>Países de residencia</h3>
+        <div className="profile-repeat-heading">
+          <h3>Países de residencia</h3>
+          <Button
+            type="button"
+            size="small"
+            variant="secondary"
+            leadingIcon={<FiPlus />}
+            disabled={saving}
+            onClick={addCountry}
+          >
+            Agregar país
+          </Button>
+        </div>
 
         {countries.length > 0 ? (
           countries.map((country, index) => (
-            <Input
-              key={country.id}
-              label={`País ${index + 1}`}
-              required
-              maxLength={100}
-              value={country.countryName}
-              disabled={saving}
-              hint="Debe corresponder a un país existente en el catálogo."
-              onChange={event =>
-                updateCountry(country.id, event.target.value)
-              }
-            />
+            <div key={country.clientKey} className="profile-repeat-item">
+              <Input
+                label={`País ${index + 1}`}
+                required
+                maxLength={100}
+                value={country.countryName}
+                disabled={saving}
+                hint="Debe corresponder a un país existente en el catálogo."
+                onChange={event =>
+                  updateCountry(country.clientKey, event.target.value)
+                }
+              />
+
+              <Button
+                type="button"
+                size="small"
+                variant="danger"
+                leadingIcon={<FiTrash2 />}
+                disabled={saving}
+                onClick={() => removeCountry(country.clientKey)}
+              >
+                Eliminar
+              </Button>
+            </div>
           ))
         ) : (
           <p className="flow-note">No tienes países registrados.</p>
@@ -356,21 +476,45 @@ export function ProfileForm({
       </section>
 
       <section className="profile-contact-section">
-        <h3>Direcciones</h3>
+        <div className="profile-repeat-heading">
+          <h3>Direcciones</h3>
+          <Button
+            type="button"
+            size="small"
+            variant="secondary"
+            leadingIcon={<FiPlus />}
+            disabled={saving}
+            onClick={addAddress}
+          >
+            Agregar dirección
+          </Button>
+        </div>
 
         {addresses.length > 0 ? (
           addresses.map((address, index) => (
-            <Input
-              key={address.id}
-              label={`Dirección ${index + 1}`}
-              required
-              maxLength={300}
-              value={address.address}
-              disabled={saving}
-              onChange={event =>
-                updateAddress(address.id, event.target.value)
-              }
-            />
+            <div key={address.clientKey} className="profile-repeat-item">
+              <Input
+                label={`Dirección ${index + 1}`}
+                required
+                maxLength={300}
+                value={address.address}
+                disabled={saving}
+                onChange={event =>
+                  updateAddress(address.clientKey, event.target.value)
+                }
+              />
+
+              <Button
+                type="button"
+                size="small"
+                variant="danger"
+                leadingIcon={<FiTrash2 />}
+                disabled={saving}
+                onClick={() => removeAddress(address.clientKey)}
+              >
+                Eliminar
+              </Button>
+            </div>
           ))
         ) : (
           <p className="flow-note">No tienes direcciones registradas.</p>
@@ -378,22 +522,46 @@ export function ProfileForm({
       </section>
 
       <section className="profile-contact-section">
-        <h3>Correos de contacto</h3>
+        <div className="profile-repeat-heading">
+          <h3>Correos de contacto</h3>
+          <Button
+            type="button"
+            size="small"
+            variant="secondary"
+            leadingIcon={<FiPlus />}
+            disabled={saving}
+            onClick={addEmail}
+          >
+            Agregar correo
+          </Button>
+        </div>
 
         {contactEmails.length > 0 ? (
           contactEmails.map((email, index) => (
-            <Input
-              key={email.id}
-              label={`Correo de contacto ${index + 1}`}
-              type="email"
-              required
-              maxLength={200}
-              value={email.email}
-              disabled={saving}
-              onChange={event =>
-                updateEmail(email.id, event.target.value)
-              }
-            />
+            <div key={email.clientKey} className="profile-repeat-item">
+              <Input
+                label={`Correo de contacto ${index + 1}`}
+                type="email"
+                required
+                maxLength={200}
+                value={email.email}
+                disabled={saving}
+                onChange={event =>
+                  updateEmail(email.clientKey, event.target.value)
+                }
+              />
+
+              <Button
+                type="button"
+                size="small"
+                variant="danger"
+                leadingIcon={<FiTrash2 />}
+                disabled={saving}
+                onClick={() => removeEmail(email.clientKey)}
+              >
+                Eliminar
+              </Button>
+            </div>
           ))
         ) : (
           <p className="flow-note">No tienes correos de contacto registrados.</p>
@@ -401,7 +569,19 @@ export function ProfileForm({
       </section>
 
       <section className="profile-contact-section">
-        <h3>Teléfonos</h3>
+        <div className="profile-repeat-heading">
+          <h3>Teléfonos</h3>
+          <Button
+            type="button"
+            size="small"
+            variant="secondary"
+            leadingIcon={<FiPlus />}
+            disabled={saving}
+            onClick={addPhone}
+          >
+            Agregar teléfono
+          </Button>
+        </div>
 
         {phones.length > 0 ? (
           phones.map((phone, index) => {
@@ -409,46 +589,63 @@ export function ProfileForm({
             const phoneError = getPhoneError(phone);
 
             return (
-              <div className="flow-fields" key={phone.id}>
-                <Select
-                  label={`País y código telefónico ${index + 1}`}
-                  required
-                  value={phone.countryCode}
-                  disabled={saving}
-                  onChange={event =>
-                    updatePhone(phone.id, 'countryCode', event.target.value)
-                  }
-                >
-                  <option value="">Selecciona un país</option>
-                  {phoneCountries.map(countryOption => (
-                    <option key={countryOption.code} value={countryOption.code}>
-                      {countryOption.name} (+{countryOption.code})
-                    </option>
-                  ))}
-                </Select>
+              <div key={phone.clientKey} className="profile-repeat-item">
+                <div className="flow-fields">
+                  <Select
+                    label={`País y código telefónico ${index + 1}`}
+                    required
+                    value={phone.countryCode}
+                    disabled={saving}
+                    onChange={event =>
+                      updatePhone(
+                        phone.clientKey,
+                        'countryCode',
+                        event.target.value
+                      )
+                    }
+                  >
+                    <option value="">Selecciona un país</option>
+                    {phoneCountries.map(countryOption => (
+                      <option key={countryOption.code} value={countryOption.code}>
+                        {countryOption.name} (+{countryOption.code})
+                      </option>
+                    ))}
+                  </Select>
 
-                <Input
-                  label={`Número de teléfono ${index + 1}`}
-                  type="tel"
-                  inputMode="numeric"
-                  required
-                  maxLength={15}
-                  value={phone.phoneNumber}
+                  <Input
+                    label={`Número de teléfono ${index + 1}`}
+                    type="tel"
+                    inputMode="numeric"
+                    required
+                    maxLength={15}
+                    value={phone.phoneNumber}
+                    disabled={saving}
+                    hint={
+                      country
+                        ? `Introduce ${describePhoneDigits(country)}.`
+                        : 'Selecciona primero un país.'
+                    }
+                    error={phoneError || undefined}
+                    onChange={event =>
+                      updatePhone(
+                        phone.clientKey,
+                        'phoneNumber',
+                        event.target.value.replace(/\D/g, '').slice(0, 15)
+                      )
+                    }
+                  />
+                </div>
+
+                <Button
+                  type="button"
+                  size="small"
+                  variant="danger"
+                  leadingIcon={<FiTrash2 />}
                   disabled={saving}
-                  hint={
-                    country
-                      ? `Introduce ${describePhoneDigits(country)}.`
-                      : 'Selecciona primero un país.'
-                  }
-                  error={phoneError || undefined}
-                  onChange={event =>
-                    updatePhone(
-                      phone.id,
-                      'phoneNumber',
-                      event.target.value.replace(/\D/g, '').slice(0, 15)
-                    )
-                  }
-                />
+                  onClick={() => removePhone(phone.clientKey)}
+                >
+                  Eliminar
+                </Button>
               </div>
             );
           })
@@ -460,11 +657,21 @@ export function ProfileForm({
       <section className="profile-links-editor">
         <div className="profile-repeat-heading">
           <h3>Enlaces personales</h3>
+          <Button
+            type="button"
+            size="small"
+            variant="secondary"
+            leadingIcon={<FiPlus />}
+            disabled={saving}
+            onClick={addLink}
+          >
+            Agregar enlace
+          </Button>
         </div>
 
         {links.length > 0 ? (
           links.map((link, index) => (
-            <div className="profile-link-editor" key={link.id}>
+            <div className="profile-link-editor" key={link.clientKey}>
               <Input
                 label={`Nombre del enlace ${index + 1}`}
                 required
@@ -472,7 +679,7 @@ export function ProfileForm({
                 value={link.text}
                 disabled={saving}
                 onChange={event =>
-                  updateLink(link.id, 'text', event.target.value)
+                  updateLink(link.clientKey, 'text', event.target.value)
                 }
               />
 
@@ -484,9 +691,20 @@ export function ProfileForm({
                 value={link.url}
                 disabled={saving}
                 onChange={event =>
-                  updateLink(link.id, 'url', event.target.value)
+                  updateLink(link.clientKey, 'url', event.target.value)
                 }
               />
+
+              <Button
+                type="button"
+                size="small"
+                variant="danger"
+                leadingIcon={<FiTrash2 />}
+                disabled={saving}
+                onClick={() => removeLink(link.clientKey)}
+              >
+                Eliminar
+              </Button>
             </div>
           ))
         ) : (
