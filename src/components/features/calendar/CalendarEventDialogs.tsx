@@ -8,7 +8,6 @@ import {
   FiMapPin,
   FiTrash2,
 } from 'react-icons/fi';
-
 import { Dialog } from '../../modals';
 import {
   Alert,
@@ -18,7 +17,6 @@ import {
   Textarea,
 } from '../../ui';
 import { StatusDot } from '../flows/FlowPrimitives';
-
 import {
   createCalendarEvent,
   updateCalendarEvent,
@@ -26,22 +24,30 @@ import {
 } from '../../../api/calendarEventsApi';
 
 import type { CalendarEventItem } from '../../../types/calendarEvents';
-
 import {
   dateKey,
   dateLabel,
   rangeLabel,
   timeLabel,
+  timeZoneLabel,
+  zonedDateTimeIso,
 } from '../../../utils/calendar';
+import { OWNER_TIME_ZONE } from '../../../types/calendar';
 
-const TIME_ZONE = 'America/La_Paz';
+const TIME_ZONE = OWNER_TIME_ZONE;
 
 function toDateTimeInput(value: string) {
   return `${dateKey(value)}T${timeLabel(value)}`;
 }
 
 function toApiDateTime(value: string) {
-  return new Date(`${value}:00-04:00`).toISOString();
+  const [day, time] = value.split('T');
+
+  return zonedDateTimeIso(
+    day,
+    time.slice(0, 5),
+    TIME_ZONE,
+  );
 }
 
 function CalendarIdentity({ calendarName }: { calendarName: string }) {
@@ -206,7 +212,7 @@ export function CalendarEventEditor({
         </div>
 
         <p className="event-timezone">
-          America/La_Paz · UTC−4
+          {timeZoneLabel(TIME_ZONE)}
         </p>
 
         <Textarea
@@ -307,7 +313,7 @@ export function CalendarEventDetails({
           <dd>
             {dateLabel(event.startsAt)}
             <br />
-            {timeLabel(event.startsAt)} · La Paz (UTC−4)
+            {timeLabel(event.startsAt)} · {timeZoneLabel(TIME_ZONE)}
           </dd>
         </div>
 
@@ -316,7 +322,7 @@ export function CalendarEventDetails({
           <dd>
             {dateLabel(event.endsAt)}
             <br />
-            {timeLabel(event.endsAt)} · La Paz (UTC−4)
+            {timeLabel(event.endsAt)} · {timeZoneLabel(TIME_ZONE)}
           </dd>
         </div>
 
@@ -439,7 +445,7 @@ export function DeleteCalendarEvent({
 
         <p>
           <FiClock />
-          {rangeLabel(range)} · La Paz (UTC−4)
+          {rangeLabel(range)} · {timeZoneLabel(TIME_ZONE)}
         </p>
       </section>
 
