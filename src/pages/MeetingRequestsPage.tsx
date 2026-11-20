@@ -977,35 +977,35 @@ export default function MeetingRequestsPage() {
                                     FECHA DE RESOLUCIÓN
                                 </p>
 
-                                {viewingRequest.meetUrl && (
-                                    <div className="requests-table-title">
-                                        <p className="ui-eyebrow">
-                                            REUNIÓN VIRTUAL
-                                        </p>
-
-                                        <a
-                                            href={viewingRequest.meetUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            Unirse a Google Meet
-                                        </a>
-                                    </div>
-                                )}
-
-                                {viewingRequest.cancellationReason && (
-                                    <div className="requests-table-title">
-                                        <p className="ui-eyebrow">
-                                            MOTIVO DE CANCELACIÓN
-                                        </p>
-
-                                        <small>{viewingRequest.cancellationReason}</small>
-                                    </div>
-                                )}
-
                                 <small>
                                     {formatRequestCreatedAt(viewingRequest.resolvedAt)}
                                 </small>
+                            </div>
+                        )}
+
+                        {viewingRequest.meetUrl && (
+                            <div className="requests-table-title">
+                                <p className="ui-eyebrow">
+                                    REUNIÓN VIRTUAL
+                                </p>
+
+                                <a
+                                    href={viewingRequest.meetUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Unirse a Google Meet
+                                </a>
+                            </div>
+                        )}
+
+                        {viewingRequest.cancellationReason && (
+                            <div className="requests-table-title">
+                                <p className="ui-eyebrow">
+                                    MOTIVO DE CANCELACIÓN
+                                </p>
+
+                                <small>{viewingRequest.cancellationReason}</small>
                             </div>
                         )}
 
