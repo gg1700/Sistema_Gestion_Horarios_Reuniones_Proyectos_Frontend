@@ -168,7 +168,9 @@ export function ProfileForm({
   function updateCountry(clientKey: string, value: string) {
     setCountries(current =>
       current.map(country =>
-        country.id === clientKey ? { ...country, countryName: value } : country
+        country.clientKey === clientKey
+          ? { ...country, countryName: value }
+          : country
       )
     );
   }
