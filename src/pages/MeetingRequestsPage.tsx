@@ -26,7 +26,7 @@ import {
 import { Dialog } from '../components/modals';
 import { Input, Textarea } from '../components/ui';
 import type { UpdateMeetingRequestPayload } from '../types/meetingRequests';
-import { resolveViewerTimeZone } from '../types/calendar';
+import { useCalendarTimeZone } from '../hooks/useCalendarTimeZone';
 
 const PAGE_LIMIT = 20;
 
@@ -85,27 +85,34 @@ function formatScheduleIn(
     };
 }
 
-function formatRequestSchedule(request: MeetingRequestItem) {
-    const localTimeZone = resolveViewerTimeZone();
+function formatRequestSchedule(
+    request: MeetingRequestItem,
+    localTimeZone: string,
+) {
+    const local = formatScheduleIn(request, localTimeZone);
 
-    const local = formatScheduleIn(request, localTimeZone,);
     const originalTimeZone = request.timeZone || localTimeZone;
+
     const original = originalTimeZone !== localTimeZone
         ? formatScheduleIn(request, originalTimeZone)
         : null;
+
     const differs = original !== null
         && (original.range !== local.range || original.date !== local.date);
 
     return {
         ...local,
-        zoneLabel: `Tu hora local (${localTimeZone.replace(/_/g, ' ')})`,
+        zoneLabel: `Tu hora configurada (${localTimeZone.replace(/_/g, ' ')})`,
         original: differs && original
             ? `${original.date}, ${original.range} en ${original.timeZone.replace(/_/g, ' ')}`
             : null,
     };
 }
 
-function formatRequestCreatedAt(createdAt: string) {
+function formatRequestCreatedAt(
+    createdAt: string,
+    timeZone: string,
+) {
     return new Intl.DateTimeFormat('es-BO', {
         day: 'numeric',
         month: 'long',
@@ -113,9 +120,10 @@ function formatRequestCreatedAt(createdAt: string) {
         hour: '2-digit',
         minute: '2-digit',
         hourCycle: 'h23',
-        timeZone: resolveViewerTimeZone(),
+        timeZone,
     }).format(new Date(createdAt));
 }
+
 
 function getCounterpartName(request: MeetingRequestItem) {
     return (
@@ -161,6 +169,8 @@ export default function MeetingRequestsPage() {
     const [cancelError, setCancelError] = useState('');
 
     const [cancelReason, setCancelReason] = useState('');
+
+    const viewerTimeZone = useCalendarTimeZone();
 
     const {
         requests,
@@ -533,6 +543,12 @@ export default function MeetingRequestsPage() {
                                                     ? 'Motivo del rechazo: '
                                                     : 'Respuesta: '}
                                                 {request.ownerResponseMessage}
+
+                                                {request.cancellationReason && (
+                                                    <small className="meeting-request-response">
+                                                        Motivo de cancelación: {request.cancellationReason}
+                                                    </small>
+                                                )}
                                             </small>
                                         )}
                                     </div>
@@ -542,7 +558,10 @@ export default function MeetingRequestsPage() {
                                 id: 'time',
                                 heading: 'HORARIO SOLICITADO',
                                 cell: request => {
-                                    const schedule = formatRequestSchedule(request);
+                                    const schedule = formatRequestSchedule(
+                                        request,
+                                        viewerTimeZone,
+                                    );
 
                                     return (
                                         <div className="requests-table-time">
@@ -552,6 +571,13 @@ export default function MeetingRequestsPage() {
                                                 {schedule.range}
                                                 <br />
                                                 {schedule.zoneLabel}
+
+                                                {schedule.original && (
+                                                    <>
+                                                        <br />
+                                                        Registrada como: {schedule.original}
+                                                    </>
+                                                )}
                                             </small>
                                         </div>
                                     );
@@ -963,20 +989,35 @@ export default function MeetingRequestsPage() {
                             </p>
 
                             <strong>
-                                {formatRequestSchedule(viewingRequest).date}
+                                {formatRequestSchedule(
+                                    viewingRequest,
+                                    viewerTimeZone,
+                                ).date}
                             </strong>
 
                             <small>
-                                {formatRequestSchedule(viewingRequest).range}
+                                {formatRequestSchedule(
+                                    viewingRequest,
+                                    viewerTimeZone,
+                                ).range}
                                 <br />
-                                {formatRequestSchedule(viewingRequest).zoneLabel}
+                                {formatRequestSchedule(
+                                    viewingRequest,
+                                    viewerTimeZone,
+                                ).zoneLabel}
 
-                                {formatRequestSchedule(viewingRequest).original && (
-                                    <>
-                                        <br />
-                                        Registrada como: {formatRequestSchedule(viewingRequest).original}
-                                    </>
-                                )}
+                                {formatRequestSchedule(
+                                    viewingRequest,
+                                    viewerTimeZone,
+                                ).original && (
+                                        <>
+                                            <br />
+                                            Registrada como: {formatRequestSchedule(
+                                                viewingRequest,
+                                                viewerTimeZone,
+                                            ).original}
+                                        </>
+                                    )}
                             </small>
                         </div>
 
@@ -986,7 +1027,10 @@ export default function MeetingRequestsPage() {
                             </p>
 
                             <small>
-                                {formatRequestCreatedAt(viewingRequest.createdAt)}
+                                {formatRequestCreatedAt(
+                                    viewingRequest.createdAt,
+                                    viewerTimeZone,
+                                )}
                             </small>
                         </div>
 
@@ -997,7 +1041,10 @@ export default function MeetingRequestsPage() {
                                 </p>
 
                                 <small>
-                                    {formatRequestCreatedAt(viewingRequest.resolvedAt)}
+                                    {formatRequestCreatedAt(
+                                        viewingRequest.resolvedAt,
+                                        viewerTimeZone,
+                                    )}
                                 </small>
                             </div>
                         )}
