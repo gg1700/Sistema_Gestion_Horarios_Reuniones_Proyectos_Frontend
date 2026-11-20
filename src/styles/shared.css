@@ -276,3 +276,30 @@ button.ui-header__identity { cursor: pointer; }
   .ui-button, .ui-switch__track::after { transition: none; }
   .ui-spinner { animation: none; border-style: dotted; }
 }
+
+.ui-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-top: 1.25rem;
+}
+
+.ui-pagination__summary {
+  color: var(--ui-muted);
+  font-size: .75rem;
+}
+
+.ui-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-left: auto;
+}
+
+.ui-pagination__controls > span {
+  color: var(--ui-muted);
+  font-size: .75rem;
+  white-space: nowrap;
+}
