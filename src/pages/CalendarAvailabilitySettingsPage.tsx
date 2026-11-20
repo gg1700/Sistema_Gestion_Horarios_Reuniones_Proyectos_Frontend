@@ -84,14 +84,13 @@ export default function CalendarAvailabilitySettingsPage() {
                         : availability.timeZone,
                 );
 
-                setDirty(shouldSuggestViewerTimeZone);
                 setRules(
                     availability.rules.map((rule, index) =>
                         createRuleDraft(rule, index),
                     ),
                 );
                 setPublicLink(link);
-                setDirty(false);
+                setDirty(shouldSuggestViewerTimeZone);
             } catch (failure) {
                 if (active) {
                     setError(
