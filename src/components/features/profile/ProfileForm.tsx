@@ -2,7 +2,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { FiUpload } from 'react-icons/fi';
 import { Alert, Avatar, Button, Input, Select } from '../../ui';
-import { countries, describePhoneDigits, findCountryByCode } from '../../../constants/countries';
+import {
+  countries as phoneCountries,
+  describePhoneDigits,
+  findCountryByCode,
+} from '../../../constants/countries';
 import type { Profile } from '../../../types/profile-response.types';
 import type { UpdateProfilePayload } from '../../../types/profile';
 
@@ -416,7 +420,7 @@ export function ProfileForm({
                   }
                 >
                   <option value="">Selecciona un país</option>
-                  {countries.map(countryOption => (
+                  {phoneCountries.map(countryOption => (
                     <option key={countryOption.code} value={countryOption.code}>
                       {countryOption.name} (+{countryOption.code})
                     </option>
