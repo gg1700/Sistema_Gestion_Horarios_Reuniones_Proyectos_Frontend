@@ -686,11 +686,11 @@ export default function AvailabilityPage({
                           )}
                         </span>
 
-                        <small>
-                          {showsViewerTime
-                            ? `Tu hora: ${formatSlotTime(slot, VIEWER_TIME_ZONE)}`
-                            : 'Disponible'}
-                        </small>
+                        {showsViewerTime && (
+                          <small>
+                            Tu hora: {formatSlotTime(slot, VIEWER_TIME_ZONE)}
+                          </small>
+                        )}
 
                         <small>Disponible</small>
                       </button>
