@@ -25,6 +25,7 @@ export interface MeetingRequestItem {
   guestEmail: string | null;
   meetUrl: string | null;
   cancellationReason: string | null;
+  cancellationActorHandle: string | null;
 }
 
 export interface MeetingRequestsResponse {
