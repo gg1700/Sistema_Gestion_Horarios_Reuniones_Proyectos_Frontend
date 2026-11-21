@@ -552,6 +552,9 @@ export default function MeetingRequestsPage() {
                                         {request.cancellationReason && (
                                             <small className="meeting-request-response">
                                                 Motivo de cancelación: {request.cancellationReason}
+                                                {request.cancellationActorHandle && (
+                                                    <> (cancelada por @{request.cancellationActorHandle})</>
+                                                )}
                                             </small>
                                         )}
                                     </div>
@@ -1031,14 +1034,14 @@ export default function MeetingRequestsPage() {
                                     viewingRequest,
                                     viewerTimeZone,
                                 ).original && (
-                                    <>
-                                        <br />
-                                        Registrada como: {formatRequestSchedule(
-                                            viewingRequest,
-                                            viewerTimeZone,
-                                        ).original}
-                                    </>
-                                )}
+                                        <>
+                                            <br />
+                                            Registrada como: {formatRequestSchedule(
+                                                viewingRequest,
+                                                viewerTimeZone,
+                                            ).original}
+                                        </>
+                                    )}
                             </small>
                         </div>
 
