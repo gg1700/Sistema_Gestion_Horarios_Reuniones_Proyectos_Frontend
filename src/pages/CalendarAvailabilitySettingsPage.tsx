@@ -12,7 +12,6 @@ import {
     replaceAvailabilityRules,
     updatePublicCalendarLink,
 } from '../api/calendarAvailabilityApi';
-
 import type {
     AvailabilityRule,
     PublicCalendarLink,

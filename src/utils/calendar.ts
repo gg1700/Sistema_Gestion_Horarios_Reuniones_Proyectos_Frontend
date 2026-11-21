@@ -1,4 +1,3 @@
-
 import { OWNER_TIME_ZONE, type TimeRange } from '../types/calendar';
 
 const locale = 'es-BO';
@@ -95,14 +94,15 @@ export function timeZoneLabel(
 export function dateLabel(
   value: string,
   options: Intl.DateTimeFormatOptions = {},
+  timeZone = OWNER_TIME_ZONE,
 ): string {
   const date =
     value.length === 10
-      ? zonedDateTime(value, '12:00')
+      ? zonedDateTime(value, '12:00', timeZone)
       : new Date(value);
 
   return new Intl.DateTimeFormat(locale, {
-    timeZone: OWNER_TIME_ZONE,
+    timeZone,
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -111,22 +111,34 @@ export function dateLabel(
   }).format(date);
 }
 
-export function timeLabel(value: string): string {
+export function timeLabel(
+  value: string,
+  timeZone = OWNER_TIME_ZONE,
+): string {
   return new Intl.DateTimeFormat(locale, {
-    timeZone: OWNER_TIME_ZONE,
+    timeZone,
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
   }).format(new Date(value));
 }
 
-export function rangeLabel(range: TimeRange): string {
-  return `${timeLabel(range.start)} — ${timeLabel(range.end)}`;
+export function rangeLabel(
+  range: TimeRange,
+  timeZone = OWNER_TIME_ZONE,
+): string {
+  return (
+    `${timeLabel(range.start, timeZone)} — ` +
+    `${timeLabel(range.end, timeZone)}`
+  );
 }
 
-export function dateKey(value: string): string {
+export function dateKey(
+  value: string,
+  timeZone = OWNER_TIME_ZONE,
+): string {
   return new Intl.DateTimeFormat('en-CA', {
-    timeZone: OWNER_TIME_ZONE,
+    timeZone,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -163,9 +175,14 @@ export function weekStart(value: string): string {
 export function calendarDaySegments<T extends TimeRange>(
   events: T[],
   day: string,
+  timeZone = OWNER_TIME_ZONE,
 ) {
-  const from = zonedDateTime(day).getTime();
-  const to = zonedDateTime(shiftDate(day, 1)).getTime();
+  const from = zonedDateTime(day, '00:00', timeZone).getTime();
+  const to = zonedDateTime(
+    shiftDate(day, 1),
+    '00:00',
+    timeZone,
+  ).getTime();
 
   const segments = events
     .filter(

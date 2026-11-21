@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { FiRefreshCw } from 'react-icons/fi';
 import { MemberShell } from '../components/features/flows/FlowShell';
@@ -26,7 +25,7 @@ import {
 import { Dialog } from '../components/modals';
 import { Input, Textarea } from '../components/ui';
 import type { UpdateMeetingRequestPayload } from '../types/meetingRequests';
-import { resolveViewerTimeZone } from '../types/calendar';
+import { useCalendarTimeZone } from '../hooks/useCalendarTimeZone';
 
 const PAGE_LIMIT = 20;
 
@@ -60,9 +59,11 @@ function getStatusTone(
 
 function formatScheduleIn(
     request: MeetingRequestItem,
-    timeZone: string) {
+    timeZone: string
+) {
     const start = new Date(request.startsAt);
     const end = new Date(request.endsAt);
+
     const date = new Intl.DateTimeFormat('es-BO', {
         timeZone,
         weekday: 'short',
@@ -85,27 +86,34 @@ function formatScheduleIn(
     };
 }
 
-function formatRequestSchedule(request: MeetingRequestItem) {
-    const localTimeZone = resolveViewerTimeZone();
+function formatRequestSchedule(
+    request: MeetingRequestItem,
+    localTimeZone: string,
+) {
+    const local = formatScheduleIn(request, localTimeZone);
 
-    const local = formatScheduleIn(request, localTimeZone,);
     const originalTimeZone = request.timeZone || localTimeZone;
+
     const original = originalTimeZone !== localTimeZone
         ? formatScheduleIn(request, originalTimeZone)
         : null;
+
     const differs = original !== null
         && (original.range !== local.range || original.date !== local.date);
 
     return {
         ...local,
-        zoneLabel: `Tu hora local (${localTimeZone.replace(/_/g, ' ')})`,
+        zoneLabel: `Tu hora configurada (${localTimeZone.replace(/_/g, ' ')})`,
         original: differs && original
             ? `${original.date}, ${original.range} en ${original.timeZone.replace(/_/g, ' ')}`
             : null,
     };
 }
 
-function formatRequestCreatedAt(createdAt: string) {
+function formatRequestCreatedAt(
+    createdAt: string,
+    timeZone: string,
+) {
     return new Intl.DateTimeFormat('es-BO', {
         day: 'numeric',
         month: 'long',
@@ -113,7 +121,7 @@ function formatRequestCreatedAt(createdAt: string) {
         hour: '2-digit',
         minute: '2-digit',
         hourCycle: 'h23',
-        timeZone: resolveViewerTimeZone(),
+        timeZone,
     }).format(new Date(createdAt));
 }
 
@@ -162,6 +170,8 @@ export default function MeetingRequestsPage() {
 
     const [cancelReason, setCancelReason] = useState('');
 
+    const viewerTimeZone = useCalendarTimeZone();
+
     const {
         requests,
         loading,
@@ -208,6 +218,7 @@ export default function MeetingRequestsPage() {
             );
 
             setViewingRequest(null);
+
             refresh();
 
             return true;
@@ -370,6 +381,7 @@ export default function MeetingRequestsPage() {
                     ? 'La reunión se canceló correctamente.'
                     : 'La solicitud se retiró correctamente.'
             );
+
             setCancellingRequest(null);
             setCancelReason('');
 
@@ -422,6 +434,7 @@ export default function MeetingRequestsPage() {
                         {decisionMessage}
                     </p>
                 )}
+
                 <div
                     className="meeting-requests-direction"
                     role="group"
@@ -535,6 +548,12 @@ export default function MeetingRequestsPage() {
                                                 {request.ownerResponseMessage}
                                             </small>
                                         )}
+
+                                        {request.cancellationReason && (
+                                            <small className="meeting-request-response">
+                                                Motivo de cancelación: {request.cancellationReason}
+                                            </small>
+                                        )}
                                     </div>
                                 ),
                             },
@@ -542,7 +561,10 @@ export default function MeetingRequestsPage() {
                                 id: 'time',
                                 heading: 'HORARIO SOLICITADO',
                                 cell: request => {
-                                    const schedule = formatRequestSchedule(request);
+                                    const schedule = formatRequestSchedule(
+                                        request,
+                                        viewerTimeZone,
+                                    );
 
                                     return (
                                         <div className="requests-table-time">
@@ -552,6 +574,13 @@ export default function MeetingRequestsPage() {
                                                 {schedule.range}
                                                 <br />
                                                 {schedule.zoneLabel}
+
+                                                {schedule.original && (
+                                                    <>
+                                                        <br />
+                                                        Registrada como: {schedule.original}
+                                                    </>
+                                                )}
                                             </small>
                                         </div>
                                     );
@@ -655,14 +684,23 @@ export default function MeetingRequestsPage() {
                         )}
 
                         <div className="requests-table-time">
-                            **Horario actual**
+                            <strong>Horario actual</strong>
 
                             <small>
-                                {formatRequestSchedule(editingRequest).date}
+                                {formatRequestSchedule(
+                                    editingRequest,
+                                    viewerTimeZone,
+                                ).date}
                                 <br />
-                                {formatRequestSchedule(editingRequest).range}
+                                {formatRequestSchedule(
+                                    editingRequest,
+                                    viewerTimeZone,
+                                ).range}
                                 <br />
-                                {formatRequestSchedule(editingRequest).zoneLabel}
+                                {formatRequestSchedule(
+                                    editingRequest,
+                                    viewerTimeZone,
+                                ).zoneLabel}
                             </small>
                         </div>
 
@@ -806,12 +844,21 @@ export default function MeetingRequestsPage() {
                         </div>
 
                         <div className="requests-table-time">
-                            {formatRequestSchedule(cancellingRequest).date}
+                            {formatRequestSchedule(
+                                cancellingRequest,
+                                viewerTimeZone,
+                            ).date}
 
                             <small>
-                                {formatRequestSchedule(cancellingRequest).range}
+                                {formatRequestSchedule(
+                                    cancellingRequest,
+                                    viewerTimeZone,
+                                ).range}
                                 <br />
-                                {formatRequestSchedule(cancellingRequest).zoneLabel}
+                                {formatRequestSchedule(
+                                    cancellingRequest,
+                                    viewerTimeZone,
+                                ).zoneLabel}
                             </small>
                         </div>
 
@@ -963,18 +1010,33 @@ export default function MeetingRequestsPage() {
                             </p>
 
                             <strong>
-                                {formatRequestSchedule(viewingRequest).date}
+                                {formatRequestSchedule(
+                                    viewingRequest,
+                                    viewerTimeZone,
+                                ).date}
                             </strong>
 
                             <small>
-                                {formatRequestSchedule(viewingRequest).range}
+                                {formatRequestSchedule(
+                                    viewingRequest,
+                                    viewerTimeZone,
+                                ).range}
                                 <br />
-                                {formatRequestSchedule(viewingRequest).zoneLabel}
+                                {formatRequestSchedule(
+                                    viewingRequest,
+                                    viewerTimeZone,
+                                ).zoneLabel}
 
-                                {formatRequestSchedule(viewingRequest).original && (
+                                {formatRequestSchedule(
+                                    viewingRequest,
+                                    viewerTimeZone,
+                                ).original && (
                                     <>
                                         <br />
-                                        Registrada como: {formatRequestSchedule(viewingRequest).original}
+                                        Registrada como: {formatRequestSchedule(
+                                            viewingRequest,
+                                            viewerTimeZone,
+                                        ).original}
                                     </>
                                 )}
                             </small>
@@ -986,7 +1048,10 @@ export default function MeetingRequestsPage() {
                             </p>
 
                             <small>
-                                {formatRequestCreatedAt(viewingRequest.createdAt)}
+                                {formatRequestCreatedAt(
+                                    viewingRequest.createdAt,
+                                    viewerTimeZone,
+                                )}
                             </small>
                         </div>
 
@@ -997,7 +1062,10 @@ export default function MeetingRequestsPage() {
                                 </p>
 
                                 <small>
-                                    {formatRequestCreatedAt(viewingRequest.resolvedAt)}
+                                    {formatRequestCreatedAt(
+                                        viewingRequest.resolvedAt,
+                                        viewerTimeZone,
+                                    )}
                                 </small>
                             </div>
                         )}
@@ -1024,7 +1092,9 @@ export default function MeetingRequestsPage() {
                                     MOTIVO DE CANCELACIÓN
                                 </p>
 
-                                <small>{viewingRequest.cancellationReason}</small>
+                                <small>
+                                    {viewingRequest.cancellationReason}
+                                </small>
                             </div>
                         )}
 
@@ -1036,7 +1106,9 @@ export default function MeetingRequestsPage() {
                                         : 'RESPUESTA DEL DESTINATARIO'}
                                 </p>
 
-                                <small>{viewingRequest.ownerResponseMessage}</small>
+                                <small>
+                                    {viewingRequest.ownerResponseMessage}
+                                </small>
                             </div>
                         )}
 
@@ -1054,7 +1126,7 @@ export default function MeetingRequestsPage() {
                             </p>
                         )}
 
-                        {viewingRequest?.status === 'accepted' && (
+                        {viewingRequest.status === 'accepted' && (
                             <Button
                                 variant="danger"
                                 disabled={cancelling || savingEdit}
